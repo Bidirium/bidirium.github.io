@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Mini Mundane Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #4c1d95 0%, #1e3a8a 50%, #312e81 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #e0e7ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+            background-color: #eab308;
+            border-color: #facc15;
+            color: #000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #22c55e;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #4ade80;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .snack-icon {
+            display: inline-block;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled) {
+            background-color: #16a34a;
+            color: #000;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #22c55e;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            border-radius: 0.25rem;
+            border: 1px solid #22c55e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #4ade80;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #4ade80;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(180, 83, 9, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #eab308;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #facc15;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #fef3c7;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #b45309;
+            color: #fef3c7;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ef4444;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #22c55e;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #86efac;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #fef08a;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #15803d;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #16a34a;
+            color: #000;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #4ade80;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #22c55e;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #374151;
+        }
+
+        .history-title {
+            color: #4ade80;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-button.current {
+            background-color: #16a34a;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: #374151;
+            color: #4ade80;
+        }
+
+        .history-button.visited:hover {
+            background-color: #4b5563;
+        }
+
+        .history-button.unvisited {
+            background-color: #1f2937;
+            color: #6b7280;
+        }
+
+        .history-hint {
+            color: #86efac;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">🎉 ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="snack-icon">🍕</span>
+                    THE MINI MUNDANE QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>✨</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">5</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">5</span> left to unlock</p>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ ENDING REACHED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                JOURNEY HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that point in your journey</p>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "You're hungry. It's 9pm. Your quest: Decide what to eat.\n\nYour fridge is mostly empty. Your willpower is questionable. What do you do?",
+                location: "🏠 Home - Kitchen",
+                choices: [
+                    { text: "Check the fridge (brave)", next: 'check_fridge' },
+                    { text: "Order delivery", next: 'order_delivery' },
+                    { text: "Just eat cereal", next: 'cereal' }
+                ]
+            },
+            check_fridge: {
+                text: "You open the fridge. The light flickers ominously.\n\nContents: Half a lemon, mysterious Tupperware from last week, and condiments. So many condiments.",
+                location: "🏠 Home - Kitchen",
+                choices: [
+                    { text: "Investigate the Tupperware", next: 'tupperware' },
+                    { text: "Give up and order food", next: 'order_delivery' },
+                    { text: "Make a condiment sandwich", next: 'condiment_sandwich' }
+                ]
+            },
+            tupperware: {
+                text: "You open the Tupperware. It's... pasta? Maybe? It's achieved sentience and is judging your life choices.\n\nThe smell hits you like a freight train.",
+                location: "🏠 Home - Kitchen",
+                choices: [
+                    { text: "Throw it away immediately", next: 'throw_away' },
+                    { text: "Smell it again (why?)", next: 'smell_again' }
+                ]
+            },
+            smell_again: {
+                text: "You smell it again. Mistake. Big mistake.\n\nYour nose may never recover. You've learned nothing.",
+                location: "🏠 Home - Kitchen",
+                ending: true,
+                achievement: "REGRET SNIFFER",
+                endingText: "💀 ENDING: You spend the next hour airing out your kitchen. You order pizza. The delivery person asks why your apartment smells weird. You have no good answer.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            throw_away: {
+                text: "You dispose of the biohazard. Your fridge is now 40% emptier but 100% safer.\n\nYou're still hungry though.",
+                location: "🏠 Home - Kitchen",
+                choices: [
+                    { text: "Order delivery", next: 'order_delivery' },
+                    { text: "Eat cereal", next: 'cereal' }
+                ]
+            },
+            condiment_sandwich: {
+                text: "You create an abomination: two slices of bread, ketchup, mustard, mayo, and... is that relish?\n\nIt's the saddest sandwich ever conceived. Even you feel bad for it.",
+                location: "🏠 Home - Kitchen",
+                ending: true,
+                achievement: "CONDIMENT CHEF",
+                endingText: "💀 ENDING: You eat the condiment sandwich. It tastes exactly as bad as you'd expect. You immediately regret everything. You order real food after. You don't tell anyone about this.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            order_delivery: {
+                text: "You open your delivery app. 47 restaurants. Infinite possibilities. Zero ability to decide.\n\nYou scroll for 20 minutes.",
+                location: "🏠 Home - On couch",
+                choices: [
+                    { text: "Order pizza (classic)", next: 'pizza' },
+                    { text: "Try something new", next: 'something_new' },
+                    { text: "Keep scrolling (dangerous)", next: 'scroll_forever' }
+                ]
+            },
+            pizza: {
+                text: "You order pizza. The estimated time: 45 minutes.\n\nThe pizza arrives in 20 minutes. It's hot, delicious, and exactly what you needed.",
+                location: "🏠 Home - Pizza victory",
+                ending: true,
+                achievement: "PIZZA CHAMPION",
+                endingText: "✨ PERFECT ENDING: You eat pizza and watch TV. Life is good. You've made the right choice. Tomorrow you'll eat vegetables. Probably.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            something_new: {
+                text: "You order from a restaurant you've never tried. It's an adventure!\n\nThe food arrives. It's... interesting. Very interesting. Too interesting.",
+                location: "🏠 Home - Experimental dinner",
+                ending: true,
+                achievement: "CULINARY ADVENTURER",
+                endingText: "💀 ENDING: The food is edible but confusing. You're not sure what you just ate. You're not sure you want to know. You stick to familiar places from now on.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            scroll_forever: {
+                text: "You scroll. And scroll. And scroll.\n\nIt's been an hour. You've looked at every menu twice. You're more confused than when you started. Your phone battery is at 2%.",
+                location: "🏠 Home - Decision paralysis",
+                ending: true,
+                achievement: "INFINITE SCROLLER",
+                endingText: "💀 ENDING: You give up and eat cereal. You wasted an hour looking at food pictures. You learned nothing. Tomorrow you'll do this all again.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            cereal: {
+                text: "You pour cereal. The box is almost empty. You get mostly crumbs and that weird cereal dust.\n\nThe milk expires tomorrow. You're living on the edge.",
+                location: "🏠 Home - Kitchen",
+                choices: [
+                    { text: "Eat it anyway", next: 'eat_cereal' },
+                    { text: "Add more cereal from another box", next: 'cereal_mix' }
+                ]
+            },
+            eat_cereal: {
+                text: "You eat the cereal dust soup. It's depressing but efficient.\n\nYou've consumed calories. Mission accomplished?",
+                location: "🏠 Home - Kitchen table",
+                ending: true,
+                achievement: "EFFICIENCY EXPERT",
+                endingText: "✨ ENDING: You finished dinner in 3 minutes. You saved money. You also feel empty inside, but that might not be related to the cereal. Tomorrow will be better. Probably.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            cereal_mix: {
+                text: "You combine two types of cereal. Chocolate puffs meet honey squares. It's chaos. Beautiful chaos.\n\nThis is the best decision you've made all day.",
+                location: "🏠 Home - Kitchen table",
+                ending: true,
+                achievement: "CEREAL SCIENTIST",
+                endingText: "✨ PERFECT ENDING: Your cereal combination is actually delicious. You've discovered something special. You eat two bowls. You'll recreate this tomorrow. Life is good.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "REGRET SNIFFER",
+            "CONDIMENT CHEF",
+            "PIZZA CHAMPION",
+            "CULINARY ADVENTURER",
+            "INFINITE SCROLLER",
+            "EFFICIENCY EXPERT",
+            "CEREAL SCIENTIST"
+        ];
+
+        <script>
+(function showAllEndings() {
+    // --- CONFIG ---
+    const start = 'start'; // the root of the story
+    const visited = new Set();
+    const endings = [];
+
+    // --- DEPTH-FIRST SEARCH FUNCTION ---
+    function explore(state, path = []) {
+        if (!scenarios[state]) return;
+
+        const scene = scenarios[state];
+        const newPath = [...path, state];
+
+        // If it's an ending, record it
+        if (scene.ending) {
+            endings.push({
+                ending: scene.achievement || "Unnamed Ending",
+                id: state,
+                endingText: scene.endingText || "(No ending text)",
+                path: newPath
+            });
+        }
+
+        // Recurse into next choices
+        if (scene.choices && scene.choices.length > 0) {
+            for (const choice of scene.choices) {
+                if (!visited.has(choice.next)) {
+                    visited.add(choice.next);
+                    explore(choice.next, newPath);
+                }
+            }
+        }
+    }
+
+    // --- RUN ---
+    explore(start);
+
+    // --- OUTPUT FORMATTED RESULT ---
+    console.log("%c📜 ALL ENDINGS FOUND:", "color:#22c55e; font-weight:bold;");
+    endings.forEach((end, i) => {
+        console.log(
+            `%c${i + 1}. ${end.ending}`,
+            "color:#facc15; font-weight:bold;"
+        );
+        console.log("   ➤ Ending ID:", end.id);
+        console.log("   ➤ Path:", end.path.join(" → "));
+        console.log("   ➤ Text:", end.endingText.trim());
+        console.log("--------------------------------------------------");
+    });
+
+    // --- OPTIONAL: show in HTML ---
+    const output = document.createElement("pre");
+    output.style.whiteSpace = "pre-wrap";
+    output.style.color = "#a7f3d0";
+    output.style.background = "#111827";
+    output.style.padding = "1rem";
+    output.style.marginTop = "2rem";
+    output.style.border = "1px solid #22c55e";
+    output.style.borderRadius = "0.5rem";
+
+    let textOut = "📜 ALL ENDINGS & PATHS\n\n";
+    endings.forEach((end, i) => {
+        textOut += `${i + 1}. ${end.ending}\n`;
+        textOut += `   Path: ${end.path.join(" → ")}\n`;
+        textOut += `   Text: ${end.endingText.trim()}\n\n`;
+    });
+    output.textContent = textOut;
+
+    document.body.appendChild(output);
+})();
+</script>
+        
+          // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            // Update location
+            document.getElementById('location').textContent = currentScenario.location;
+
+            // Update scenario text
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            // Update ending text
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            // Update ending warning
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            // Update choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            // Update achievements display
+            updateAchievementsDisplay();
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Update nav buttons
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            document.getElementById('achievementTitle').textContent = '🎉 ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = allAchievements.length;
+                document.getElementById('achievementsLeft').textContent = allAchievements.length - achievements.length;
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge';
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
