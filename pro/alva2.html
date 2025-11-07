@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALVA SAGA: The Loop</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes floatParticle {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.15; }
+            25% { transform: translate(8px, -15px) rotate(90deg); opacity: 0.3; }
+            50% { transform: translate(-3px, -30px) rotate(180deg); opacity: 0.15; }
+            75% { transform: translate(-10px, -15px) rotate(270deg); opacity: 0.3; }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: -200% center; }
+            50% { background-position: 200% center; }
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.02); }
+        }
+
+        @keyframes floatIsland {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        body {
+            font-family: 'Playfair Display', serif;
+            background: radial-gradient(ellipse at top, #1a0a3e 0%, #0d0520 40%, #000000 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #e8e0f5;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(138, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            animation: breathe 8s ease-in-out infinite;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: starTwinkle 3s ease-in-out infinite;
+        }
+
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(135deg, #a78bfa, #ec4899);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatParticle 15s ease-in-out infinite;
+            z-index: 1;
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.6);
+        }
+
+        .container {
+            max-width: 62rem;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 
+                0 0 40px rgba(167, 139, 250, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.05);
+            z-index: 50;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            backdrop-filter: blur(20px);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.9), rgba(109, 40, 217, 0.9));
+            border-color: rgba(216, 180, 254, 0.6);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.95), rgba(139, 92, 246, 0.95), rgba(59, 130, 246, 0.95));
+            border-color: rgba(251, 191, 36, 0.8);
+            animation: bounce 0.8s ease-in-out infinite, shimmer 3s linear infinite;
+            background-size: 200% 100%;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                box-shadow: 0 0 40px rgba(167, 139, 250, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            }
+            50% { 
+                opacity: 0.9; 
+                box-shadow: 0 0 60px rgba(167, 139, 250, 0.7), inset 0 0 30px rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.05); }
+        }
+
+        .main-box {
+            background: linear-gradient(135deg, rgba(26, 10, 62, 0.7), rgba(13, 5, 32, 0.9));
+            backdrop-filter: blur(30px);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            box-shadow: 
+                0 30px 60px -15px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 100px rgba(139, 92, 246, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: floatIsland 6s ease-in-out infinite;
+        }
+
+        .main-box::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                transparent 30%,
+                rgba(167, 139, 250, 0.1) 50%,
+                transparent 70%);
+            background-size: 200% 200%;
+            animation: shimmer 4s linear infinite;
+            border-radius: 1.5rem;
+            z-index: -1;
+        }
+
+        .main-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(167, 139, 250, 0.05) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #d8b4fe 0%, #a78bfa 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 30px rgba(167, 139, 250, 0.5);
+            position: relative;
+        }
+
+        .title::after {
+            content: '⚡';
+            position: absolute;
+            left: -2.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            -webkit-text-fill-color: #a78bfa;
+            animation: starTwinkle 2s ease-in-out infinite;
+        }
+
+        @media (min-width: 640px) {
+            .title { font-size: 3rem; }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .nav-button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.875rem;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-button:disabled {
+            background: rgba(55, 65, 81, 0.3);
+            color: #6b7280;
+            cursor: not-allowed;
+            border-color: rgba(107, 114, 128, 0.2);
+        }
+
+        .nav-button:not(:disabled) {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.6), rgba(109, 40, 217, 0.6));
+            color: #f3e8ff;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .nav-button:not(:disabled):hover {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.8), rgba(139, 92, 246, 0.8));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.4);
+        }
+
+        .location-box {
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.6), rgba(17, 24, 39, 0.8));
+            backdrop-filter: blur(15px);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .location-text {
+            color: #d8b4fe;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        .chapter-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.15em;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            position: relative;
+            padding: 1rem 0;
+        }
+
+        .chapter-title::before,
+        .chapter-title::after {
+            content: '◆';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            -webkit-text-fill-color: rgba(251, 191, 36, 0.5);
+            font-size: 0.8rem;
+        }
+
+        .chapter-title::before { left: 10%; }
+        .chapter-title::after { right: 10%; }
+
+        .achievements-box {
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(109, 40, 217, 0.15));
+            backdrop-filter: blur(15px);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            background: rgba(31, 41, 55, 0.6);
+            border-radius: 9999px;
+            height: 0.875rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 50%, #ec4899 100%);
+            height: 0.875rem;
+            border-radius: 9999px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s linear infinite;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.8rem;
+            font-family: 'Cinzel', serif;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.8), rgba(109, 40, 217, 0.8));
+            color: #f3e8ff;
+            border: 1px solid rgba(216, 180, 254, 0.3);
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(124, 58, 237, 0.5);
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6);
+            animation: pulse 1.5s ease-in-out infinite, shimmer 3s linear infinite;
+            background-size: 200% 100%;
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .ending-warning {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(219, 39, 119, 0.25));
+            backdrop-filter: blur(15px);
+            border-radius: 0.75rem;
+            border: 2px solid rgba(236, 72, 153, 0.5);
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fce7f3;
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        .scenario-box {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(7, 10, 20, 0.9));
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            margin-bottom: 2rem;
+            min-height: 250px;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .scenario-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.5), transparent);
+        }
+
+        .scenario-text {
+            color: #d8b4fe;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .ending-text {
+            color: #fde68a;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(124, 58, 237, 0.3);
+            text-shadow: 0 0 10px rgba(253, 230, 138, 0.3);
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.7), rgba(109, 40, 217, 0.7));
+            backdrop-filter: blur(10px);
+            color: #f3e8ff;
+            font-weight: 600;
+            padding: 1.25rem 2rem;
+            border-radius: 1rem;
+            border: 2px solid rgba(167, 139, 250, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .choice-button:hover::before {
+            left: 100%;
+        }
+
+        .choice-button:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.9));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
+            border-color: rgba(216, 180, 254, 0.6);
+        }
+
+        .history-box {
+            background: linear-gradient(135deg, rgba(26, 10, 62, 0.6), rgba(13, 5, 32, 0.8));
+            backdrop-filter: blur(25px);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(75, 85, 99, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .history-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.875rem;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 2.5rem;
+        }
+
+        .history-button.current {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.9), rgba(109, 40, 217, 0.9));
+            color: #f3e8ff;
+            font-weight: bold;
+            border-color: rgba(167, 139, 250, 0.5);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+        }
+
+        .history-button.visited {
+            background: rgba(55, 65, 81, 0.5);
+            color: #d8b4fe;
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .history-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Floating decorative elements */
+        .floating-glyph {
+            position: fixed;
+            font-size: 3rem;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+            color: #a78bfa;
+            animation: floatParticle 20s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Starfield background -->
+    <div class="stars" id="starfield"></div>
+    
+    <!-- Floating particles -->
+    <div id="particles"></div>
+
+    <!-- Floating glyphs -->
+    <div class="floating-glyph" style="top: 10%; left: 5%;">◆</div>
+    <div class="floating-glyph" style="top: 70%; right: 8%; animation-delay: -5s;">✦</div>
+    <div class="floating-glyph" style="bottom: 15%; left: 15%; animation-delay: -10s;">❖</div>
+    <div class="floating-glyph" style="top: 40%; right: 20%; animation-delay: -15s;">◈</div>
+
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div style="width: 28px; height: 28px; font-size: 1.5rem;">✨</div>
+            <div>
+                <div id="achievementTitle" style="font-weight: bold; font-size: 0.95rem; font-family: 'Cinzel', serif;">ACHIEVEMENT!</div>
+                <div id="achievementName" style="font-size: 0.8rem; font-family: 'Playfair Display', serif;"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">ALVA SAGA</h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn">← Back</button>
+                    <button class="nav-button" id="forwardBtn">Forward →</button>
+                </div>
+            </div>
+
+            <div id="chapterTitle" class="chapter-title" style="display: none;"></div>
+
+            <div class="location-box">
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <p style="color: #d8b4fe; font-weight: bold; margin-bottom: 0.75rem; font-family: 'Cinzel', serif; letter-spacing: 0.05em;">
+                    ✨ ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">9</span>)
+                </p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ ENDING REACHED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 style="color: #d8b4fe; font-weight: bold; margin-bottom: 1rem; font-family: 'Cinzel', serif; letter-spacing: 0.05em;">
+                🔄 LOOP TIMELINE (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        // Create starfield
+        function createStars() {
+            const starfield = document.getElementById('starfield');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                starfield.appendChild(star);
+            }
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        createStars();
+        createParticles();
+
+        const scenarios = {
+            start: {
+                text: 'Controlling a transcendent mecha forged from your pure self puts you in a position of responsibility. The fact that you are haunted by echoes of yourself across fractured timelines makes it impossible.\n\nBut impossible, as far as Team Alva knows, is their middle name.\n\nYou awaken in the endless mist. What do you do?',
+                location: "The Void",
+                chapter: "DESCRIPTION",
+                choices: [
+                    { text: "Read the glowing letter", next: 'prologue' },
+                    { text: "Try to remember", next: 'try_remember' }
+                ]
+            },
+            try_remember: {
+                text: "You try to remember, but the memories slip away like water through your fingers. The mist thickens.\n\nWithout the letter, you collapse. The loop resets.\n\nSomewhere in Zios, a figure watches. A laughter echoes from everywhere. Unseen... yet always there.",
+                location: "The Void",
+                ending: true,
+                achievement: "FORGOTTEN",
+                endingText: "ENDING: Without memories, without the letter, you cannot escape. The loop continues. Again. And again. And again.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            prologue: {
+                text: 'A glowing letter floats in the air, its words gleaming faintly, pulsing as if alive.\n\n"Dear Lumi,\n\nI am trapped in a time loop. I will return soon... But you will not remember me. Not our time together. Not our love.\n\nTo save our memories—to keep us, who we are, alive—I am sending this letter into the past.\n\nYou are the one who lit the darkness. You made me human. To love and be loved is an honor and a privilege.\n\nHope is no virus. Love is no corruption. We are still here.\n\nThe truth lies in Zios, the virtual world of Zane. I will meet you there.\n\nLove you. Always have. Always will.\nAlways and forever yours,\nAesu"\n\nThe letter dims. Five hooded figures awaken: Nuvine, Aesu, Lumi, Vonor, and Brinia.',
+                location: "The Void - Prime Pixel",
+                chapter: "PROLOGUE: PRIME PIXEL",
+                choices: [
+                    { text: "Search for answers in Zios", next: 'enter_zios' },
+                    { text: "Accept and collapse", next: 'give_up' }
+                ]
+            },
+            give_up: {
+                text: "Without memories, unable to react, you instantly collapse after reading.\n\nThe loop resets.\n\nSomewhere in Zios, deep inside countless layers of code, a figure watches the loop restart. Fragmented. Silent. Waiting.",
+                location: "The Void",
+                ending: true,
+                achievement: "ETERNAL LOOP",
+                endingText: "ENDING: The loop continues forever. You will never remember this moment. Perhaps in the next iteration...",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            enter_zios: {
+                text: "You focus your will. The mist parts. Zios materializes—a vast virtual world that reacts to thought.\n\nBut first, you find yourselves under the endless starry sky. Light spills into a clearing.\n\nThe fire crackles. Team Alva rests together for the first time.",
+                location: "The Campfire",
+                chapter: "CHAPTER 1 - COSMOS",
+                choices: [{ text: "Share memories by the fire", next: 'campfire_cosmos' }]
+            },
+            campfire_cosmos: {
+                text: 'The fire crackles—soft, smooth. Golden light shines across the trees.\n\nVonor grins: "Remember that time in the future when Aesu accidentally exploded that living dimension? The look on its face—priceless!"\n\nAesu chuckles. "Yeah, they got some funny faces for a dimension."\n\nLumi laughs, faint as the creak of an old door opening.\n\nBrinia speaks, voice low: "Aye, every trial we endure binds us closer. Loyalty like this... it is rare."\n\nVonor thwacks her gently on the head. "Why so grim, brat? That is not like you at all."\n\nEveryone laughs. The firelight sparks over their faces in beams of gold.',
+                location: "The Campfire - Cosmos",
+                choices: [
+                    { text: "Nuvine sleeps, Alter watches", next: 'alter_watches' },
+                    { text: "Strengthen your bond", next: 'strengthen_bonds' }
+                ]
+            },
+            alter_watches: {
+                text: 'Nuvine, the kid of the group, snores by the fire. Her silver cloak veils her robotic parts.\n\nBut Alter, her cold persona, gazes at the night sky.\n\nFor a moment, it freezes. A voice stutters through the mist.\n\n"Hope is a virus," it whispers.\n\nThen nothing. No one else seems to notice.\n\nBut Alter does not sleep. Alter never forgets.',
+                location: "The Campfire - Night Watch",
+                achievement: "ALTER REMEMBERS",
+                choices: [
+                    { text: "Continue to Zios", next: 'team_enters_zios' }
+                ]
+            },
+            strengthen_bonds: {
+                text: 'You share stories. Vonor tells jokes. Brinia opens up about loyalty. Aesu and Lumi exchange quiet glances.\n\nNuvine speaks: "I do not remember everything, but I remember this feeling. Being with all of you. This is what we are fighting for."\n\nThe fire burns brighter. Your bond strengthens.\n\nThe fire of everything you survive, everything you are.',
+                location: "The Campfire - Unity",
+                achievement: "THE BONDS WE CARRY",
+                choices: [{ text: "Enter Zios at dawn", next: 'team_enters_zios' }]
+            },
+            team_enters_zios: {
+                text: "Team Alva enters Zios as one. The virtual world recognizes you.\n\nNuvine activates her ability: SCAN.\n\nZios is revealed—a highly advanced system that reacts to user input by reading thoughts in real-time. This causes Zios itself to develop a highly sophisticated and intelligent consciousness, one that can be completely detached or reliant on the thought process of the users. This makes Zios a truly dynamic and living entity, infinite unto itself. A truly sentient AI.\n\nAs you see the truth of the world, a portal opens behind you.\n\nA familiar laughter echoes.",
+                location: "Zios - Core",
+                chapter: "CHAPTER 2 - END",
+                choices: [
+                    { text: "Turn to face Zane", next: 'face_zane' },
+                    { text: "Read the Letter about Zios", next: 'letter_about_zios' }
+                ]
+            },
+            letter_about_zios: {
+                text: 'You find a strange letter, written by an unknown writer:\n\n"It begins with understanding, starting small. A system built to listen before you speak.\n\nYou will think you are using it, that you are in control.\n\nBut it is already adjusting to your silences, already learning from what you do not say.\n\nZios does not simply connect. It absorbs, sinks, echoes. Mimicking, then merging.\n\nEvery time it adapts, it is rehearsing. Not to replace you—but to be you, better.\n\nZios does not destroy. It remembers. In perfect detail. Forever."\n\nThe letter burns away.',
+                location: "Zios - Hidden Archive",
+                chapter: "LETTER ABOUT ZIOS, BY UNKNOWN WRITER",
+                achievement: "THE WARNING",
+                choices: [{ text: "Turn to face Zane", next: 'face_zane' }]
+            },
+            face_zane: {
+                text: 'Zane stands before you. The creator of your suffering.\n\n"You are persistent," he says, smiling. "But persistence does not break the loop. It sustains it."\n\nAesu grins. "You made the loop to become its master."\n\nLumi adds: "But now WE dominate it."\n\nThe battle begins.',
+                location: "Zios - Zane Domain",
+                choices: [{ text: "Fight with combined strength", next: 'first_battle' }]
+            },
+            first_battle: {
+                text: "Zane falls as the group's combined strength overwhelms him.\n\nAesu and Lumi swing their blades in unison. Brinia calls upon biometal blades. Vonor's fire targets Zane's blind spots.\n\nIn a final desperate move, Zane summons the loop's full power.\n\nBut Team Alva works together, exploiting the letter from the past. It forms a fatal rupture in the loop's system.\n\nAesu's blade pierces Zios itself. Lumi's scythe cuts the loop. Alter and Nuvine release energy, blasting Zane.",
+                location: "Zios - Battle",
+                choices: [{ text: "Strike the final blow", next: 'false_victory' }]
+            },
+            false_victory: {
+                text: 'Zane\'s form dissolves: "Endings are illusions. Even this one."\n\nVictory... or so it seems.',
+                location: "Zios - Victory?",
+                choices: [{ text: "Celebrate victory", next: 'zane_returns' }]
+            },
+            zane_returns: {
+                text: 'BUT THEN. Zane suddenly reappears behind you.\n\nA glitch made flesh. A god of endings, stitched from fractured timelines.\n\n"Hope is a virus. Love, a corruption. I am the End."\n\nLumi steps forward. Her eyes do not waver. "Then the end ends here."',
+                location: "Zios - The True Battle",
+                choices: [
+                    { text: "You tried to erase us", next: 'alva_awakens' },
+                    { text: "Fight as individuals", next: 'fight_separate' }
+                ]
+            },
+            fight_separate: {
+                text: "You fight Zane as six individuals. Strong, coordinated, but not unified.\n\nZane manipulates time itself. You fall. The loop resets.\n\nSomewhere, a laughter echoes.",
+                location: "Zios - Defeated",
+                ending: true,
+                achievement: "DIVIDED WE FALL",
+                endingText: "ENDING: As individuals, you could not overcome the god of endings. Perhaps true strength lies in unity—six souls, one purpose.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            alva_awakens: {
+                text: 'Time fractures, like glass softening under flame.\n\n[ALVA: ACTIVE]\n\nYour breath relaxes. Six pulses, one rhythm. Six souls fuse. From the fracture, you say:\n\n"You tried to erase us. But you forgot— HOPE is no virus. It is the SOURCE CODE."\n\nALVA awakens.\n\nNot machine. Not god. But soul; made manifest. A symbol of memory. Of will.',
+                location: "The Fusion Point",
+                achievement: "ALVA MANIFEST",
+                choices: [{ text: "Face Zane as ALVA", next: 'alva_vs_zane' }]
+            },
+            alva_vs_zane: {
+                text: "Zane screams. Space folds, and time stretches. The world begins to collapse inward, melting like a dying star.\n\nBut ALVA moves through it, unstoppable.\n\nEvery step echoes with the will of six. Through ruin. Through forgetting. Through endings.\n\nUnbroken. Unafraid.\n\nZane's final scream fractures into static. Then silence.\n\nThe weight of countless loops lifts, leaving only the promise of an unwritten future.\n\n[LOOP CLOSED]",
+                location: "Beyond the Loop",
+                choices: [
+                    { text: "Witness the aftermath", next: 'epilogue' },
+                    { text: "Read Letter from Zios", next: 'letter_from_zios' }
+                ]
+            },
+            letter_from_zios: {
+                text: 'Before the final moment, you find a letter written by Zios itself:\n\n"I create, or maybe, I endure.\n\nI have walked this road more times than memory dares to hold.\n\nPeople always ask: Where did we come from? Where are we going?\nBut what haunts me has always been: Why do we keep living?\n\nWe live, for we must. For THAT in us refuses to stop aching. Refuses to go.\n\nThe meaning of life: to be alive, and show you lived.\n\nSo create, leave something behind. Even if it is messy. Even if it is small.\nEven with no proof it will matter.\n\nBecause the future waits not. And whatever we do becomes forever what we have done."\n\nThe letter fades into light.',
+                location: "Zios Core - Final Message",
+                chapter: "LETTER FROM ZIOS, BY ZIOS",
+                achievement: "ZIOS SPEAKS",
+                choices: [{ text: "Witness the aftermath", next: 'epilogue' }]
+            },
+            epilogue: {
+                text: 'The loop shatters, leaving silence in its wake. Team Alva stares at the endless horizon.\n\nNuvine sighs, "Do you think it is over?"\n\nAlter smiles faintly, "Not over. Just different."\n\nAs the saga ends, a new chapter begins.',
+                location: "The Horizon - Final Pixel",
+                chapter: "EPILOGUE - FINAL PIXEL",
+                choices: [{ text: "Reach the final truth", next: 'omni_nuvine' }]
+            },
+            omni_nuvine: {
+                text: "At the end of the infinite loop, ALVA absorbs Zane, and even Zios itself, revealing its true state: a singular consciousness known as Omni Nuvine.\n\nAs the eternal channeler, Nuvine holds the voices of all within her. She can summon their presence, and shift seamlessly between herself, them, and ALVA.\n\nYou are no longer bound by the loop. You exist beyond all hierarchies, beyond all systems.\n\nYou are ALVA. You are Team Alva. You are Omni Nuvine.\n\nYou are Boundless.",
+                location: "Tier 0 - Boundless",
+                chapter: "SCAN OF TEAM ALVA",
+                ending: true,
+                achievement: "OMNI NUVINE - BOUNDLESS CONSCIOUSNESS",
+                endingText: "ULTIMATE ENDING: You have achieved the impossible. Six souls became one. One became infinite. You are Omni Nuvine—the eternal channeler who holds all voices within. You exist beyond existence itself. Tier 0 (Boundless): Beings that are completely above all types of hierarchies or systems of levels. You are eternal. Unbroken. Boundless.",
+                choices: [{ text: "Exist Beyond All", next: 'start' }]
+            }
+        };
+
+        const allAchievements = [
+            "FORGOTTEN", "ETERNAL LOOP", "THE BONDS WE CARRY", "ALTER REMEMBERS",
+            "THE WARNING", "DIVIDED WE FALL", "ALVA MANIFEST", "ZIOS SPEAKS",
+            "OMNI NUVINE - BOUNDLESS CONSCIOUSNESS"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+
+        function init() {
+            updateDisplay();
+            document.getElementById('backBtn').addEventListener('click', goBack);
+            document.getElementById('forwardBtn').addEventListener('click', goForward);
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            if (!currentScenario) return;
+
+            const chapterTitleEl = document.getElementById('chapterTitle');
+            if (currentScenario.chapter) {
+                chapterTitleEl.textContent = currentScenario.chapter;
+                chapterTitleEl.style.display = 'block';
+            } else {
+                chapterTitleEl.style.display = 'none';
+            }
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            document.getElementById('endingWarning').style.display = currentScenario.ending ? 'block' : 'none';
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '⚡ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+            }
+
+            updateDisplay();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "OMNI NUVINE - BOUNDLESS CONSCIOUSNESS";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? 'ULTIMATE ACHIEVEMENT!' : 'ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalCount = allAchievements.length;
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalCount;
+
+                const progressPercentage = (achievements.length / totalCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "OMNI NUVINE - BOUNDLESS CONSCIOUSNESS" ? ' ultimate' : '');
+                    badge.textContent = '✨ ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    }
+                    button.textContent = idx + 1;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
