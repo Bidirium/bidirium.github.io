@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Perfect Run Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a0a2e 0%, #4a0e4e 50%, #2e0a1a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #a855f7;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(168, 85, 247, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #1a0a2e;
+            border-color: #a855f7;
+            color: #a855f7;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #a855f7, #ec4899);
+            border-color: #a855f7;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(26, 10, 46, 0.9);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #a855f7;
+            box-shadow: 0 20px 25px -5px rgba(168, 85, 247, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #a855f7;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .time-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #a855f7;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #1a0a2e;
+            color: #a855f7;
+        }
+
+        .nav-button:disabled {
+            background-color: #2a1a3e;
+            color: #6a2a7a;
+            border-color: #6a2a7a;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #a855f7;
+            color: #000;
+            box-shadow: 0 0 15px #a855f7;
+        }
+
+        .stats-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(74, 14, 78, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #a855f7;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-label {
+            color: #c084fc;
+            font-size: 0.875rem;
+        }
+
+        .stat-value {
+            color: #a855f7;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(74, 14, 78, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #a855f7;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #a855f7;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(74, 14, 78, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #a855f7;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1a0a2e;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #6a2a7a;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #6a2a7a, #a855f7);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+            border: 1px solid #a855f7;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #a855f7, #ec4899);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ec4899;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(78, 14, 14, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ef4444;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #a855f7;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #c084fc;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #ec4899;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #6a2a7a;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #1a0a2e;
+            color: #a855f7;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #a855f7;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #a855f7;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #a855f7;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(26, 10, 46, 0.9);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #6a2a7a;
+        }
+
+        .history-title {
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #a855f7;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #1a0a2e;
+            color: #a855f7;
+        }
+
+        .history-button.current {
+            background-color: #a855f7;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(74, 14, 78, 0.5);
+            color: #a855f7;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(168, 85, 247, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #1a0a2e;
+            color: #6a2a7a;
+        }
+
+        .history-hint {
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(26, 10, 46, 0.9);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #6a2a7a;
+        }
+
+        .quest-log-title {
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #c084fc;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #6a2a7a;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="time-icon">⏰</span>
+                    THE PERFECT RUN
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Reload</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-box">
+                <div class="stat-item">
+                    <span class="stat-label">💀 Deaths:</span>
+                    <span class="stat-value" id="deathCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">💰 Money Spent:</span>
+                    <span class="stat-value" id="moneySpent">€0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">🎯 Loop:</span>
+                    <span class="stat-value" id="loopNumber">1</span>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">15</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">15</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ LOOP CONCLUDED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>⏮️</span>
+                SAVE POINT HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to reload to that moment</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                LOOP MEMORY
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "May 8th, 2020. You're Ryan 'Quicksave' Romano, driving your red Plymouth Fury toward New Rome, Italy's glitzy capital of sin.\n\nYou have a simple delivery job: bring a briefcase to Renesco's Jolie Wrangler pub. The pay is decent, and you're bored.\n\nBest of all? You have the power to save and reload your life whenever you die. This should be easy.",
+                location: "🚗 Highway to New Rome",
+                choices: [
+                    { text: "Drive carefully to the pub", next: 'careful_drive' },
+                    { text: "Drive recklessly, you can always reload", next: 'reckless_drive' },
+                    { text: "Explore the city first", next: 'explore_city' }
+                ]
+            },
+            careful_drive: {
+                text: "You navigate New Rome's chaotic traffic with uncharacteristic caution. The city sprawls before you—casinos, the Colosseum Maximus, the towering Dynamis spire.\n\nYou reach the pub without incident. Time to make the delivery.",
+                location: "🍺 Jolie Wrangler Pub",
+                choices: [
+                    { text: "Enter and deliver the briefcase immediately", next: 'direct_delivery' },
+                    { text: "Scout the area first", next: 'scout_pub' }
+                ]
+            },
+            reckless_drive: {
+                text: "You gun it through traffic, causing two near-accidents. A tank truck nearly smashes into you, then a Bliss-addict stumbles into the road.\n\nYou swerve wildly—",
+                location: "🚗 New Rome Streets - CRASH!",
+                ending: true,
+                achievement: "FIRST DEATH",
+                death: true,
+                endingText: "💀 DEATH #1: Your car flips. Everything goes dark. You wake up on the highway again.\n\nWelcome to the loop, Quicksave. Time to try again.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            explore_city: {
+                text: "You drive through the Golden Coast, admiring the Mediterranean and the advertisements for Elixirs—superpowers in a bottle.\n\nYou spot Wyvern on a billboard. Dynamis sells these knockoff powers for ridiculous prices. You got the real thing.\n\nEventually, you head to the pub.",
+                location: "🌆 New Rome - Golden Coast",
+                choices: [
+                    { text: "Go to the pub now", next: 'careful_drive' }
+                ]
+            },
+            scout_pub: {
+                text: "You park and observe the pub from your car. Looks normal enough—a few patrons, an old barman, nothing suspicious.\n\nWait. Someone's approaching the pub in a hoodie. Something feels... off about them.",
+                location: "🚗 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Enter before the hooded figure", next: 'beat_ghoul_inside' },
+                    { text: "Wait and observe the hooded figure", next: 'observe_ghoul' },
+                    { text: "Just make the delivery normally", next: 'direct_delivery' }
+                ]
+            },
+            observe_ghoul: {
+                text: "You watch as the hooded figure enters. Thirty seconds later, screams erupt from inside. Ice spears burst through the windows.\n\nYou see people dying. The assassin is some kind of ice-powered Genome.",
+                location: "🚗 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Drive your car into the pub", next: 'car_attack_prepared' },
+                    { text: "Go in with weapons ready", next: 'armed_entry' },
+                    { text: "This is too dangerous, leave", next: 'abandon_delivery' }
+                ]
+            },
+            direct_delivery: {
+                text: "You walk in casually with the briefcase. 'Hello, local humans, I come in peace! Is this Renesco's Jolie Wrangler?'\n\nThe barman looks annoyed. 'It's written on the front door. What do you want?'\n\nYou hand him the briefcase. Then someone enters behind you. The temperature drops.",
+                location: "🍺 Jolie Wrangler Pub",
+                choices: [
+                    { text: "Turn around", next: 'ghoul_ambush' }
+                ]
+            },
+            ghoul_ambush: {
+                text: "'Renesco?' a raspy voice asks.\n\nAn ice spear tears out the barman's throat before you can react. Another impales your chest, puncturing your lungs.\n\nYou collapse, seeing your killer—a walking skeleton wreathed in frost. A Psycho.\n\n'Adam sends his regards,' he rasps.\n\nYou die.",
+                location: "🍺 Jolie Wrangler Pub",
+                ending: true,
+                achievement: "AMBUSHED",
+                death: true,
+                endingText: "💀 DEATH #2: You were caught completely off guard. Ghoul of the Meta-Gang killed you and everyone in the pub.\n\nNow you know the threat. Use this knowledge.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            beat_ghoul_inside: {
+                text: "You rush in just as the hooded figure enters. You tackle him from behind before he can attack.\n\nBut he's fast—spinning around, manifesting ice armor. You're in melee range with a Genome killer.",
+                location: "🍺 Jolie Wrangler Pub - Combat",
+                choices: [
+                    { text: "Use your time-stop power", next: 'timestop_ghoul' },
+                    { text: "Try to fight normally", next: 'fight_ghoul_fail' }
+                ]
+            },
+            armed_entry: {
+                text: "You grab your baseball bat and shotgun from the trunk, then burst into the pub.\n\nGhoul has already killed Renesco. He spins toward you, ice shards forming.\n\n'Another one?' he hisses.",
+                location: "🍺 Jolie Wrangler Pub - Combat",
+                choices: [
+                    { text: "Use time-stop and close distance", next: 'timestop_ghoul' },
+                    { text: "Shoot him with the shotgun", next: 'shotgun_ghoul' }
+                ]
+            },
+            fight_ghoul_fail: {
+                text: "You throw a punch. Ghoul dodges with superhuman speed and counters. Ice shards pierce your body from five different angles.\n\nYou forgot—Genomes have enhanced physical abilities. Fighting one hand-to-hand without your powers is suicide.",
+                location: "🍺 Jolie Wrangler Pub",
+                ending: true,
+                achievement: "ROOKIE MISTAKE",
+                death: true,
+                endingText: "💀 DEATH #3: Never fight a Genome without using your advantages. You have powers for a reason, Quicksave.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            timestop_ghoul: {
+                text: "You activate your time-stop. The world turns purple and silent. Ghoul freezes mid-attack, his ice shards suspended in midair.\n\nYou have a few seconds. What you do now matters.",
+                location: "🍺 Jolie Wrangler Pub - TIME STOPPED",
+                choices: [
+                    { text: "Beat him with the bat", next: 'bat_victory' },
+                    { text: "Grab a weapon from your car", next: 'get_better_weapon' },
+                    { text: "Just dodge and escape", next: 'escape_timestop' }
+                ]
+            },
+            shotgun_ghoul: {
+                text: "You fire. The blast hits Ghoul's ice armor, shattering it but not penetrating. He staggers back, then retaliates with a volley of ice projectiles.\n\nYou're hit multiple times before you can use time-stop.",
+                location: "🍺 Jolie Wrangler Pub",
+                ending: true,
+                achievement: "OUTGUNNED",
+                death: true,
+                endingText: "💀 DEATH #4: Guns alone won't beat a prepared Genome. You need strategy, not just firepower.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            car_attack_prepared: {
+                text: "You rev the engine, blast ACDC on the radio, and drive straight through the pub's wall.\n\nYour reinforced Plymouth hits Ghoul from behind at full speed, crushing him against the counter. Perfect ambush!\n\n'Hey guys, I'm Quicksave! I'm immortal, but don't tell anyone!'",
+                location: "🍺 Jolie Wrangler Pub - Demolished",
+                choices: [
+                    { text: "Finish him with the baseball bat", next: 'bat_victory' },
+                    { text: "Call Dynamis Security", next: 'call_security' }
+                ]
+            },
+            bat_victory: {
+                text: "You grab your aluminum bat and beat Ghoul to the tune of Highway to Hell. Between the car impact and the bat, he can't mount a defense.\n\n'I feel like the healthcare system, beating up a helpless granny!'\n\nDynamis Security arrives, and you bribe them to take Ghoul away. Mission accomplished!",
+                location: "🍺 Jolie Wrangler Pub",
+                ending: true,
+                achievement: "SIDEQUEST COMPLETE",
+                endingText: "✅ SUCCESS: You delivered the briefcase and defeated Ghoul! Your first real victory in New Rome.\n\nBut this is just the beginning. The Meta-Gang won't be happy. And you're starting to wonder—what was in that briefcase?",
+                choices: [
+                    { text: "Continue in New Rome", next: 'after_delivery' }
+                ]
+            },
+            call_security: {
+                text: "You call Dynamis Security. They arrive in minutes.\n\nBut Ghoul recovers faster than expected. He freezes you solid before Security can intervene.\n\nYou die, trapped in ice.",
+                location: "🍺 Jolie Wrangler Pub",
+                ending: true,
+                achievement: "TOO SLOW",
+                death: true,
+                endingText: "💀 DEATH #5: Calling for help was smart, but not fast enough. When facing a Psycho, you need to neutralize them immediately.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            get_better_weapon: {
+                text: "While time is stopped, you sprint to your car and grab the white rabbit plushie—your most devastating weapon.\n\nTime resumes. 'Meet Mr. Fluffles,' you say, squeezing the toy.\n\nIt unleashes a reality-warping explosion that obliterates Ghoul and half the pub.",
+                location: "🍺 Jolie Wrangler Pub - DEMOLISHED",
+                ending: true,
+                achievement: "OVERKILL",
+                endingText: "💥 ENDING: You won... but destroyed the pub, killed two civilians, and caused €500,000 in damages. Dynamis puts a bounty on your head.\n\nMaybe the rabbit plushie is TOO powerful for simple deliveries.",
+                choices: [
+                    { text: "Reload and try again", next: 'start' }
+                ]
+            },
+            escape_timestop: {
+                text: "You use the frozen time to escape. Smart—you survive.\n\nBut Ghoul massacres everyone in the pub, including Renesco. Your delivery client is dead.\n\nMission failed.",
+                location: "🌆 New Rome Streets",
+                ending: true,
+                achievement: "SURVIVOR'S GUILT",
+                endingText: "😔 ENDING: You lived, but everyone else died. The briefcase is lost. Your reputation as a courier is ruined.\n\nSometimes survival isn't enough. Sometimes you need to fight.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            abandon_delivery: {
+                text: "You drive away. It's not your fight, right?\n\nLater, you learn Ghoul killed everyone in the pub, including Renesco. The Meta-Gang is terrorizing the district.\n\nYour client's contact puts a bounty on you for abandoning the delivery.",
+                location: "🌆 New Rome - Safe Location",
+                ending: true,
+                achievement: "COWARD",
+                endingText: "💔 ENDING: You chose safety over duty. In New Rome, reputation is everything. You're now marked as unreliable.\n\nNo one will hire Quicksave again.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            after_delivery: {
+                text: "After bribing Security and Renesco for the damages, you're down €100,000 but the job is done.\n\nRenesco mentions the Meta-Gang has been hitting establishments across the district. 'They're Elixir junkies who've gone full Psycho. Dangerous.'\n\nYou ask about Len, your old friend. No one's seen her.",
+                location: "🍺 Jolie Wrangler Pub - Aftermath",
+                choices: [
+                    { text: "Investigate the Meta-Gang", next: 'investigate_metagang' },
+                    { text: "Search for Len", next: 'search_len' },
+                    { text: "Explore Rust Town for tech", next: 'rust_town' }
+                ]
+            },
+            investigate_metagang: {
+                text: "You dig into the Meta-Gang. They're a group of Psychos—people who took too many Elixirs and mutated. They're hitting businesses that refuse to pay protection money.\n\nTheir leader is Adam, a powerful Genome. They operate out of the northern slums.",
+                location: "💻 Your Apartment - Research",
+                choices: [
+                    { text: "Infiltrate their hideout", next: 'infiltrate_metagang' },
+                    { text: "Set a trap for them", next: 'trap_metagang' },
+                    { text: "This is too dangerous", next: 'avoid_metagang' }
+                ]
+            },
+            search_len: {
+                text: "Len—your old revolutionary friend. She was always talking about overthrowing corporate power. Last you heard, she was in New Rome.\n\nYou check underground forums, leftist meeting spots, and old contact addresses. Nothing.\n\nThen you find a coded message: 'The revolution needs you. Rust Town. The Junkyard. Midnight.'",
+                location: "💻 Your Apartment - Investigation",
+                choices: [
+                    { text: "Go to the Junkyard at midnight", next: 'junkyard_midnight' },
+                    { text: "It's obviously a trap", next: 'suspect_trap' }
+                ]
+            },
+            rust_town: {
+                text: "Rust Town—the industrial wasteland north of the Golden Coast. This is where the poor live, where Psychos roam, and where you can buy illegal tech.\n\nThe Junkyard is a massive scrapyard converted into a black market. Dangerous, but full of opportunities.",
+                location: "🏭 Rust Town - The Junkyard",
+                choices: [
+                    { text: "Shop for weapons and gear", next: 'shop_junkyard' },
+                    { text: "Look for information brokers", next: 'info_broker' },
+                    { text: "This place is too sketchy", next: 'leave_junkyard' }
+                ]
+            },
+            infiltrate_metagang: {
+                text: "You find their hideout—an abandoned factory. Guards patrol outside.\n\nYou use time-stop to slip past them. Inside, you find crates of stolen Elixirs and weapons. This is bigger than protection money.",
+                location: "🏭 Meta-Gang Hideout",
+                choices: [
+                    { text: "Sabotage their supplies", next: 'sabotage_success' },
+                    { text: "Try to find Adam directly", next: 'confront_adam' },
+                    { text: "Just gather intel and leave", next: 'intel_escape' }
+                ]
+            },
+            trap_metagang: {
+                text: "You set up an ambush. You bribe Renesco to report his next 'protection payment' location, then wait with weapons ready.\n\nGhoul arrives with two other Psychos—Salamander (fire powers) and Vapor (gaseous form).\n\nThree against one.",
+                location: "🍺 Jolie Wrangler Pub - Ambush",
+                choices: [
+                    { text: "Use time-stop and attack", next: 'triple_threat' },
+                    { text: "Blow them up with explosives", next: 'explosive_trap' },
+                    { text: "This is suicide, abort", next: 'abort_trap' }
+                ]
+            },
+            avoid_metagang: {
+                text: "Smart. The Meta-Gang is too dangerous to fight alone. You focus on other opportunities in New Rome.\n\nBut weeks later, they track you down. Ghoul remembers you from the pub.",
+                location: "🌆 New Rome Streets",
+                ending: true,
+                achievement: "HUNTED",
+                death: true,
+                endingText: "💀 DEATH #6: You can run from problems, but in New Rome, problems always catch up. The Meta-Gang doesn't forgive or forget.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            junkyard_midnight: {
+                text: "You arrive at midnight. The Junkyard is eerie—mountains of scrap metal casting long shadows.\n\nA figure emerges from behind a rusted car. Black hair, blue eyes, tactical gear.\n\n'Len?'\n\n'Ryan. You're late.'",
+                location: "🏭 The Junkyard - Midnight",
+                choices: [
+                    { text: "What are you doing here?", next: 'len_revelation' },
+                    { text: "Is this about the revolution?", next: 'len_revolution' }
+                ]
+            },
+            suspect_trap: {
+                text: "Your instincts scream trap. You don't go.\n\nLater, you learn it wasn't a trap—it really was Len. She needed your help with something big.\n\nBut she's gone now, disappeared again. You lost your chance.",
+                location: "💻 Your Apartment",
+                ending: true,
+                achievement: "MISSED CONNECTION",
+                endingText: "😔 ENDING: Paranoia saved your life many times. This time, it cost you a friendship.\n\nLen needed you. You weren't there. Some opportunities don't come twice.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            shop_junkyard: {
+                text: "A merchant with cybernetic eyes shows you his wares: modified Elixirs, experimental weapons, illegal tech.\n\nOne item catches your eye—a 'Time Dilator.' It could enhance your time-stop powers significantly.\n\nPrice: €250,000. You have €50,000.",
+                location: "🏭 The Junkyard - Black Market",
+                choices: [
+                    { text: "Try to negotiate the price", next: 'negotiate_dilator' },
+                    { text: "Look for a job to earn money", next: 'junkyard_jobs' },
+                    { text: "Steal it", next: 'steal_dilator' }
+                ]
+            },
+            info_broker: {
+                text: "A woman in a gas mask deals in information. 'What do you want to know, time-boy?'\n\nShe knows your power? Interesting.\n\n'I sell secrets. Dynamis conspiracies, Meta-Gang locations, hidden Elixir labs. Everything has a price.'",
+                location: "🏭 The Junkyard - Information Den",
+                choices: [
+                    { text: "Ask about Adam and the Meta-Gang", next: 'adam_info' },
+                    { text: "Ask about Dynamis Corporation", next: 'dynamis_info' },
+                    { text: "Ask about her", next: 'broker_identity' }
+                ]
+            },
+            leave_junkyard: {
+                text: "You leave. As you're driving away, you see someone watching you from a rooftop.\n\nGhoul.\n\nHe's tracking you.",
+                location: "🚗 Leaving Rust Town",
+                choices: [
+                    { text: "Confront him", next: 'rooftop_fight' },
+                    { text: "Lead him into a trap", next: 'car_trap' },
+                    { text: "Escape using time-stop", next: 'timestop_escape' }
+                ]
+            },
+            sabotage_success: {
+                text: "You use time-stop to plant explosives in the Elixir storage. When time resumes, you're already blocks away.\n\nThe explosion rocks the district. The Meta-Gang's supply is destroyed.\n\nBut you've made a powerful enemy.",
+                location: "🌆 New Rome - Safe Distance",
+                ending: true,
+                achievement: "SABOTEUR",
+                endingText: "💥 ENDING: You crippled the Meta-Gang's operation! They're weakened but furious. Adam himself puts a million-euro bounty on Quicksave.\n\nYou won this battle. But the war is just beginning.",
+                choices: [
+                    { text: "Continue your story", next: 'after_sabotage' }
+                ]
+            },
+            confront_adam: {
+                text: "You find Adam in the factory's upper office—a massive Genome with metallic skin and electric powers coursing through him.\n\n'Quicksave. I've heard about you. The courier who can't die.'\n\nHe points at you. Lightning arcs from his finger.",
+                location: "🏭 Meta-Gang Hideout - Boss Room",
+                choices: [
+                    { text: "Use time-stop and attack", next: 'adam_fight_prepared' },
+                    { text: "Try to talk", next: 'adam_negotiate' },
+                    { text: "This is a bad idea, run", next: 'flee_adam' }
+                ]
+            },
+            intel_escape: {
+                text: "You photograph everything and slip out. Good intel.\n\nBut as you leave, someone grabs you from behind. Vapor—the gaseous Psycho—materializes.\n\n'Thought you could sneak in here?'\n\nHe suffocates you with toxic gas.",
+                location: "🏭 Meta-Gang Hideout",
+                ending: true,
+                achievement: "CAUGHT SNEAKING",
+                death: true,
+                endingText: "💀 DEATH #7: Stealth is good, but you should have escaped faster. Never linger in enemy territory.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            triple_threat: {
+                text: "You activate time-stop and pull out your pisto-gauntlets.\n\nIn frozen time, you position yourself perfectly. When time resumes, you fire at all three simultaneously.\n\nGhoul goes down. Salamander's head explodes. But Vapor turns gaseous and escapes your bullets.",
+                location: "🍺 Jolie Wrangler Pub - Combat",
+                choices: [
+                    { text: "Chase Vapor", next: 'vapor_chase' },
+                    { text: "Let him escape, mission accomplished", next: 'partial_victory' }
+                ]
+            },
+            explosive_trap: {
+                text: "You detonate C4 planted throughout the pub.\n\nThe explosion kills all three Psychos... and levels the entire building. And the two buildings next to it.\n\nDynamis Security arrives. 'That's €2 million in damages. You're under arrest.'",
+                location: "🍺 Jolie Wrangler Pub - OBLITERATED",
+                ending: true,
+                achievement: "EXCESSIVE FORCE",
+                endingText: "💥 ENDING: You eliminated the threat but caused catastrophic collateral damage. Dynamis throws you in a corporate prison.\n\nSometimes overkill is just... kill.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            abort_trap: {
+                text: "You bail before they arrive. Smart.\n\nBut they figure out someone tried to set them up. They start hunting for whoever planned the ambush.\n\nEventually, they find you.",
+                location: "💻 Your Apartment - One Week Later",
+                ending: true,
+                achievement: "FOUND YOU",
+                death: true,
+                endingText: "💀 DEATH #8: Running from a fight is sometimes smart. But if you start something, you better finish it.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            len_revelation: {
+                text: "'I'm working against Dynamis. They're not just selling Elixirs—they're experimenting on people. Creating Psychos deliberately.'\n\nShe shows you documents. Test subjects. Failure rates. Profit margins.\n\n'They're turning humans into weapons. We need to stop them.'",
+                location: "🏭 The Junkyard - Midnight",
+                choices: [
+                    { text: "I'm in. How do we fight them?", next: 'join_len' },
+                    { text: "This is too big for us", next: 'refuse_len' }
+                ]
+            },
+            len_revolution: {
+                text: "'Revolution? Ryan, this isn't about ideology anymore. Dynamis is creating monsters. Deliberately mutating people for profit.'\n\nShe's more serious than you've ever seen her.\n\n'I need your powers. We're planning a raid on their main research facility.'",
+                location: "🏭 The Junkyard - Midnight",
+                choices: [
+                    { text: "Count me in", next: 'join_len' },
+                    { text: "What's in it for me?", next: 'negotiate_len' }
+                ]
+            },
+            negotiate_dilator: {
+                text: "'Two-fifty is my price,' the merchant says flatly. 'This tech is unique. Military-grade.'\n\nYou try every angle. He doesn't budge.\n\n'Come back with money or don't come back.'",
+                location: "🏭 The Junkyard - Black Market",
+                choices: [
+                    { text: "Find a way to earn money", next: 'junkyard_jobs' },
+                    { text: "Steal it when he's not looking", next: 'steal_dilator' },
+                    { text: "Forget it, explore elsewhere", next: 'leave_junkyard' }
+                ]
+            },
+            junkyard_jobs: {
+                text: "The merchant offers work: 'Retrieve a stolen shipment from the Meta-Gang. €100,000 if you succeed.'\n\nDangerous, but it would get you closer to affording the Time Dilator.",
+                location: "🏭 The Junkyard - Black Market",
+                choices: [
+                    { text: "Accept the job", next: 'retrieval_mission' },
+                    { text: "Too risky, find another way", next: 'other_money' }
+                ]
+            },
+            steal_dilator: {
+                text: "You use time-stop to grab the Time Dilator and run.\n\nBut the merchant has anti-theft measures. An alarm screams. Armed guards converge.\n\n'You just made a big mistake, time-boy.'",
+                location: "🏭 The Junkyard - ALARM",
+                ending: true,
+                achievement: "CAUGHT RED-HANDED",
+                death: true,
+                endingText: "💀 DEATH #9: The Junkyard doesn't tolerate thieves. They make an example of you. Your body is found in a compactor.\n\nSteal smarter, not harder.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            adam_info: {
+                text: "'Adam? He's not just a gang leader. He's an experiment that escaped Dynamis. They gave him his powers, then lost control.'\n\nShe leans closer. 'He wants revenge on Dynamis. The protection racket funds his war against them.'\n\n'Price: €10,000.'",
+                location: "🏭 The Junkyard - Information Den",
+                choices: [
+                    { text: "Pay for the information", next: 'pay_adam_info' },
+                    { text: "That's too expensive", next: 'refuse_info' }
+                ]
+            },
+            dynamis_info: {
+                text: "'Dynamis? They run this city. They're also running illegal Genome experiments in secret labs. Creating Psychos deliberately.'\n\n'Price: €15,000. Worth every euro.'",
+                location: "🏭 The Junkyard - Information Den",
+                choices: [
+                    { text: "Pay for the information", next: 'pay_dynamis_info' },
+                    { text: "I'll pass", next: 'refuse_info' }
+                ]
+            },
+            broker_identity: {
+                text: "'Me? I'm someone who knows too much to live without protection.' She taps her mask. 'This city eats people alive. Information is the only currency that matters.'\n\n'Now buy something or get out.'",
+                location: "🏭 The Junkyard - Information Den",
+                choices: [
+                    { text: "Ask about Adam and the Meta-Gang", next: 'adam_info' },
+                    { text: "Ask about Dynamis Corporation", next: 'dynamis_info' },
+                    { text: "Leave", next: 'leave_junkyard' }
+                ]
+            },
+            rooftop_fight: {
+                text: "You park and climb to the roof using fire escapes.\n\nGhoul is waiting. 'You've been causing problems, Quicksave. Adam wants you dead.'\n\nHe attacks without warning.",
+                location: "🏢 Rooftop Battle",
+                choices: [
+                    { text: "Use time-stop and bat combo", next: 'rooftop_victory' },
+                    { text: "Push him off the roof", next: 'rooftop_push' },
+                    { text: "This is a bad position, retreat", next: 'rooftop_retreat' }
+                ]
+            },
+            car_trap: {
+                text: "You drive into a narrow alley and wait. Ghoul follows.\n\nYou've rigged the alley with explosives. When he's in position, you detonate.\n\nThe blast brings down both buildings. Ghoul is buried in rubble.",
+                location: "🌆 New Rome - Alley Trap",
+                ending: true,
+                achievement: "TACTICIAN",
+                endingText: "✅ SUCCESS: You used your environment and planning to defeat a superior opponent. Smart!\n\nBut the Meta-Gang knows you're a threat now. They're coming in force.",
+                choices: [
+                    { text: "Continue your story", next: 'after_ghoul' }
+                ]
+            },
+            timestop_escape: {
+                text: "You use time-stop to lose him in traffic. He can't track you when time is frozen.\n\nYou escape. But he knows your car now. You'll need to be more careful.",
+                location: "🚗 New Rome Streets - Safe",
+                choices: [
+                    { text: "Continue exploring", next: 'after_delivery' }
+                ]
+            },
+            after_sabotage: {
+                text: "With the Meta-Gang's supplies destroyed, the district is safer. But Adam himself is still out there, and he's angry.\n\nYou receive an anonymous message: 'Meet me at the Colosseum Maximus. Midnight. Come alone. -L'\n\nLen?",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Go to the Colosseum meeting", next: 'colosseum_meeting' },
+                    { text: "It's probably a trap", next: 'ignore_meeting' }
+                ]
+            },
+            adam_fight_prepared: {
+                text: "You stop time and attack with everything you have. But when time resumes, Adam is ready.\n\n'Time manipulation? Predictable.'\n\nHis metallic skin grounds your weapons. Lightning fills the room.\n\nYou die screaming.",
+                location: "🏭 Meta-Gang Hideout",
+                ending: true,
+                achievement: "OUTMATCHED",
+                death: true,
+                endingText: "💀 DEATH #10: Adam is a high-tier Genome. Your current powers and weapons aren't enough. You need better preparation—or allies.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            adam_negotiate: {
+                text: "'Talk?' Adam laughs. 'You destroyed my supplies. Killed my men. And you want to TALK?'\n\nLightning strikes you before you can respond.",
+                location: "🏭 Meta-Gang Hideout",
+                ending: true,
+                achievement: "POOR NEGOTIATOR",
+                death: true,
+                endingText: "💀 DEATH #11: Some enemies can't be reasoned with after you've already attacked them. Timing matters.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            flee_adam: {
+                text: "You run. Smart.\n\nAdam's laughter echoes behind you. 'Run, little courier! I'll find you eventually!'\n\nYou escape, but you've learned an important lesson: Adam is beyond your current power level.",
+                location: "🌆 New Rome Streets - Escaped",
+                choices: [
+                    { text: "Continue your story", next: 'after_delivery' }
+                ]
+            },
+            vapor_chase: {
+                text: "You chase Vapor into the streets. He's gaseous—hard to hit.\n\nHe reforms behind you and uses toxic gas. You can't breathe.\n\nYou die of poisoning.",
+                location: "🌆 New Rome Streets",
+                ending: true,
+                achievement: "UNWINNABLE CHASE",
+                death: true,
+                endingText: "💀 DEATH #12: Vapor's powers counter yours. Some fights can't be won without the right tools or allies.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            partial_victory: {
+                text: "Two out of three isn't bad. Vapor escapes, but you've eliminated Ghoul and Salamander.\n\nThe Meta-Gang is significantly weakened. You've earned respect in the district.",
+                location: "🍺 Jolie Wrangler Pub - After Battle",
+                ending: true,
+                achievement: "PARTIAL VICTORY",
+                endingText: "⚡ ENDING: You didn't get them all, but you made a difference. The Meta-Gang is crippled. Civilians are safer.\n\nSometimes a partial victory is all you can achieve. The question is: what's next?",
+                choices: [
+                    { text: "Continue your story", next: 'after_partial_victory' }
+                ]
+            },
+            join_len: {
+                text: "'Good. We raid the facility tomorrow night. Bring your best gear.'\n\nLen outlines the plan: infiltrate Dynamis Tower, reach the secret lab on sub-level 7, destroy their research, and escape.\n\n'Are you ready for this, Ryan?'",
+                location: "🏭 The Junkyard - Planning",
+                choices: [
+                    { text: "I'm ready. Let's take down Dynamis.", next: 'dynamis_raid' },
+                    { text: "I need better gear first", next: 'prepare_raid' }
+                ]
+            },
+            refuse_len: {
+                text: "'Then you're a coward.' Len walks away.\n\nWeeks later, you hear she attempted the raid alone. She was captured. Dynamis executed her publicly as a warning to other revolutionaries.\n\nYou could have saved her.",
+                location: "🏭 The Junkyard",
+                ending: true,
+                achievement: "BETRAYED A FRIEND",
+                endingText: "💔 ENDING: You had the power to help but chose safety. Len died because you weren't there.\n\nWith time powers, you can undo many mistakes. But guilt? That stays with you across every loop.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            negotiate_len: {
+                text: "Len stares at you. 'What's in it for you? PEOPLE ARE DYING, Ryan. Dynamis is creating monsters!'\n\nShe shakes her head. 'I thought you were different. I was wrong.'\n\nShe leaves.",
+                location: "🏭 The Junkyard",
+                ending: true,
+                achievement: "MERCENARY",
+                endingText: "💔 ENDING: Not everything is about profit. Some causes are worth fighting for on principle alone.\n\nLen needed a hero. You offered her a businessman. She'll fight Dynamis alone now—and probably die.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            retrieval_mission: {
+                text: "You track the Meta-Gang shipment to a warehouse. Inside: crates of experimental Elixirs worth millions.\n\nBut it's guarded by Vapor and three gang members.",
+                location: "🏭 Warehouse - Retrieval Mission",
+                choices: [
+                    { text: "Stealth approach with time-stop", next: 'stealth_retrieval' },
+                    { text: "Frontal assault", next: 'assault_retrieval' },
+                    { text: "Set fire to distract them", next: 'fire_distraction' }
+                ]
+            },
+            other_money: {
+                text: "You look for other ways to make money. Courier jobs, gambling, bounties.\n\nIt takes months to save €250,000. By then, the Time Dilator is sold to someone else.\n\nMissed opportunity.",
+                location: "🌆 New Rome - Months Later",
+                ending: true,
+                achievement: "TOO LATE",
+                endingText: "⏰ ENDING: Sometimes timing is everything. The perfect gear was within reach, but you were too slow.\n\nIn New Rome, opportunities don't wait.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            pay_adam_info: {
+                text: "You pay. She tells you everything about Adam—his origin, his powers, his weaknesses.\n\n'Fire disrupts his electric conductivity. And he's obsessed with revenge against Dr. Livia, the Dynamis scientist who created him.'\n\nUseful information.",
+                location: "🏭 The Junkyard - Information Den",
+                choices: [
+                    { text: "Use this info against Adam", next: 'adam_weakness' },
+                    { text: "Continue exploring", next: 'after_delivery' }
+                ]
+            },
+            pay_dynamis_info: {
+                text: "She shows you documents: Dynamis is creating Psychos deliberately. They give unstable Elixirs to test subjects, then observe the mutations.\n\n'They're weaponizing mental illness and selling it. The Meta-Gang? Dynamis escapees. All of them.'\n\nThis changes everything.",
+                location: "🏭 The Junkyard - Information Den",
+                choices: [
+                    { text: "I need to stop Dynamis", next: 'anti_dynamis_path' },
+                    { text: "This is too big for me", next: 'ignore_conspiracy' }
+                ]
+            },
+            refuse_info: {
+                text: "'Then get out. I don't deal with window shoppers.'\n\nYou leave empty-handed. Information costs money in New Rome.",
+                location: "🏭 The Junkyard",
+                choices: [
+                    { text: "Explore elsewhere", next: 'after_delivery' }
+                ]
+            },
+            rooftop_victory: {
+                text: "Time stops. You position yourself behind Ghoul with your bat.\n\nTime resumes. One swing sends him off the roof. He falls five stories and shatters on impact.\n\n'Quicksave always delivers,' you say to no one.",
+                location: "🏢 Rooftop",
+                ending: true,
+                achievement: "ROOFTOP RUMBLE",
+                endingText: "✅ SUCCESS: You eliminated Ghoul permanently! The Meta-Gang's most persistent assassin is gone.\n\nBut you're still on their radar. Adam will send more.",
+                choices: [
+                    { text: "Continue your story", next: 'after_ghoul' }
+                ]
+            },
+            rooftop_push: {
+                text: "You charge and try to push him off. But Ghoul creates ice spikes from the roof that impale your legs.\n\nYou're pinned. He approaches with an ice blade.\n\n'Goodnight, Quicksave.'\n\nYou die on the rooftop.",
+                location: "🏢 Rooftop",
+                ending: true,
+                achievement: "IMPALED",
+                death: true,
+                endingText: "💀 DEATH #13: Rushing a Genome without your powers is always a mistake. Use your advantages!",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            rooftop_retreat: {
+                text: "You jump off the roof using time-stop to slow your fall. You land safely and drive away.\n\nGhoul watches from above. He knows where you were. He'll find you again.",
+                location: "🚗 New Rome Streets",
+                choices: [
+                    { text: "Continue exploring", next: 'after_delivery' }
+                ]
+            },
+            after_ghoul: {
+                text: "With Ghoul dead, you've made serious enemies. But you've also proven yourself.\n\nA message arrives on your phone: 'Impressive work. I have a proposition. Meet me at Dynamis Tower. Top floor. Midnight. -Dr. Livia'\n\nThe scientist who created Adam.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Meet Dr. Livia", next: 'meet_livia' },
+                    { text: "This is definitely a trap", next: 'ignore_livia' },
+                    { text: "Investigate her first", next: 'research_livia' }
+                ]
+            },
+            colosseum_meeting: {
+                text: "You arrive at the Colosseum Maximus at midnight. The massive arena is empty, illuminated by moonlight.\n\nLen emerges from the shadows. 'You came.'\n\nShe's not alone. Five others stand with her—revolutionaries.",
+                location: "🏟️ Colosseum Maximus - Midnight",
+                choices: [
+                    { text: "What's the plan?", next: 'resistance_plan' },
+                    { text: "Who are these people?", next: 'meet_resistance' }
+                ]
+            },
+            ignore_meeting: {
+                text: "You don't go. Paranoia wins.\n\nThe next day, news breaks: a group of revolutionaries attacked Dynamis Tower. All were killed. Including someone matching Len's description.\n\nYou could have helped.",
+                location: "💻 Your Apartment - Next Day",
+                ending: true,
+                achievement: "ABANDONED ALLIES",
+                endingText: "💔 ENDING: Fear kept you safe but cost you everything that matters. Len died fighting for what she believed in.\n\nYou're alive. Alone. Safe. Empty.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            after_partial_victory: {
+                text: "Word spreads: Quicksave took down two Meta-Gang Psychos. You're getting a reputation.\n\nMultiple parties reach out:\n- Dr. Livia from Dynamis wants to meet\n- Len sends coordinates for a resistance meeting\n- A mysterious fixer offers high-paying jobs",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Meet Dr. Livia at Dynamis", next: 'meet_livia' },
+                    { text: "Join Len's resistance", next: 'colosseum_meeting' },
+                    { text: "Work for the fixer", next: 'fixer_jobs' }
+                ]
+            },
+            dynamis_raid: {
+                text: "Night falls. You and Len infiltrate Dynamis Tower using stolen ID cards.\n\nSecurity is tight. Guards patrol every floor. You reach sub-level 7—the secret lab.\n\nInside: rows of test subjects in pods. Living experiments. Psychos in the making.",
+                location: "🏢 Dynamis Tower - Sub-Level 7",
+                choices: [
+                    { text: "Destroy the lab immediately", next: 'destroy_lab' },
+                    { text: "Free the test subjects first", next: 'free_subjects' },
+                    { text: "Gather evidence for later", next: 'gather_evidence' }
+                ]
+            },
+            prepare_raid: {
+                text: "Len nods. 'Smart. We wait while you get stronger.'\n\nYou spend weeks gathering gear, weapons, intel. When you're finally ready, Len contacts you.\n\n'Tonight. We end this.'",
+                location: "🏭 The Junkyard - Fully Prepared",
+                choices: [
+                    { text: "Begin the raid", next: 'dynamis_raid_prepared' }
+                ]
+            },
+            stealth_retrieval: {
+                text: "You use time-stop repeatedly to move past the guards. You're in and out with the shipment before Vapor notices.\n\nThe merchant is impressed. He pays you €100,000.\n\n'You're good. Real good. Come back anytime.'",
+                location: "🏭 The Junkyard - Mission Complete",
+                ending: true,
+                achievement: "MASTER THIEF",
+                endingText: "✅ SUCCESS: You pulled off the impossible—stealing from the Meta-Gang without a fight. Your time powers make you the perfect thief.\n\nYou're €100,000 richer. Halfway to that Time Dilator!",
+                choices: [
+                    { text: "Continue your story", next: 'after_retrieval' }
+                ]
+            },
+            assault_retrieval: {
+                text: "You burst in guns blazing. The guards go down, but Vapor is ready.\n\nHe transforms into toxic gas and fills the warehouse. You can't breathe.\n\nYou die of asphyxiation.",
+                location: "🏭 Warehouse",
+                ending: true,
+                achievement: "GASSED",
+                death: true,
+                endingText: "💀 DEATH #14: Direct combat against Vapor is suicide. His powers counter most physical attacks. You need strategy, not firepower.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            fire_distraction: {
+                text: "You set a controlled fire in the corner. The guards panic and evacuate.\n\nBut Vapor realizes it's a distraction. He finds you stealing the shipment.\n\n'Clever. Not clever enough.'\n\nToxic gas fills your lungs.",
+                location: "🏭 Warehouse",
+                ending: true,
+                achievement: "OUTSMARTED",
+                death: true,
+                endingText: "💀 DEATH #15: Vapor isn't stupid. Distractions only work on lesser enemies. Against intelligent Genomes, you need better plans.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            adam_weakness: {
+                text: "Armed with knowledge of Adam's weakness, you prepare. You acquire flamethrowers and incendiary rounds.\n\nYou track Adam to his hideout. Time for a rematch.",
+                location: "🏭 Meta-Gang Hideout - Prepared",
+                choices: [
+                    { text: "Challenge Adam directly", next: 'adam_final_fight' },
+                    { text: "Burn the entire hideout", next: 'burn_hideout' }
+                ]
+            },
+            anti_dynamis_path: {
+                text: "You decide to take down Dynamis from the inside. This conspiracy is too big to ignore.\n\nYou need allies. Len would be perfect for this. Time to find her.",
+                location: "💻 Your Apartment - New Mission",
+                choices: [
+                    { text: "Search for Len", next: 'search_len' }
+                ]
+            },
+            ignore_conspiracy: {
+                text: "You decide it's not your problem. Dynamis is too powerful. You're just a courier.\n\nMonths pass. The Psycho problem gets worse. The city descends into chaos. Eventually, Dynamis' experiments spiral out of control.\n\nA Psycho named Mechron—one of their creations—goes rogue and destroys half of New Rome.",
+                location: "🌆 New Rome - Ruins",
+                ending: true,
+                achievement: "APOCALYPSE",
+                endingText: "💀 ENDING: By doing nothing, you let evil win. Dynamis' experiments destroyed the city. Millions died.\n\nWith great power comes great responsibility. You had time powers and chose to waste them.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            meet_livia: {
+                text: "You reach the top floor of Dynamis Tower. Dr. Livia is a sharp woman in a lab coat, late 40s.\n\n'Quicksave. Your time manipulation is fascinating. I want to study it.'\n\nShe offers €1 million to work for Dynamis.\n\n'Help us, and you'll have wealth, power, protection.'",
+                location: "🏢 Dynamis Tower - Top Floor",
+                choices: [
+                    { text: "Accept her offer", next: 'join_dynamis' },
+                    { text: "Refuse and leave", next: 'refuse_dynamis' },
+                    { text: "Attack her now", next: 'attack_livia' }
+                ]
+            },
+            ignore_livia: {
+                text: "You don't trust Dynamis. You ignore the message.\n\nA week later, Adam attacks you with the full Meta-Gang. They overwhelm you with numbers.",
+                location: "🌆 New Rome Streets",
+                ending: true,
+                achievement: "HUNTED DOWN",
+                death: true,
+                endingText: "💀 DEATH #16: By ignoring Livia, you missed a chance to learn about your enemies. Knowledge is survival in New Rome.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            research_livia: {
+                text: "You investigate Dr. Livia. She's Dynamis' head of Genome research. She created Adam, Ghoul, and dozens of other Psychos.\n\nShe's brilliant and ruthless. But she has enemies within Dynamis—corporate rivals who want her gone.\n\nThis information could be useful.",
+                location: "💻 Your Apartment - Research Complete",
+                choices: [
+                    { text: "Meet her with leverage", next: 'meet_livia_prepared' },
+                    { text: "Use this info to help Len", next: 'share_with_len' }
+                ]
+            },
+            resistance_plan: {
+                text: "'We're hitting Dynamis Tower. Their main research facility. We destroy it, we cripple their Psycho production.'\n\nLen shows you blueprints. 'Sub-level 7. That's where they create the monsters.'\n\n'With your powers, we might actually succeed.'",
+                location: "🏟️ Colosseum Maximus",
+                choices: [
+                    { text: "I'm with you", next: 'join_resistance' },
+                    { text: "This is suicide", next: 'refuse_resistance' }
+                ]
+            },
+            meet_resistance: {
+                text: "Len introduces you: 'This is Marco (explosive expert), Yuki (hacker), Santos (former Dynamis security), Isabella (medic), and Chen (sniper).'\n\nThey're skilled, determined, and ready to die for the cause.\n\n'We've been planning this for months. You're the missing piece,' Len says.",
+                location: "🏟️ Colosseum Maximus",
+                choices: [
+                    { text: "Join the resistance", next: 'join_resistance' },
+                    { text: "I work alone", next: 'refuse_resistance' }
+                ]
+            },
+            fixer_jobs: {
+                text: "The fixer—known only as 'Matchstick'—offers high-risk, high-reward jobs.\n\n'Steal corporate secrets, eliminate targets, sabotage competitors. I pay well.'\n\nIt's morally gray work, but profitable.",
+                location: "☎️ Encrypted Call",
+                choices: [
+                    { text: "Accept fixer work", next: 'mercenary_path' },
+                    { text: "Decline, too shady", next: 'refuse_fixer' }
+                ]
+            },
+            destroy_lab: {
+                text: "You plant explosives. 'What about the subjects?' Len asks.\n\n'They're too far gone. We can't save them.'\n\nYou trigger the detonation. The lab explodes. Alarms scream. Guards converge.\n\n'Run!' Len shouts.",
+                location: "🏢 Dynamis Tower - Sub-Level 7 - EXPLODING",
+                choices: [
+                    { text: "Fight your way out", next: 'raid_escape_fight' },
+                    { text: "Use time-stop to escape", next: 'raid_escape_timestop' }
+                ]
+            },
+            free_subjects: {
+                text: "You start opening pods. The subjects stumble out—confused, mutated, dangerous.\n\n'Ryan, we don't have time!' Len warns.\n\nOne subject attacks. Then another. They're not in control. They're Psychos.",
+                location: "🏢 Dynamis Tower - Sub-Level 7 - CHAOS",
+                ending: true,
+                achievement: "NO GOOD DEED",
+                death: true,
+                endingText: "💀 DEATH #17: You tried to save them. They were too far gone. The Psychos tore you apart.\n\nSome people can't be saved. Some situations have no good options.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            gather_evidence: {
+                text: "You photograph everything, download files. This evidence could expose Dynamis to the world.\n\nBut you're taking too long. Guards discover you.\n\n'Intruders in sub-level 7! Code Red!'",
+                location: "🏢 Dynamis Tower - Sub-Level 7 - DISCOVERED",
+                choices: [
+                    { text: "Fight and destroy the lab", next: 'desperate_sabotage' },
+                    { text: "Escape with the evidence", next: 'evidence_escape' }
+                ]
+            },
+            dynamis_raid_prepared: {
+                text: "You're armed to the teeth. Time Dilator acquired. Weapons upgraded. Intel complete.\n\nYou and Len infiltrate like ghosts. Sub-level 7. The lab is ahead.\n\nThis time, nothing will stop you.",
+                location: "🏢 Dynamis Tower - Sub-Level 7 - PREPARED",
+                choices: [
+                    { text: "Execute the perfect raid", next: 'perfect_raid' }
+                ]
+            },
+            after_retrieval: {
+                text: "With €100,000 in hand, you're closer to your goals. The merchant offers you more jobs.\n\n'You're reliable. Rare quality in New Rome. I've got something big if you want it.'",
+                location: "🏭 The Junkyard",
+                choices: [
+                    { text: "Take another job", next: 'second_retrieval' },
+                    { text: "Save up for the Time Dilator", next: 'save_for_dilator' },
+                    { text: "Explore other opportunities", next: 'after_delivery' }
+                ]
+            },
+            adam_final_fight: {
+                text: "You confront Adam in his office. 'Fire weapons? You did your homework.'\n\nHe smiles. 'Won't help you.'\n\nThe fight is intense. You use time-stop, incendiary rounds, and everything you have. Adam is weakened by fire but incredibly powerful.\n\nIt takes seventeen deaths, but finally—FINALLY—you win.",
+                location: "🏭 Meta-Gang Hideout - Boss Fight",
+                ending: true,
+                achievement: "ADAM'S FALL",
+                endingText: "⚡ ULTIMATE VICTORY: You defeated Adam after countless attempts! The Meta-Gang is leaderless. The district is safer.\n\nYou proved that with enough determination—and infinite retries—anything is possible. This is the power of Quicksave.",
+                choices: [
+                    { text: "Continue your legend", next: 'post_adam' }
+                ]
+            },
+            burn_hideout: {
+                text: "You don't fight fair. You douse the entire building in gasoline and light it up.\n\nAdam tries to escape but the fire disrupts his powers. He burns.\n\nThe Meta-Gang is destroyed. Collateral damage: high. Your conscience: negotiable.",
+                location: "🏭 Meta-Gang Hideout - INFERNO",
+                ending: true,
+                achievement: "SCORCHED EARTH",
+                endingText: "🔥 ENDING: You eliminated the Meta-Gang through overwhelming force. Effective? Yes. Heroic? Debatable.\n\nSometimes the easiest solution is the most brutal. Welcome to New Rome.",
+                choices: [
+                    { text: "Continue in New Rome", next: 'post_adam' }
+                ]
+            },
+            join_dynamis: {
+                text: "You accept. Dr. Livia smiles. 'Excellent. You'll help us perfect our Elixir program. Your time powers could revolutionize everything.'\n\nShe hands you a contract. You sign.\n\nYou become Dynamis' weapon. Rich, powerful, and complicit in creating monsters.",
+                location: "🏢 Dynamis Tower - Signed",
+                ending: true,
+                achievement: "SOLD YOUR SOUL",
+                endingText: "💰 ENDING: You chose wealth over morals. You help Dynamis create Psychos. The city suffers. You prosper.\n\nMoney can't buy back your humanity. But it can buy really nice cars.",
+                choices: [
+                    { text: "Reload and choose differently", next: 'start' }
+                ]
+            },
+            refuse_dynamis: {
+                text: "'Disappointing.' Livia snaps her fingers. Security guards surround you.\n\n'You know too much to walk away, Quicksave. Corporate policy.'\n\nThey open fire.",
+                location: "🏢 Dynamis Tower - Betrayed",
+                ending: true,
+                achievement: "KNEW TOO MUCH",
+                death: true,
+                endingText: "💀 DEATH #18: Walking into the enemy's headquarters without backup was foolish. Livia was never going to let you leave.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            attack_livia: {
+                text: "You pull your gun. Security guards tackle you instantly.\n\nYou use time-stop and fight. But there are thirty guards. Even you can't beat those odds.\n\nYou die in Dynamis Tower.",
+                location: "🏢 Dynamis Tower - Combat",
+                ending: true,
+                achievement: "OVEREAGER",
+                death: true,
+                endingText: "💀 DEATH #19: Attacking the head of Dynamis in her own tower was brave but stupid. Pick your battles smarter.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            meet_livia_prepared: {
+                text: "You meet Livia armed with information about her corporate rivals.\n\n'I know about the board's vote to replace you. I know about Project Mechron. I know you're desperate.'\n\nHer eyes narrow. 'What do you want?'\n\n'An alliance. You help me, I help you stay in power.'",
+                location: "🏢 Dynamis Tower - Negotiation",
+                choices: [
+                    { text: "Form a tactical alliance", next: 'livia_alliance' },
+                    { text: "Blackmail her instead", next: 'blackmail_livia' }
+                ]
+            },
+            share_with_len: {
+                text: "You give Len everything you learned about Livia.\n\n'This is perfect. We can use this against her. Maybe even turn her against Dynamis.'\n\nLen starts planning a more sophisticated approach.",
+                location: "🏟️ Meeting with Len",
+                choices: [
+                    { text: "Help Len's new plan", next: 'sophisticated_resistance' }
+                ]
+            },
+            join_resistance: {
+                text: "You join the resistance. Over weeks, you train with them, plan with them, become part of something bigger.\n\nWhen the raid finally happens, you're ready. All of you.",
+                location: "🏟️ Colosseum Maximus - United",
+                choices: [
+                    { text: "Begin the raid together", next: 'united_raid' }
+                ]
+            },
+            refuse_resistance: {
+                text: "'Then you're useless to us.' Len's face hardens. 'Get out.'\n\nYou leave. The resistance raids Dynamis without you. They all die.\n\nTheir blood is on your hands.",
+                location: "🌆 New Rome Streets",
+                ending: true,
+                achievement: "WATCHED THEM DIE",
+                endingText: "💔 ENDING: You had the power to save them but chose yourself. The resistance died heroes. You live a coward.\n\nTime powers let you undo deaths—except the ones that happen because you weren't there.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            mercenary_path: {
+                text: "You become Matchstick's top agent. High-paying jobs. Corporate espionage. Wet work.\n\nYou're rich, skilled, and morally bankrupt. New Rome's perfect mercenary.",
+                location: "💰 Mercenary Life",
+                ending: true,
+                achievement: "HIRED GUN",
+                endingText: "💰 ENDING: You chose profit over principle. You're wealthy, powerful, and empty.\n\nIn a city of sin, you became just another sinner. At least you got paid well.",
+                choices: [
+                    { text: "Reload and find meaning", next: 'start' }
+                ]
+            },
+            refuse_fixer: {
+                text: "You decline Matchstick's offer. Some lines you won't cross.\n\n'Your loss. Call me if you change your mind.'\n\nYou continue your independent path through New Rome.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Continue your story", next: 'after_delivery' }
+                ]
+            },
+            raid_escape_fight: {
+                text: "You and Len fight through waves of security. Time-stop lets you dodge, counter, eliminate.\n\nBut Dynamis has Genome guards. One of them—a speedster—matches your time manipulation.\n\nYou die in the stairwell.",
+                location: "🏢 Dynamis Tower - Stairwell",
+                ending: true,
+                achievement: "MATCHED POWER",
+                death: true,
+                endingText: "💀 DEATH #20: Dynamis employs other Genomes. Some of them counter your powers. Fighting head-on was a mistake.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            raid_escape_timestop: {
+                text: "You grab Len and use extended time-stop to escape. You navigate through frozen guards, frozen alarms, frozen chaos.\n\nYou escape Dynamis Tower. The lab is destroyed. Mission success!\n\nBut at what cost?",
+                location: "🌆 New Rome Streets - Escaped",
+                ending: true,
+                achievement: "SABOTEUR",
+                endingText: "✅ PARTIAL SUCCESS: You destroyed Dynamis' lab and escaped! Their Psycho production is crippled.\n\nBut they'll rebuild. This is a victory, not the war. Dynamis remembers. Dynamis always remembers.",
+                choices: [
+                    { text: "Continue the fight", next: 'post_raid' }
+                ]
+            },
+            desperate_sabotage: {
+                text: "You fight guards while Len plants explosives. It's chaos. You're outnumbered.\n\nYou use time-stop repeatedly, fighting fatigue. Finally, the charges are set.\n\n'Run!' you shout.\n\nThe explosion rocks the tower. You both escape barely alive.",
+                location: "🏢 Dynamis Tower - Explosion",
+                ending: true,
+                achievement: "DESPERATE VICTORY",
+                endingText: "⚡ SUCCESS: You destroyed the lab through sheer determination! It wasn't clean, it wasn't pretty, but it worked.\n\nDynamis is wounded. But wounded animals are the most dangerous.",
+                choices: [
+                    { text: "Continue the war", next: 'post_raid' }
+                ]
+            },
+            evidence_escape: {
+                text: "You and Len escape with hard drives full of evidence. Corporate experiments, victim lists, financial records.\n\nYou leak it all to the media. The scandal rocks Dynamis. Stock prices crash. Arrests are made.\n\nYou won without destroying anything. Information was the real weapon.",
+                location: "💻 Your Apartment - Victory",
+                ending: true,
+                achievement: "PERFECT EXPOSÉ",
+                endingText: "🌟 PERFECT ENDING: You defeated Dynamis with truth! The evidence destroyed them more thoroughly than any explosion.\n\nThe pen is mightier than the sword. And leaked documents? Mightier than both.",
+                choices: [
+                    { text: "Enjoy your victory", next: 'true_ending' }
+                ]
+            },
+            perfect_raid: {
+                text: "Everything goes according to plan. Your Time Dilator extends your time-stop. You're unstoppable.\n\nYou destroy the lab, gather evidence, and escape without a single casualty. The perfect run.\n\nDynamis' Psycho program is ended. The evidence goes public. Justice is served.",
+                location: "🏢 Dynamis Tower - Perfect Execution",
+                ending: true,
+                achievement: "THE PERFECT RUN",
+                endingText: "🌟 ULTIMATE ENDING: You achieved the impossible—the perfect run! Through preparation, planning, and precise execution, you saved New Rome.\n\nThis is what time powers are for: achieving perfection through infinite attempts. You are Quicksave, and you always deliver.",
+                choices: [
+                    { text: "Bask in glory", next: 'ultimate_ending' }
+                ]
+            },
+            second_retrieval: {
+                text: "'I need you to steal a prototype Elixir from a Dynamis transport. €200,000 if you succeed.'\n\nThis is bigger, riskier, and far more profitable.",
+                location: "🏭 The Junkyard",
+                choices: [
+                    { text: "Accept the job", next: 'dynamis_heist' },
+                    { text: "Too risky right now", next: 'save_for_dilator' }
+                ]
+            },
+            save_for_dilator: {
+                text: "You save your money. After another job or two, you have €250,000.\n\nYou buy the Time Dilator. Your time-stop now lasts longer. You're significantly more powerful.\n\n'Pleasure doing business,' the merchant says.",
+                location: "🏭 The Junkyard - Upgraded",
+                choices: [
+                    { text: "Test your new powers", next: 'powered_up' }
+                ]
+            },
+            post_adam: {
+                text: "With Adam defeated, the Meta-Gang dissolves. The district celebrates you as a hero.\n\nBut your work isn't done. Dynamis still creates Psychos. The city still suffers.\n\nLen contacts you: 'Ready to finish what we started?'",
+                location: "💻 Your Apartment - Hero Status",
+                choices: [
+                    { text: "Join Len's final mission", next: 'final_mission_len' },
+                    { text: "Retire as a hero", next: 'hero_retirement' }
+                ]
+            },
+            livia_alliance: {
+                text: "You form an uneasy alliance with Livia. She feeds you information. You eliminate her rivals.\n\nTogether, you reshape Dynamis from within. It's morally gray, but effective.\n\nThe Psycho program is reformed—not ended, but controlled. Better than nothing.",
+                location: "🏢 Dynamis Tower - Alliance",
+                ending: true,
+                achievement: "POLITICAL MASTERMIND",
+                endingText: "⚡ GREY ENDING: You changed the system from within. Not perfect, but progress. Sometimes compromise achieves more than idealism.\n\nYou're neither hero nor villain. You're a realist. Welcome to New Rome.",
+                choices: [
+                    { text: "Continue your complicated life", next: 'grey_path' }
+                ]
+            },
+            blackmail_livia: {
+                text: "'Blackmail? Me?' Livia laughs. 'You have no idea who you're dealing with.'\n\nShe signals. Guards appear. You fight but you're on her territory.\n\nYou die in Dynamis Tower. Again.",
+                location: "🏢 Dynamis Tower",
+                ending: true,
+                achievement: "OVERPLAYED YOUR HAND",
+                death: true,
+                endingText: "💀 DEATH #21: Blackmailing someone in their own fortress was bold. Also stupid. Very, very stupid.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            sophisticated_resistance: {
+                text: "With intel on Livia, Len plans a surgical strike. Not destruction—replacement. You'll expose Livia, install a reformist in her place, and change Dynamis from within.\n\nIt's brilliant. It might actually work.",
+                location: "🏟️ Resistance Planning",
+                choices: [
+                    { text: "Execute the plan", next: 'political_victory' }
+                ]
+            },
+            united_raid: {
+                text: "Seven of you infiltrate together. Each person has a role. Marco handles explosives. Yuki hacks systems. Santos navigates. You provide time manipulation.\n\nIt's synchronized. Beautiful. Professional.\n\nThe raid succeeds. The lab is destroyed. Everyone survives.\n\nTeamwork makes the dream work.",
+                location: "🏢 Dynamis Tower - Team Victory",
+                ending: true,
+                achievement: "POWER OF FRIENDSHIP",
+                endingText: "✅ TEAM VICTORY: You couldn't have done it alone. Together, you achieved the impossible!\n\nThe resistance succeeds. Dynamis is crippled. New Rome is safer. Heroes aren't born—they're forged in fire, together.",
+                choices: [
+                    { text: "Celebrate with friends", next: 'friendship_ending' }
+                ]
+            },
+            post_raid: {
+                text: "Dynamis is damaged but not destroyed. They're rebuilding. Hunting you.\n\nYou need to finish this. Either destroy them completely or find another solution.",
+                location: "💻 Your Apartment - Hunted",
+                choices: [
+                    { text: "Hunt down Dr. Livia", next: 'livia_hunt' },
+                    { text: "Expose them publicly", next: 'public_exposure' },
+                    { text: "Leave New Rome", next: 'leave_city' }
+                ]
+            },
+            dynamis_heist: {
+                text: "You intercept a Dynamis transport convoy. Military-grade security. Genome guards.\n\nYou use time-stop to infiltrate the lead truck. Inside: a case containing a glowing purple Elixir.\n\n'Project Infinity,' the label reads.",
+                location: "🚛 Highway Heist",
+                choices: [
+                    { text: "Steal it and escape", next: 'heist_success' },
+                    { text: "Drink it yourself", next: 'drink_elixir' },
+                    { text: "Destroy it", next: 'destroy_elixir' }
+                ]
+            },
+            powered_up: {
+                text: "With the Time Dilator, you can stop time for minutes instead of seconds. You're nearly unstoppable.\n\nYou test it by stopping a speeding car, walking around it, and restarting time. The driver doesn't even notice.\n\n'This changes everything,' you whisper.",
+                location: "🌆 New Rome Streets - God Mode",
+                choices: [
+                    { text: "Use this power for good", next: 'hero_path' },
+                    { text: "Take what you want", next: 'villain_path' }
+                ]
+            },
+            final_mission_len: {
+                text: "Len's plan: infiltrate Dynamis Tower during the annual board meeting. When all executives are present, expose everything. End the corporation in one move.\n\n'This is it, Ryan. Our final run.'",
+                location: "🏟️ Final Briefing",
+                choices: [
+                    { text: "Let's end this", next: 'final_raid' }
+                ]
+            },
+            hero_retirement: {
+                text: "You've done enough. You defeated Adam. You helped people. Time to rest.\n\nYou retire to the countryside with your Plymouth and your memories. Occasionally, you reload to fix small problems. But mostly? You relax.\n\nPeace.",
+                location: "🏡 Countryside Villa",
+                ending: true,
+                achievement: "PEACEFUL RETIREMENT",
+                endingText: "🏖️ ENDING: You earned your rest. Not all heroes die in battle. Some live to enjoy the peace they created.\n\nQuicksave delivered one last time: himself, to happiness.",
+                choices: [
+                    { text: "Start a new adventure", next: 'start' }
+                ]
+            },
+            grey_path: {
+                text: "Working with Livia is complicated. You're neither hero nor villain. You prevent the worst abuses while enabling some lesser evils.\n\nIt's messy. It's real. It's New Rome.\n\nYears pass. You become a power broker. Wealthy. Connected. Morally ambiguous.",
+                location: "🏢 Dynamis Tower - Your Office",
+                ending: true,
+                achievement: "GREY AREA",
+                endingText: "⚖️ ENDING: You chose pragmatism over purity. The world isn't black and white. Neither are you.\n\nYou saved some lives. Sacrificed others. Made hard choices. That's leadership. That's survival. That's New Rome.",
+                choices: [
+                    { text: "Live with your choices", next: 'start' }
+                ]
+            },
+            political_victory: {
+                text: "You execute the plan flawlessly. Evidence leaks. Livia is arrested. A reformist CEO takes over Dynamis.\n\nThe Psycho program is shut down. Victims are compensated. Real change happens.\n\nYou and Len watch from a rooftop as Dynamis Tower lights change—new leadership, new hope.",
+                location: "🏢 Rooftop View",
+                ending: true,
+                achievement: "REVOLUTIONARY",
+                endingText: "🌟 PERFECT POLITICAL ENDING: You changed the system without destroying it. The city is better. People are safer.\n\nThis is victory—not through violence, but through intelligence, planning, and courage. This is the perfect run.",
+                choices: [
+                    { text: "Enjoy New Rome saved", next: 'true_ending' }
+                ]
+            },
+            friendship_ending: {
+                text: "You celebrate with the resistance. Marco brings wine. Yuki plays music on a hacked speaker. Santos tells war stories.\n\nLen raises a toast: 'To Quicksave. To all of us. We did the impossible.'\n\nYou drink. You laugh. You're alive. You have friends. You have purpose.\n\nThis is what victory feels like.",
+                location: "🏟️ Colosseum Maximus - Victory Party",
+                ending: true,
+                achievement: "FOUND FAMILY",
+                endingText: "❤️ PERFECT ENDING: You didn't just save the city. You found a family. These people would die for you—and you for them.\n\nTime powers let you live forever. But friendship? That makes life worth living. This is the perfect run.",
+                choices: [
+                    { text: "Start a new chapter", next: 'start' }
+                ]
+            },
+            livia_hunt: {
+                text: "You track Livia to a secret Dynamis facility. She's working on a new project: 'Mechron.'\n\nA weapon that could level cities. She's desperate, dangerous, and cornered.\n\n'Quicksave. I was hoping you'd come.'",
+                location: "🏭 Secret Facility",
+                choices: [
+                    { text: "Stop her permanently", next: 'kill_livia' },
+                    { text: "Capture her alive", next: 'capture_livia' }
+                ]
+            },
+            public_exposure: {
+                text: "You gather every piece of evidence. Videos, documents, testimonies. You give it all to international media.\n\nThe exposé goes viral. Dynamis' stock crashes. Governments investigate. Arrests follow.\n\nYou destroyed them with truth.",
+                location: "💻 Your Apartment - Media Sensation",
+                ending: true,
+                achievement: "WHISTLEBLOWER",
+                endingText: "📰 PERFECT ENDING: Information was your greatest weapon. Dynamis falls not to violence but to exposure.\n\nThe pen defeats the sword. The truth defeats evil. You are Quicksave, and you delivered justice.",
+                choices: [
+                    { text: "Enjoy your victory", next: 'true_ending' }
+                ]
+            },
+            leave_city: {
+                text: "You pack your Plymouth and leave New Rome behind. Len calls. You don't answer.\n\nMonths later, you hear Dynamis rebuilt. The Psycho problem worsened. Len died fighting alone.\n\nYou ran. They suffered.",
+                location: "🚗 Somewhere Else",
+                ending: true,
+                achievement: "COWARD'S ESCAPE",
+                endingText: "💔 ENDING: You had the power to save everyone. You chose yourself instead.\n\nTime powers let you escape any danger. But you can't escape guilt. It follows you across every loop.",
+                choices: [
+                    { text: "Reload and face your responsibility", next: 'start' }
+                ]
+            },
+            heist_success: {
+                text: "You steal Project Infinity and deliver it to the merchant. He pays €200,000.\n\n'This is worth millions,' he says, examining the Elixir. 'Good work, Quicksave.'\n\nYou're now wealthy enough for anything.",
+                location: "🏭 The Junkyard - Rich",
+                choices: [
+                    { text: "Buy all the best gear", next: 'fully_equipped' },
+                    { text: "Invest in the resistance", next: 'fund_resistance' }
+                ]
+            },
+            drink_elixir: {
+                text: "Curiosity wins. You drink Project Infinity.\n\nPower floods through you. Your time-stop becomes permanent. You exist outside of time itself.\n\nYou're a god. But gods are lonely. You can never connect with anyone again. Everyone else is frozen to you.",
+                location: "🌌 Outside Time",
+                ending: true,
+                achievement: "ASCENDED",
+                endingText: "👁️ TRANSCENDENT ENDING: You became something beyond human. Infinite power. Infinite loneliness.\n\nYou saved the world by freezing it forever. Everyone is safe. Nothing moves. Nothing lives. You won. Was it worth it?",
+                choices: [
+                    { text: "Reload to mortality", next: 'start' }
+                ]
+            },
+            destroy_elixir: {
+                text: "You smash the Elixir. It shatters, its contents evaporating.\n\nDynamis will never create this weapon. Good.\n\nBut you also lost €200,000. The merchant is furious. You make a powerful enemy.",
+                location: "🚛 Highway",
+                choices: [
+                    { text: "Deal with the consequences", next: 'merchant_angry' }
+                ]
+            },
+            hero_path: {
+                text: "With enhanced powers, you become New Rome's protector. You stop crimes before they happen. Save people from accidents. Prevent disasters.\n\nYou're a true hero. Anonymous but effective.\n\nThe city doesn't know your name, but they feel safer. That's enough.",
+                location: "🌆 New Rome - Guardian",
+                ending: true,
+                achievement: "SILENT GUARDIAN",
+                endingText: "🦸 HERO ENDING: You used infinite power for good. New Rome thrives under your protection.\n\nNo one knows Quicksave's name. But everyone lives better lives. That's heroism—helping without recognition.",
+                choices: [
+                    { text: "Continue protecting", next: 'start' }
+                ]
+            },
+            villain_path: {
+                text: "With God-tier time powers, why follow rules? You rob banks in frozen time. Take what you want. Live like a king.\n\nYou're unstoppable. Untouchable. Rich beyond measure.\n\nBut empty. Power without purpose is just ego.",
+                location: "💎 Your Mansion",
+                ending: true,
+                achievement: "CORRUPTED",
+                endingText: "😈 VILLAIN ENDING: Absolute power corrupted absolutely. You have everything and nothing.\n\nYou won New Rome but lost yourself. Was it worth it?",
+                choices: [
+                    { text: "Reload and choose better", next: 'start' }
+                ]
+            },
+            final_raid: {
+                text: "You and Len infiltrate during the board meeting. Every Dynamis executive is present.\n\nYou use time-stop to place cameras. Evidence is broadcast live. The world watches as Dynamis' crimes are exposed in real-time.\n\nThe board is arrested on camera. Dynamis collapses. You win.",
+                location: "🏢 Dynamis Tower - Board Room",
+                ending: true,
+                achievement: "THE PERFECT RUN",
+                endingText: "🌟 ULTIMATE PERFECT ENDING: You executed the perfect plan. Dynamis is destroyed. Justice served. City saved.\n\nYou and Len changed the world together. This is the perfect run—not just success, but meaning. This is what time powers are for.",
+                choices: [
+                    { text: "Achieve perfection", next: 'ultimate_ending' }
+                ]
+            },
+            kill_livia: {
+                text: "You end her. One bullet, one moment, one choice.\n\nShe dies. Her research dies with her. Mechron will never exist.\n\nBut you killed in cold blood. You're no longer just a courier. You're an executioner.",
+                location: "🏭 Secret Facility - Aftermath",
+                ending: true,
+                achievement: "DARK JUSTICE",
+                endingText: "⚫ DARK ENDING: You saved countless lives by taking one. Pragmatic? Yes. Heroic? Questionable.\n\nThe city is safer. Your soul is darker. Such is justice in New Rome.",
+                choices: [
+                    { text: "Live with it", next: 'start' }
+                ]
+            },
+            capture_livia: {
+                text: "You capture Livia alive. She faces trial. Her testimony exposes Dynamis completely.\n\nJustice is served legally. No blood on your hands. The system works for once.\n\nYou did it the right way.",
+                location: "⚖️ Courthouse",
+                ending: true,
+                achievement: "LAWFUL GOOD",
+                endingText: "⚖️ LAWFUL ENDING: You captured the villain and let justice work. No vigilante execution. No compromise.\n\nYou proved heroes can win without becoming villains. That's rare. That's special.",
+                choices: [
+                    { text: "Continue being good", next: 'true_ending' }
+                ]
+            },
+            fully_equipped: {
+                text: "You buy everything: Time Dilator, plasma weapons, armor, gadgets. You're a walking arsenal.\n\nWith this gear, nothing can stop you. Time for the final mission.",
+                location: "🏭 The Junkyard - Armed to the Teeth",
+                choices: [
+                    { text: "Take down Dynamis once and for all", next: 'final_assault' }
+                ]
+            },
+            fund_resistance: {
+                text: "You give all your money to the resistance. They buy gear, weapons, intel.\n\nLen hugs you. 'You're a good person, Ryan.'\n\nTogether, you're unstoppable.",
+                location: "🏟️ Resistance Base - Funded",
+                choices: [
+                    { text: "Lead the final assault", next: 'resistance_finale' }
+                ]
+            },
+            merchant_angry: {
+                text: "The merchant puts a bounty on you. Every criminal in New Rome wants you dead.\n\nYou fight them off using time-stop, but it's exhausting. Eventually, someone gets lucky.\n\nYou die in an alley.",
+                location: "🌆 Dark Alley",
+                ending: true,
+                achievement: "MADE ENEMIES",
+                death: true,
+                endingText: "💀 DEATH #22: Destroying valuable property makes powerful enemies. Sometimes the cost isn't worth the principle.",
+                choices: [
+                    { text: "Reload save point", next: 'start' }
+                ]
+            },
+            final_assault: {
+                text: "Armed with the best gear, you assault Dynamis Tower solo. You're a one-man army.\n\nYou fight through floors. Defeat Genome guards. Reach Livia.\n\nYou destroy her research. You end the Psycho program. You save New Rome.\n\nAlone. Powerful. Victorious.",
+                location: "🏢 Dynamis Tower - Solo Victory",
+                ending: true,
+                achievement: "LONE WOLF",
+                endingText: "🐺 SOLO ENDING: You didn't need help. You were strong enough alone. Dynamis falls to one person—you.\n\nSometimes the hero walks alone. Sometimes that's enough. You are Quicksave, and you delivered.",
+                choices: [
+                    { text: "Enjoy solitary victory", next: 'start' }
+                ]
+            },
+            resistance_finale: {
+                text: "The resistance, fully funded, launches a coordinated assault. Every member plays their part perfectly.\n\nYou lead them through Dynamis Tower. Together, you're unstoppable. You reach the top.\n\nDynamis surrenders. The city is saved. Together.",
+                location: "🏢 Dynamis Tower - United Victory",
+                ending: true,
+                achievement: "UNITED WE STAND",
+                endingText: "👥 PERFECT TEAM ENDING: You didn't just win—you built a movement. Individuals are strong, but together you're unstoppable.\n\nThis is the power of unity. This is the perfect run—achieved not alone, but together.",
+                choices: [
+                    { text: "Celebrate with family", next: 'friendship_ending' }
+                ]
+            },
+            true_ending: {
+                text: "New Rome is saved. Dynamis is reformed. The Psycho program ended. Justice served.\n\nYou stand on a rooftop with Len, watching the sunrise over the Mediterranean.\n\n'We did it,' she says.\n\n'Yeah,' you reply. 'We delivered.'\n\nYour Plymouth is parked below. Your powers are ready. And somewhere out there, another adventure waits.\n\nBut for now? Rest. You earned it.",
+                location: "🌅 Rooftop - New Dawn",
+                ending: true,
+                achievement: "TRUE HERO",
+                endingText: "🌟 TRUE ENDING: You saved the city. Found meaning. Helped people. Made friends. Fought evil. Won.\n\nThis is the perfect run—not just succeeding, but living well. You are Quicksave. You always deliver. And you always will.",
+                choices: [
+                    { text: "Begin a new adventure", next: 'start' }
+                ]
+            },
+            ultimate_ending: {
+                text: "You achieved perfection. Every choice was right. Every action perfect. Every outcome ideal.\n\nDynamis is destroyed. Adam is defeated. Len survives. The city prospers. You have friends, purpose, and peace.\n\nThis is the perfect run. After countless deaths, infinite retries, and endless determination—you finally achieved it.\n\nYou sit in your Plymouth, engine purring, and smile. Time to find the next impossible mission.\n\nBecause you're Quicksave. And you ALWAYS deliver.",
+                location: "🚗 Your Plymouth - Perfect Victory",
+                ending: true,
+                achievement: "QUICKSAVE: THE PERFECT RUN",
+                endingText: "🏆 ULTIMATE PERFECT ENDING: You did it. The impossible. The perfect run. Zero casualties. Maximum justice. Complete victory.\n\nYou used infinite retries to achieve the one outcome where everyone lives and evil loses. This is the power of determination. This is the power of time. This is YOUR power.\n\nWelcome to perfection, Quicksave. Now... where to next?",
+                choices: [
+                    { text: "Start a new perfect run", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "FIRST DEATH",
+            "AMBUSHED",
+            "SIDEQUEST COMPLETE",
+            "ROOKIE MISTAKE",
+            "ADAM'S FALL",
+            "THE PERFECT RUN",
+            "COWARD",
+            "SURVIVOR'S GUILT",
+            "FOUND FAMILY",
+            "TRUE HERO",
+            "MASTER THIEF",
+            "REVOLUTIONARY",
+            "SILENT GUARDIAN",
+            "CORRUPTED",
+            "QUICKSAVE: THE PERFECT RUN"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+        let deathCount = 0;
+        let moneySpent = 0;
+        let loopNumber = 1;
+
+        function init() {
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            endingWarning.style.display = currentScenario.ending ? 'block' : 'none';
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateStatsDisplay();
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('deathCount').textContent = deathCount;
+            document.getElementById('moneySpent').textContent = '€' + moneySpent.toLocaleString();
+            document.getElementById('loopNumber').textContent = loopNumber;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            
+            if (nextScenario && nextScenario.death) {
+                deathCount++;
+                loopNumber++;
+            }
+
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length) {
+                    setTimeout(() => {
+                        if (!achievements.includes("MASTER OF TIME")) {
+                            achievements.push("MASTER OF TIME");
+                            showAchievementPopup("MASTER OF TIME");
+                        }
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "MASTER OF TIME" || achievement === "QUICKSAVE: THE PERFECT RUN";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + 1;
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "MASTER OF TIME" || ach === "QUICKSAVE: THE PERFECT RUN" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry.substring(0, 100) + (entry.length > 100 ? '...' : '');
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
