@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Case of the Missing Donut</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #e0e7ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #eab308;
+            border-color: #facc15;
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #9333ea, #ec4899);
+            border-color: #d8b4fe;
+            color: #fff;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #f59e0b;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .detective-icon {
+            display: inline-block;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled) {
+            background-color: #d97706;
+            color: #000;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #f59e0b;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            border-radius: 0.25rem;
+            border: 1px solid #f59e0b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #fbbf24;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(180, 83, 9, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #eab308;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #facc15;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #fef3c7;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1f2937;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #b45309, #fcd34d);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #b45309;
+            color: #fef3c7;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #9333ea, #ec4899);
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ef4444;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #f59e0b;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #fcd34d;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #bef264;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #d97706;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #d97706;
+            color: #000;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #fbbf24;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #f59e0b;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #374151;
+        }
+
+        .history-title {
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-button.current {
+            background-color: #d97706;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: #374151;
+            color: #fbbf24;
+        }
+
+        .history-button.visited:hover {
+            background-color: #4b5563;
+        }
+
+        .history-button.unvisited {
+            background-color: #1f2937;
+            color: #6b7280;
+        }
+
+        .history-hint {
+            color: #fcd34d;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #374151;
+        }
+
+        .quest-log-title {
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #fcd34d;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">🎉 CASE SOLVED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="detective-icon">🕵️</span>
+                    THE CASE OF THE MISSING DONUT
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>✨</span>
+                        <p class="achievements-title-text">CASES SOLVED (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to solve</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">🔍 CASE CLOSED 🔍</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                INVESTIGATION TIMELINE (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to revisit that moment in your investigation</p>
+        </div>
+
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📋</span>
+                DETECTIVE'S NOTEBOOK
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "Monday morning. 9:47 AM. The precinct break room.\n\nYou're Detective Martinez, and someone has committed an unforgivable crime: They ate YOUR jelly donut. The one with your name written on the box in permanent marker.\n\nThis isn't just about a donut. This is about respect. About boundaries. About JUSTICE.\n\nWhat's your opening move, Detective?",
+                location: "🏢 Police Precinct - Break Room",
+                choices: [
+                    { text: "Examine the crime scene methodically", next: 'examine_scene' },
+                    { text: "Interview witnesses immediately", next: 'interview_witnesses' },
+                    { text: "Check security footage", next: 'security_footage' }
+                ]
+            },
+            
+            examine_scene: {
+                text: "You approach the scene with professional detachment. Your detective senses are tingling.\n\nEvidence discovered:\n- Empty donut box with your name crossed out in RED PEN\n- Jelly-filled crumbs scattered across the table\n- A coffee cup still warm to the touch\n- A sticky note that says 'IOU - J'\n\nThe perpetrator left clues. Rookie mistake.",
+                location: "🏢 Police Precinct - Break Room",
+                choices: [
+                    { text: "Analyze the handwriting on the note", next: 'analyze_handwriting' },
+                    { text: "Dust for fingerprints on the coffee cup", next: 'fingerprints' },
+                    { text: "Follow the crumb trail", next: 'crumb_trail' }
+                ]
+            },
+
+            analyze_handwriting: {
+                text: "You examine the sticky note closely. The 'J' is written with a distinctive loop. You've seen this handwriting before...\n\nYou pull out personnel files and compare. Three people in this precinct have names starting with 'J':\n- Jenkins (Forensics)\n- Jamie (Intern)\n- Johnson (Captain's secretary)\n\nThe handwriting matches... all three of them? They all write their J's the same way. This is suspicious.",
+                location: "🏢 Police Precinct - Your Desk",
+                choices: [
+                    { text: "Question Jenkins first", next: 'question_jenkins' },
+                    { text: "Track down the intern Jamie", next: 'find_jamie' },
+                    { text: "Interview Johnson", next: 'interview_johnson' }
+                ]
+            },
+
+            question_jenkins: {
+                text: "You find Jenkins in the forensics lab, hunched over a microscope.\n\nYou: 'Jenkins. We need to talk.'\nJenkins: 'About what?'\nYou: 'My donut. Someone left an IOU note signed 'J'.'\nJenkins: *doesn't look up* 'And you think it was me? I'm allergic to jelly. Nice detective work, Detective.'\n\nHis alibi checks out. You've seen him use an EpiPen before. He's cleared.",
+                location: "🔬 Forensics Lab",
+                choices: [
+                    { text: "Apologize and move on to Jamie", next: 'find_jamie' },
+                    { text: "Ask if he saw anything suspicious", next: 'jenkins_info' }
+                ]
+            },
+
+            jenkins_info: {
+                text: "Jenkins finally looks up from his microscope.\n\nJenkins: 'Actually... I did see the intern hanging around the break room this morning. Around 9:15. They looked guilty about something.'\nYou: 'Jamie?'\nJenkins: 'That's the one. Always hungry, that kid. Poor college student and all.'\n\nYou've got a lead. Time to find Jamie.",
+                location: "🔬 Forensics Lab",
+                choices: [
+                    { text: "Find Jamie immediately", next: 'find_jamie' }
+                ]
+            },
+
+            find_jamie: {
+                text: "You search the precinct for Jamie. They're not at their usual desk. You check the filing room, the supply closet, the evidence locker...\n\nFinally, you find them in the records room, organizing files. When they see you, they freeze like a deer in headlights.\n\nJamie: 'Oh! Detective Martinez! I was just... organizing these files...'\n\nThey're nervous. VERY nervous.",
+                location: "📁 Records Room",
+                choices: [
+                    { text: "Confront them directly about the note", next: 'confront_jamie' },
+                    { text: "Use subtle interrogation tactics", next: 'subtle_interrogation' },
+                    { text: "Show compassion and ask if everything's okay", next: 'compassionate_approach' }
+                ]
+            },
+
+            confront_jamie: {
+                text: "You pull out the sticky note and hold it up.\n\nYou: 'Recognize this handwriting?'\n\nJamie's face goes pale. They look at the floor.\n\nJamie: 'I... I was going to replace it. I swear. I have the money. It's just... I haven't eaten since yesterday morning. Three jobs to pay for college and I couldn't afford breakfast and your donut was just sitting there and I'm so sorry...'\n\nThey're on the verge of tears. This investigation just got complicated.",
+                location: "📁 Records Room",
+                choices: [
+                    { text: "Accept the apology and help them", next: 'help_jamie' },
+                    { text: "Demand they replace the donut", next: 'demand_replacement' },
+                    { text: "Report them to the Captain", next: 'report_jamie' }
+                ]
+            },
+
+            help_jamie: {
+                text: "You put the note away and sit down.\n\nYou: 'Look, I get it. Times are tough. But next time, just ask. Come on, let's go get lunch. My treat.'\n\nJamie looks shocked: 'Really? After I stole from you?'\nYou: 'It's a donut, not the crown jewels. Plus, I remember being a broke college student. Let's go.'\n\nYou take Jamie to the diner across the street. Over lunch, you learn about their struggles, their dreams of becoming a detective, their three part-time jobs.\n\nYou connect them with the precinct's hardship fund. You become a mentor.\n\nSometimes justice isn't about punishment. It's about understanding.",
+                location: "🍽️ Mel's Diner",
+                ending: true,
+                achievement: "THE COMPASSIONATE DETECTIVE",
+                endingText: "✨ PERFECT ENDING: You solved the case AND made a real difference in someone's life. Jamie brings you coffee every morning for the next year as thanks. Three years later, they graduate top of their class at the police academy. The Captain commends your mentorship. You've proven that great detectives lead with empathy.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            demand_replacement: {
+                text: "You: 'I want my donut replaced. Today.'\n\nJamie nods quickly: 'Yes. Of course. I'll go right now.'\n\nThey return an hour later with a box of a dozen donuts from the fancy bakery downtown. They must have spent their entire day's meal budget on this.\n\nYou take the box. Jamie looks exhausted and defeated.\n\nYou've won. But looking at their face, it doesn't feel like victory.",
+                location: "🏢 Police Precinct",
+                ending: true,
+                achievement: "JUSTICE BY THE BOOK",
+                endingText: "💀 CASE SOLVED: You got your restitution, but at what cost? Jamie avoids you for the rest of their internship. You eat the donuts alone. They taste like ash. The Captain later tells you Jamie quit the internship early. Sometimes being 'right' doesn't mean you did the right thing.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            report_jamie: {
+                text: "You bring Jamie to the Captain's office and present your evidence.\n\nCaptain: 'They ate your donut?'\nYou: 'Theft is theft, sir.'\nCaptain: *sighs heavily* 'Jamie, is this true?'\n\nJamie nods, tears streaming down their face. The Captain gives them a formal warning and they're dismissed.\n\nAfter Jamie leaves, the Captain looks at you with disappointment.\n\nCaptain: 'You know, a good detective knows when to show mercy. That kid is struggling. I expected better judgment from you.'",
+                location: "👮 Captain's Office",
+                ending: true,
+                achievement: "TECHNICALLY CORRECT",
+                endingText: "💀 CASE CLOSED: You solved the case by the book. Jamie is reprimanded and quits their internship the next day. The precinct thinks you're heartless. The Captain questions your judgment. You got justice, but you lost respect. Sometimes following the rules to the letter means losing sight of what's right.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            subtle_interrogation: {
+                text: "You lean against the filing cabinet casually.\n\nYou: 'So, Jamie. How's the internship going?'\nJamie: 'Oh, uh, good...'\nYou: 'Getting enough to eat? I know the hours can be rough.'\nJamie: *hesitates* 'I'm... managing.'\nYou: 'Because someone left me an IOU note this morning. For a donut.'\n\nJamie's hands start shaking. They set down the files.\n\nJamie: 'That was me. I'm sorry. I was going to pay you back, I swear. I just... I haven't eaten and I lost control and...'",
+                location: "📁 Records Room",
+                choices: [
+                    { text: "Show understanding", next: 'help_jamie' },
+                    { text: "Accept payment for the donut", next: 'accept_payment' }
+                ]
+            },
+
+            accept_payment: {
+                text: "You: 'Alright. It's $3.50 for the donut. Plus $1.50 for emotional damages. Call it $5 even.'\n\nJamie pulls out a crumpled $5 bill from their pocket. It might be all the money they have.\n\nJamie: 'Thank you for not reporting me.'\n\nThey hand you the money. You take it. The bill feels heavy in your hand.\n\nCase closed. Justice served. So why do you feel terrible?",
+                location: "📁 Records Room",
+                ending: true,
+                achievement: "THE PRAGMATIST",
+                endingText: "💀 CASE SOLVED: You got your money back. Jamie continues their internship, but they never speak to you again unless required. You keep the $5 in your wallet as a reminder. Sometimes you wonder if you made the right choice. The donut cost $3.50. But what did your decision cost?",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            compassionate_approach: {
+                text: "You soften your expression and sit down.\n\nYou: 'Jamie, is everything okay? You look stressed.'\n\nThe kindness breaks them. Jamie sits down and tells you everything: the three jobs, skipping meals to afford textbooks, the exhaustion, the moment of weakness this morning.\n\nJamie: 'I left you an IOU. I was going to replace it. I just needed to get through today first.'\n\nYou: 'Why didn't you just ask for help?'\n\nJamie: 'Pride, I guess. Stupid pride.'",
+                location: "📁 Records Room",
+                choices: [
+                    { text: "Take them to lunch and mentor them", next: 'help_jamie' },
+                    { text: "Connect them with resources", next: 'resources_ending' }
+                ]
+            },
+
+            resources_ending: {
+                text: "You: 'Look, forget the donut. Let's fix the real problem here.'\n\nYou spend the next hour connecting Jamie with:\n- The precinct's emergency hardship fund\n- A local food bank\n- A scholarship program for aspiring LEOs\n- A better-paying part-time position in the records department\n\nJamie is overwhelmed with gratitude.\n\nJamie: 'I don't know what to say...'\nYou: 'Say you'll pass it forward someday when you're a detective.'\n\nYou've solved more than just the donut case today.",
+                location: "🏢 Police Precinct - Your Desk",
+                ending: true,
+                achievement: "THE MENTOR",
+                endingText: "✨ PERFECT ENDING: You didn't just solve the case – you changed a life. Jamie thrives with the new resources. They excel in the academy, and years later, they credit you with saving their career. The Captain promotes you for exemplary community policing. Sometimes the best detective work happens off the case.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            interview_johnson: {
+                text: "You find Johnson at their desk outside the Captain's office, typing away.\n\nYou: 'Johnson, got a minute?'\nJohnson: 'Sure, Detective. What's up?'\nYou: 'Someone ate my donut this morning. Left a note signed with 'J'. Any idea who might have done that?'\n\nJohnson looks genuinely confused: 'Your donut? I saw the Captain grab something from the break room around 9:15. Didn't get a good look at what it was, though.'\n\nYou freeze. The Captain? This investigation just took a dangerous turn.",
+                location: "🏢 Police Precinct - Captain's Office Area",
+                choices: [
+                    { text: "Investigate the Captain carefully", next: 'investigate_captain' },
+                    { text: "Forget this lead and check on Jamie", next: 'find_jamie' }
+                ]
+            },
+
+            investigate_captain: {
+                text: "You decide to investigate your own boss. This is either brave or career suicide.\n\nYou casually walk past the Captain's office. Through the window, you see him eating something. Is that... jelly on his tie?\n\nYou need more evidence before confronting him. You check his trash can when he leaves for a meeting.\n\nBingo. Your donut box. With YOUR NAME on it. In his trash.",
+                location: "👮 Captain's Office",
+                choices: [
+                    { text: "Confront him directly when he returns", next: 'confront_captain' },
+                    { text: "Leave anonymous evidence on his desk", next: 'anonymous_evidence' },
+                    { text: "Let it go - he's the boss", next: 'let_it_go' }
+                ]
+            },
+
+            confront_captain: {
+                text: "The Captain returns from his meeting. You're waiting in his office, holding the donut box.\n\nCaptain: 'Detective Martinez. What's this about?'\n\nYou place the box on his desk.\n\nYou: 'Sir, I believe you ate my donut this morning.'\n\nLong silence. The Captain looks at the box, then at you.\n\nCaptain: 'You're right. I did. I thought it was from the communal box. When I realized it had your name on it, I was going to replace it. But then I got called into that budget meeting...'\n\nHe opens his drawer and pulls out a $10 bill.\n\nCaptain: 'I apologize, Detective. And I respect you for having the courage to call me out.'",
+                location: "👮 Captain's Office",
+                ending: true,
+                achievement: "COURAGE UNDER FIRE",
+                endingText: "✨ PERFECT ENDING: The Captain not only apologizes but commends you for your integrity and courage. He promotes you to Senior Detective on the spot, citing your willingness to pursue justice regardless of hierarchy. Word spreads through the precinct. You've earned massive respect. The $10 pays for lunch for you AND Jamie.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            anonymous_evidence: {
+                text: "You leave the donut box on the Captain's desk with a note: 'Found this in your trash. Might want to be more careful about whose food you take.'\n\nThe next morning, there's a box of premium donuts on your desk with a note: 'My apologies. - Cap'\n\nThe Captain never mentions it directly, but he gives you a knowing nod in the hallway. Message received. Respect established.",
+                location: "🏢 Police Precinct - Your Desk",
+                ending: true,
+                achievement: "THE SUBTLE APPROACH",
+                endingText: "✨ CASE SOLVED: You handled the situation with tact and diplomacy. The Captain respects your discretion. Your professional relationship strengthens. Sometimes the best confrontations are the ones that preserve dignity on both sides. The premium donuts are really good, too.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            let_it_go: {
+                text: "You put the box back in the trash. Some battles aren't worth fighting.\n\nYou: 'It's just a donut. He's got enough stress running this place.'\n\nYou walk away from the investigation. Later that day, the Captain calls you into his office.\n\nCaptain: 'I owe you an apology. I ate your donut this morning by mistake. Johnson told me you were investigating. The fact that you didn't press the issue... that shows maturity, Detective.'\n\nHe hands you a $20.\n\nCaptain: 'Take the team out for donuts. My treat.'",
+                location: "👮 Captain's Office",
+                ending: true,
+                achievement: "THE BIGGER PERSON",
+                endingText: "✨ PERFECT ENDING: By choosing not to pursue the case against your boss, you demonstrated wisdom and emotional intelligence. The Captain appreciates your discretion and rewards you with a glowing performance review. You use the $20 to buy donuts for the entire precinct. Everyone wins.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            fingerprints: {
+                text: "You carefully bag the coffee cup and take it to Jenkins in forensics.\n\nJenkins: 'You want me to run prints on a coffee cup from the break room?'\nYou: 'It's connected to my donut case.'\nJenkins: 'Your... donut case. You're serious?'\nYou: 'Dead serious.'\n\nJenkins sighs but runs the prints anyway. Twenty minutes later:\n\nJenkins: 'Prints match Jamie Rodriguez. The intern. Also found traces of jelly on the cup rim.'",
+                location: "🔬 Forensics Lab",
+                choices: [
+                    { text: "Confront Jamie with the evidence", next: 'find_jamie' },
+                    { text: "Investigate more before confronting", next: 'investigate_more' }
+                ]
+            },
+
+            investigate_more: {
+                text: "You decide to gather more intel before making accusations. You spend the rest of the morning discreetly observing Jamie.\n\nYou notice:\n- They skip lunch entirely\n- They look exhausted\n- They're wearing clothes that have seen better days\n- They're studying from a textbook during breaks\n\nYou check their employee file. Three jobs. Full-time student. No family support listed.\n\nSuddenly this isn't just about a donut anymore.",
+                location: "🏢 Police Precinct - Various Locations",
+                choices: [
+                    { text: "Approach them with compassion", next: 'compassionate_approach' },
+                    { text: "Present the evidence professionally", next: 'professional_approach' }
+                ]
+            },
+
+            professional_approach: {
+                text: "You approach Jamie in the records room.\n\nYou: 'Jamie, I have fingerprint evidence placing you at the scene of my missing donut. I also have the IOU note. I need you to explain what happened.'\n\nJamie doesn't try to deny it. They explain everything calmly, professionally.\n\nJamie: 'I made a mistake. I was hungry and desperate. I left the note to take responsibility. I planned to replace it today. If you need to report me, I understand.'\n\nThey're taking ownership. That counts for something.",
+                location: "📁 Records Room",
+                choices: [
+                    { text: "Accept the explanation and help them", next: 'help_jamie' },
+                    { text: "Issue a warning but let it slide", next: 'warning_ending' }
+                ]
+            },
+
+            warning_ending: {
+                text: "You: 'Alright. Here's what's going to happen. You're going to replace the donut. I'm going to forget this investigation. And you're going to come to me if you need help in the future. Deal?'\n\nJamie looks relieved: 'Deal. Thank you, Detective.'\n\nThey bring you a donut the next day. But they also start eating lunch with the other officers. You've maintained justice while preserving their dignity.",
+                location: "📁 Records Room",
+                ending: true,
+                achievement: "BALANCED JUSTICE",
+                endingText: "✨ CASE SOLVED: You found the perfect balance between accountability and compassion. Jamie replaces the donut and learns a valuable lesson about asking for help. They become one of the best interns the precinct has ever had. The Captain notices your fair handling of the situation and commends your judgment.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            crumb_trail: {
+                text: "You follow the crumb trail like a bloodhound. It leads from the break room, down the hallway, past several offices...\n\nThe trail ends at the supply closet. You open the door.\n\nInside, you find Jamie, sitting on a box of printer paper, eating what looks like the last piece of your donut.\n\nJamie freezes when they see you. Caught red-handed. Or rather, jelly-handed.",
+                location: "🏢 Police Precinct - Supply Closet",
+                choices: [
+                    { text: "Demand an explanation", next: 'demand_explanation' },
+                    { text: "Close the door and walk away", next: 'walk_away' }
+                ]
+            },
+
+            demand_explanation: {
+                text: "You: 'That's my donut. Want to explain why you're eating it in a supply closet?'\n\nJamie sets down the donut piece.\n\nJamie: 'I know. I'm sorry. I haven't eaten in two days. My paycheck doesn't come until Friday and I've been working three jobs and I just... I saw it and I lost control. I left you a note. I was going to pay you back.'\n\nThey're not making excuses. They're just explaining.\n\nYou notice the textbooks on the floor next to them. Criminal Justice 301. They're studying to be like you.",
+                location: "🏢 Police Precinct - Supply Closet",
+                choices: [
+                    { text: "Buy them lunch and mentor them", next: 'help_jamie' },
+                    { text: "Make them work off the debt", next: 'work_off_debt' }
+                ]
+            },
+
+            work_off_debt: {
+                text: "You: 'Alright. Here's the deal. You owe me for the donut. You're going to work it off by helping me with case files this week. Extra hours.'\n\nJamie nods: 'Yes, Detective. Thank you for not reporting me.'\n\nOver the next week, Jamie works extra hours. You teach them detective skills, share war stories, and 'accidentally' buy too much lunch and share it with them.\n\nBy Friday, they've learned more about police work than a month of filing. The debt is paid, but you've gained an eager protégé.",
+                location: "🏢 Police Precinct",
+                ending: true,
+                achievement: "THE TEACHER",
+                endingText: "✨ CASE SOLVED: You turned a theft into a teaching opportunity. Jamie learns valuable skills and you discover you enjoy mentoring. They ace their academy entrance exam months later. The Captain notices your positive influence on the intern program. Sometimes punishment and growth can be the same thing.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            walk_away: {
+                text: "You look at Jamie - exhausted, hungry, studying in a supply closet between shifts - and you close the door quietly.\n\nSome cases don't need solving. Some people just need a break.\n\nYou go back to your desk and 'forget' to investigate further. The next day, there's a $5 bill on your desk with a note: 'Thank you. - J'\n\nYou never mention it. Jamie never mentions it. But they bring you coffee every morning after that.",
+                location: "🏢 Police Precinct - Your Desk",
+                ending: true,
+                achievement: "QUIET MERCY",
+                endingText: "✨ PERFECT ENDING: You chose compassion over confrontation. Jamie never knows you saw them. The investigation quietly closes. But your small act of mercy ripples outward - Jamie excels in their internship, graduates with honors, and becomes a detective who remembers the importance of empathy. You changed a life by doing nothing.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            interview_witnesses: {
+                text: "You decide to canvass the precinct for witnesses. Someone must have seen something.\n\nYou interview:\n- Officer Davis: 'Saw someone near the break room around 9:15, but didn't see who.'\n- Sergeant Miller: 'I was in briefing all morning.'\n- The janitor Mrs. Rodriguez: 'I saw the young intern coming out of the break room with jelly on their face.'\n\nBingo. You have an eyewitness.",
+                location: "🏢 Police Precinct - Main Floor",
+                choices: [
+                    { text: "Track down Jamie immediately", next: 'find_jamie' },
+                    { text: "Gather more evidence first", next: 'gather_evidence' }
+                ]
+            },
+
+            gather_evidence: {
+                text: "You decide to build an airtight case before confronting anyone.\n\nYou:\n- Take photos of the crime scene\n- Bag the IOU note as evidence\n- Get a written statement from Mrs. Rodriguez\n- Check Jamie's work schedule (they were on duty at 9:15)\n- Review the break room sign-in sheet\n\nAfter two hours of investigation, you have enough evidence to convict in any court.\n\nTime to make your move.",
+                location: "🏢 Police Precinct - Your Desk",
+                choices: [
+                    { text: "Present evidence to Jamie professionally", next: 'professional_approach' },
+                    { text: "Bring the full case to the Captain", next: 'case_to_captain' }
+                ]
+            },
+
+            case_to_captain: {
+                text: "You compile everything into a report and bring it to the Captain.\n\nCaptain: *reading* 'You spent two hours investigating a stolen donut?'\nYou: 'It's about principle, sir. If we let break room theft slide, what's next?'\nCaptain: 'Martinez, I appreciate thoroughness, but this is excessive. Talk to the kid. Work it out. Don't waste department time on donuts.'\n\nHe's right. You got carried away with procedure.",
+                location: "👮 Captain's Office",
+                choices: [
+                    { text: "Take the Captain's advice", next: 'compassionate_approach' }
+                ]
+            },
+
+            security_footage: {
+                text: "You head straight to the security office. Officer Chen is monitoring the feeds.\n\nYou: 'Chen, I need break room footage from this morning. 9:00 to 9:30.'\nChen: 'What's this for?'\nYou: 'Theft investigation.'\nChen: *pulls up footage* 'Alright, let's see...'\n\nYou both watch. At 9:12, someone enters the break room. At 9:14, they leave with something in their hands.\n\nChen: 'That's the intern. Jamie, I think?'\n\nYou have video evidence.",
+                location: "📹 Security Office",
+                choices: [
+                    { text: "Confront Jamie with the footage", next: 'footage_confrontation' },
+                    { text: "Watch more to understand the full context", next: 'full_context' }
+                ]
+            },
+
+            footage_confrontation: {
+                text: "You find Jamie and show them the footage on your phone.\n\nYou: 'Care to explain this?'\n\nJamie watches themselves on camera. Their shoulders slump.\n\nJamie: 'I have no excuse. I was hungry and stupid. I left you an IOU. I planned to replace it today. I'm so sorry.'\n\nThey're not fighting it. They're taking full responsibility.",
+                location: "🏢 Police Precinct - Hallway",
+                choices: [
+                    { text: "Show mercy and help them", next: 'help_jamie' },
+                    { text: "Accept their apology and move on", next: 'simple_resolution' }
+                ]
+            },
+
+            simple_resolution: {
+                text: "You: 'Alright. I appreciate your honesty. Replace the donut and we're square.'\n\nJamie nods vigorously: 'Absolutely. I'll go right now.'\n\nThey return with two donuts - one for you, one for them.\n\nJamie: 'Can we... eat these together? I'd like to explain why I did it.'\n\nYou both sit in the break room. Jamie tells you about their struggles. You listen. Really listen.\n\nBy the end, you understand. And you've made an unexpected friend.",
+                location: "🏢 Police Precinct - Break Room",
+                ending: true,
+                achievement: "THE LISTENER",
+                endingText: "✨ CASE SOLVED: You solved the case quickly and fairly. But more importantly, you took time to understand the person behind the crime. Jamie becomes a trusted colleague. Years later, when you need backup on a difficult case, Jamie is the first to volunteer. Sometimes solving the crime is less important than building the relationship.",
+                choices: [
+                    { text: "Start New Investigation", next: 'start' }
+                ]
+            },
+
+            full_context: {
+                text: "You: 'Let's rewind. Show me footage from 8:30 onward.'\n\nYou watch the full morning unfold:\n- 8:45: Jamie arrives, looks exhausted\n- 9:00: Jamie sits at their desk, staring at nothing\n- 9:05: Jamie goes to the break room, opens the fridge, closes it (nothing in there)\n- 9:12: Jamie returns to the break room, hesitates at your donut for a full minute\n- 9:14: Jamie takes it, leaves the IOU note\n- 9:15: Jamie eats it quickly in the supply closet, then cries\n\nChen: 'Man, that kid is struggling.'\n\nYou've seen the full story. This changes everything.",
+                location: "📹 Security Office",
+                choices: [
+                    { text: "Approach with compassion knowing the full story", next: 'compassionate_approach' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "THE COMPASSIONATE DETECTIVE",
+            "JUSTICE BY THE BOOK",
+            "TECHNICALLY CORRECT",
+            "THE PRAGMATIST",
+            "THE MENTOR",
+            "COURAGE UNDER FIRE",
+            "THE SUBTLE APPROACH",
+            "THE BIGGER PERSON",
+            "BALANCED JUSTICE",
+            "THE TEACHER",
+            "QUIET MERCY",
+            "THE LISTENER"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        function init() {
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            endingWarning.style.display = currentScenario.ending ? 'block' : 'none';
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("MASTER DETECTIVE - ALL CASES SOLVED")) {
+                    setTimeout(() => {
+                        achievements.push("MASTER DETECTIVE - ALL CASES SOLVED");
+                        showAchievementPopup("MASTER DETECTIVE - ALL CASES SOLVED");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "MASTER DETECTIVE - ALL CASES SOLVED";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '🎉 CASE SOLVED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + 1;
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "MASTER DETECTIVE - ALL CASES SOLVED" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.forEach((entry) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
