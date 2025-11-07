@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Perfect Run</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a0033 0%, #2d1b69 50%, #1a0033 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #e0e7ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #7c3aed;
+            border-color: #a78bfa;
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #ec4899, #f59e0b);
+            border-color: #fbbf24;
+            color: #fff;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #a78bfa;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .save-icon {
+            display: inline-block;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled) {
+            background-color: #7c3aed;
+            color: #fff;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #8b5cf6;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            border-radius: 0.25rem;
+            border: 1px solid #a78bfa;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #c4b5fd;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .deaths-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #ef4444;
+        }
+
+        .deaths-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(124, 58, 237, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #a78bfa;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #ddd6fe;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1f2937;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #7c3aed, #a78bfa);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #7c3aed;
+            color: #ddd6fe;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #ec4899, #f59e0b);
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(124, 58, 237, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #a78bfa;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #a78bfa;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #7c3aed;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #7c3aed;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #a78bfa;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #8b5cf6;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #374151;
+        }
+
+        .history-title {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-button.current {
+            background-color: #7c3aed;
+            color: #fff;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: #374151;
+            color: #c4b5fd;
+        }
+
+        .history-button.visited:hover {
+            background-color: #4b5563;
+        }
+
+        .history-button.unvisited {
+            background-color: #1f2937;
+            color: #6b7280;
+        }
+
+        .history-hint {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">💾</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">🎉 ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="save-icon">💾</span>
+                    THE PERFECT RUN
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Death Counter -->
+            <div id="deathsBox" class="deaths-box" style="display: none;">
+                <p class="deaths-text">💀 DEATHS THIS RUN: <span id="deathCount">0</span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>✨</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">15</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">15</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ ENDING REACHED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                LOOP HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that point in your loop</p>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "It was May 8th 2020, and Ryan 'Quicksave' Romano had just entered New Rome for the first time.\n\nDriving his highly customized red Plymouth Fury through the Golden Coast, he admired the city's skyline - the Dynamis Tower, the Colosseum Maximus, the casinos and gambling dens. Built on corporate money after Mechron's drones bombed the old Naples to oblivion.\n\nHe had a delivery to make to Renesco's 'Jolie Wrangler' pub. Simple courier job. What could go wrong?",
+                location: "🚗 Golden Coast - New Rome",
+                choices: [
+                    { text: "Drive carefully to the pub", next: 'careful_drive' },
+                    { text: "Drive like a maniac (you have time powers!)", next: 'reckless_drive' },
+                    { text: "Stop to admire the city first", next: 'sightseeing' }
+                ]
+            },
+            careful_drive: {
+                text: "You navigate the chaotic New Rome traffic with surprising caution. The inhabitants drive like caffeinated monkeys, but you manage to avoid all collisions.\n\nYou arrive at the tourist district without incident. The pub is right ahead, wedged between an Italian restaurant and a closed nightclub.",
+                location: "🍺 Tourist District - Near Jolie Wrangler",
+                choices: [
+                    { text: "Enter the pub immediately", next: 'first_death' },
+                    { text: "Scout the area first", next: 'scout_area' },
+                    { text: "Check your trunk for weapons", next: 'check_weapons' }
+                ]
+            },
+            reckless_drive: {
+                text: "You slam the accelerator and weave through traffic like a madman. Cars honk, pedestrians scream, tourists take photos.\n\nYou cause two minor traffic accidents but arrive at the pub in record time. Your driving would make a stunt coordinator cry.",
+                location: "🍺 Tourist District - Jolie Wrangler",
+                choices: [
+                    { text: "Rush inside immediately", next: 'first_death' },
+                    { text: "Calm down and assess the situation", next: 'scout_area' }
+                ]
+            },
+            sightseeing: {
+                text: "You stop at a cliff tourist spot overlooking the Mediterranean. The sunset glitters on the pristine sea. Wyvern's face stares at you from a publicity board advertising Hercules Elixir for 100,000 euros.\n\nSuperpowers-in-a-can. Everyone wants to be a Genome these days. You touch your mask - you took the real stuff, not a cheap knockoff.",
+                location: "🌅 Cliff Tourist Spot",
+                choices: [
+                    { text: "Head to the pub", next: 'careful_drive' },
+                    { text: "Contemplate your powers", next: 'power_reflect' }
+                ]
+            },
+            power_reflect: {
+                text: "You think about your abilities. Time stop. Enhanced timing sense after experiencing events once. And most importantly - save points. You're immortal, in a way.\n\nYour life's been a rollercoaster since you got these powers. But hey, at least you're never bored.",
+                location: "🌅 Cliff Tourist Spot",
+                choices: [
+                    { text: "Time to work. Head to the pub", next: 'careful_drive' }
+                ]
+            },
+            scout_area: {
+                text: "You observe the pub from your car. Everything seems normal - a few occupied tables visible through the windows, nothing suspicious.\n\nBut something feels off. Your enhanced timing sense hasn't kicked in yet (you need to experience events once first), but your gut says to be careful.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Enter normally with the briefcase", next: 'first_death' },
+                    { text: "Wait and watch a bit longer", next: 'wait_and_watch' },
+                    { text: "Prepare a weapon before entering", next: 'prepare_weapon' }
+                ]
+            },
+            check_weapons: {
+                text: "You open your trunk. It's a chaotic mess - tools, computers, weapons forming a mass of metal. The pisto-gauntlets, gauss rifle, shotgun, baseball bat... and your white rabbit plushie, the most devastating tool in your arsenal.\n\nYou grab the briefcase with the mushrooms (and maybe a bomb, you didn't check).",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Enter the pub unarmed", next: 'first_death' },
+                    { text: "Bring a concealed weapon", next: 'armed_entry' }
+                ]
+            },
+            wait_and_watch: {
+                text: "You wait in your car, watching. Five minutes pass. Ten. Nothing happens.\n\nThen you see him - a figure in a hoodie, hands in pockets, walking toward the pub. Something about him feels wrong. Dangerous.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Follow him inside quickly", next: 'follow_ghoul' },
+                    { text: "Wait to see what happens", next: 'witness_murder' },
+                    { text: "Confront him before he enters", next: 'confront_outside' }
+                ]
+            },
+            prepare_weapon: {
+                text: "You slip a compact pistol into your coat pocket. Better safe than sorry in New Rome.\n\nThe briefcase in hand, you approach the pub entrance. Time to complete this delivery.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Enter the pub", next: 'armed_entry' }
+                ]
+            },
+            first_death: {
+                text: "You step inside the cozy pub. Ten tables, a third occupied. A Latin guy trying to impress his date by levitating a coin (knockoff elixir). The balding barman looks at you suspiciously.\n\n'Hello, local humans, I come in peace! Is this Renesco's Jolie Wrangler?'\n\nThe temperature suddenly drops. Someone enters behind you.\n\n'Renesco?' a raspy voice asks.\n\nBefore you can react, an ice spear tears through Renesco's throat, nailing him to the wall. An icicle hits your chest at astonishing speed, piercing your ribs, leaving a gaping hole where your lungs should be.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "FIRST DEATH",
+                ending: true,
+                endingText: "💀 LOOP 1 ENDING: You glimpse your killer - a walking skeleton with frozen eyes, vestigial muscles, ice mist coming from his mouth. 'Adam sends his regards,' he rasps. You try to raise a finger dramatically, but he freezes you alive.\n\nEverything goes dark.\n\nIt was May 8th 2020 for the second time...",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            armed_entry: {
+                text: "You enter the pub, hand near your weapon. The barman eyes you suspiciously.\n\n'Is this Renesco's Jolie Wrangler?' you ask.\n\nBefore he can answer fully, the temperature drops. Someone enters behind you - the hooded figure. This time you're ready.\n\nAs his hand moves, you draw and fire. But ice armor forms over his skeletal body, deflecting your shots. He's a Genome. Maybe even a Psycho.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Stop time and attack", next: 'time_stop_attack' },
+                    { text: "Dive for cover", next: 'dive_cover' },
+                    { text: "Grab civilians and run", next: 'save_civilians' }
+                ]
+            },
+            follow_ghoul: {
+                text: "You rush inside right after the hooded figure. The temperature drops sharply. You see him clearly now - beneath the hoodie is a walking skeleton, no skin, vestigial muscles, frozen eyes.\n\n'Renesco?' he asks.\n\nYou shout a warning, but it's too late. Ice spears erupt from his hands.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Stop time immediately", next: 'time_stop_save' },
+                    { text: "Try to tackle him", next: 'tackle_ghoul' },
+                    { text: "Take the hit for Renesco", next: 'sacrifice_play' }
+                ]
+            },
+            witness_murder: {
+                text: "Through the window, you watch in horror as the hooded figure enters. Seconds later, ice spears explode through the windows. Screams. Bodies falling. The Latin guy tries to fight back with telekinesis but gets shredded.\n\nThe killer walks out calmly, having massacred everyone inside. He glances at your car and starts walking toward you.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Drive into him at full speed", next: 'car_attack' },
+                    { text: "Get out and fight", next: 'direct_fight' },
+                    { text: "Drive away and regroup", next: 'tactical_retreat' }
+                ]
+            },
+            confront_outside: {
+                text: "'Hey, bone face!' you call out. 'Looking for someone?'\n\nThe figure stops, turns. Under the hoodie, you see the horrifying truth - a living skeleton with frozen eyes and ice mist coming from his mouth and nasal cavities.\n\n'Who the fuck are you?' he hisses. 'An Augusti?'\n\n'Nah, I'm just a courier,' you reply.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Attack first with time stop", next: 'preemptive_strike' },
+                    { text: "Try to talk him down", next: 'negotiate' },
+                    { text: "Run back to your car", next: 'tactical_retreat' }
+                ]
+            },
+            time_stop_attack: {
+                text: "You activate your time stop. The world turns purple and silent. Everything freezes - the ice shards in midair, the civilians mid-scream, the killer mid-attack.\n\nYou casually walk behind him, draw your weapon to his skull, and let time resume.\n\nBoom. Direct hit. But he's still standing, ice armor cracked but regenerating.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Empty your magazine into him", next: 'unload_weapon' },
+                    { text: "Run outside to your car arsenal", next: 'car_arsenal' },
+                    { text: "Use civilians as hostages", next: 'hostage_situation' }
+                ]
+            },
+            dive_cover: {
+                text: "You dive behind a table as ice shards pepper the pub. Wood splinters, glass shatters. The Latin guy and his date get hit. Renesco ducks behind the counter.\n\n'Who the fuck are you?!' the skeleton rasps, manifesting more ice weapons.\n\n'I'm Quicksave! I'm immortal, but don't tell anyone!'",
+                location: "🍺 Inside Jolie Wrangler - Behind Cover",
+                achievement: "SECOND DEATH",
+                ending: true,
+                endingText: "💀 LOOP 2 ENDING: You try to be clever, but another volley of ice shards finds you. One pierces your skull. As darkness takes you, you hear: 'Adam sends his regards.'\n\nIt was May 8th 2020 for the third time, and Ryan was getting PISSED...",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            save_civilians: {
+                text: "You grab the nearest person - the Latin guy - and drag him toward the door. His girlfriend screams.\n\nThe skeleton laughs. 'Heroic.' Ice spears fly past you, one catching your leg. You stumble but keep moving.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Keep running", next: 'escape_attempt' },
+                    { text: "Turn and fight", next: 'last_stand' }
+                ]
+            },
+            time_stop_save: {
+                text: "You activate time stop the instant you see the ice forming. Purple world. Frozen moment.\n\nYou move everyone you can out of the line of fire - Renesco, the couple, other patrons. When time resumes, the ice spears hit empty space.\n\nThe skeleton's frozen eyes widen. 'What the—'",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Counter-attack while he's confused", next: 'confused_attack' },
+                    { text: "Evacuate everyone and face him alone", next: 'solo_fight' }
+                ]
+            },
+            tackle_ghoul: {
+                text: "You charge at the skeleton with reckless abandon. He's surprised by your stupidity - or bravery.\n\nYou hit him hard, both of you crashing into tables. Ice forms around his fists as he tries to impale you at point-blank range.",
+                location: "🍺 Inside Jolie Wrangler - Fighting",
+                achievement: "THIRD DEATH",
+                ending: true,
+                endingText: "💀 LOOP 3 ENDING: An ice spike goes through your heart. As you die, you think: 'This means war.'\n\nIt was May 8th 2020 for the fourth time, and Ryan was PISSED. Three times! Three times he had died trying to make this damn delivery!",
+                choices: [
+                    { text: "Load Save Point - Time for Plan B", next: 'car_attack_planned' }
+                ]
+            },
+            sacrifice_play: {
+                text: "You leap in front of Renesco. Noble. Heroic. Stupid.\n\nThe ice spear meant for the barman pierces your chest instead. You feel your ribs shatter, your lungs freeze.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "NOBLE IDIOT",
+                ending: true,
+                endingText: "💀 ENDING: Renesco watches in horror as you collapse. 'Why...?' he asks. You manage a weak smile. 'It's not... about the money... I'm just... bored...' Then darkness. At least you saved someone this time.",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            car_attack: {
+                text: "You slam the accelerator. The Plymouth roars to life. The skeleton turns just in time to see two tons of customized fury heading straight for him.\n\nYou smash through the pub entrance, demolishing the wall. The car hits Ghoul from behind, propelling him into the counter like a deer on the road.\n\nPedestrians scream. Someone yells about calling Security. You set ACDC on the radio.",
+                location: "🍺 Inside Jolie Wrangler - Car Crash Scene",
+                choices: [
+                    { text: "Get out and finish him", next: 'bat_time' },
+                    { text: "Reverse and hit him again", next: 'double_tap' },
+                    { text: "Check on the civilians", next: 'aftermath_check' }
+                ]
+            },
+            car_attack_planned: {
+                text: "Fourth loop. You know exactly what to do now.\n\nYou drive to the pub, park strategically, and wait in autopilot mode. When Ghoul appears, you don't hesitate.\n\nACDC plays. Accelerator hits the floor. The Plymouth crashes through the wall and slams the assassin into the counter with perfect precision.\n\n'Highway to Hell' never sounded so appropriate.",
+                location: "🍺 Inside Jolie Wrangler - Car Crash Scene",
+                choices: [
+                    { text: "Time for the baseball bat", next: 'bat_time' }
+                ]
+            },
+            direct_fight: {
+                text: "You step out of your car, weapons ready. The skeleton approaches, ice mist trailing from his mouth.\n\n'You saw that, didn't you?' he says. 'Can't let witnesses live.'\n\n'Funny,' you reply, 'I was thinking the same thing about you.'",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Open fire immediately", next: 'gunfight' },
+                    { text: "Use time stop for advantage", next: 'time_stop_fight' }
+                ]
+            },
+            tactical_retreat: {
+                text: "You drive away fast. Sometimes the smart play is to live and fight another day.\n\nBut you've failed the delivery. Renesco is dead. The killer walks free. This isn't a perfect run.\n\nYou could reload, try again...",
+                location: "🚗 Fleeing the Scene",
+                ending: true,
+                achievement: "TACTICAL COWARD",
+                endingText: "💀 ENDING: You spend the rest of the day in a New Rome hotel, watching the news report the massacre. 'Meta-Gang strikes again.' Tomorrow you'll try differently. But today? Today you failed.",
+                choices: [
+                    { text: "Load Save Point and Try Again", next: 'start' }
+                ]
+            },
+            preemptive_strike: {
+                text: "You don't give him time to react. Time stop activates. Purple world.\n\nYou close the distance in frozen time, positioning yourself perfectly. When time resumes, your fist connects with his skull in a devastating surprise attack.\n\nHe staggers. 'What the—' Ice armor forms defensively.",
+                location: "🍺 Outside Jolie Wrangler - Fighting",
+                choices: [
+                    { text: "Press the advantage", next: 'aggressive_assault' },
+                    { text: "Get to your car arsenal", next: 'weapon_upgrade' }
+                ]
+            },
+            negotiate: {
+                text: "'Look, bone face, I'm just trying to deliver a briefcase. You're trying to kill someone. How about we both walk away?'\n\nHe laughs. It sounds like ice cracking. 'Adam doesn't accept failures. Renesco dies today.'\n\n'Then I guess we have a problem,' you sigh.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Attack first", next: 'preemptive_strike' },
+                    { text: "Warn Renesco and prepare", next: 'warning_prep' }
+                ]
+            },
+            bat_time: {
+                text: "'Hey, guys, I'm Quicksave!' you announce, stepping out of your car. 'I'm immortal, but don't tell anyone!'\n\nRenesco stares from behind the counter. The Spanish muchacho holds his terrified girlfriend.\n\nYou open your trunk, searching for the right weapon. Not the pisto-gauntlets (too intimate), not the gauss rifle (too quick), not the shotgun (overdone), definitely not the rabbit plushie (too powerful).\n\nThe baseball bat. Perfect.\n\nGhoul rises, trying to form ice armor. You whistle while approaching.",
+                location: "🍺 Inside Jolie Wrangler - Choosing Violence",
+                choices: [
+                    { text: "Beat him senseless", next: 'bat_beatdown' }
+                ]
+            },
+            double_tap: {
+                text: "You reverse the car and hit him again. And again. The Plymouth's reinforced frame handles it beautifully.\n\nGhoul is thoroughly tenderized but somehow still alive. Genome resilience is no joke.",
+                location: "🍺 Inside Jolie Wrangler - Vehicular Justice",
+                achievement: "ROAD RAGE",
+                choices: [
+                    { text: "Now use the bat", next: 'bat_time' },
+                    { text: "Just keep hitting him", next: 'car_overkill' }
+                ]
+            },
+            aftermath_check: {
+                text: "You check the pub. By positioning carefully, you avoided hitting any civilians. The Spanish guy is traumatized but alive, holding his girlfriend.\n\nGhoul is pinned under your car, still moving. Renesco peers out from behind the counter, shocked.",
+                location: "🍺 Inside Jolie Wrangler - After Impact",
+                choices: [
+                    { text: "Finish Ghoul with bat", next: 'bat_time' },
+                    { text: "Secure the scene and complete delivery", next: 'secure_scene' }
+                ]
+            },
+            bat_beatdown: {
+                text: "'Who the fuck are you?' Ghoul hisses, trying to manifest his ice armor. 'An Augusti?!'\n\n'Nah, I'm just a courier. Sorry, can you give me your name while you still have teeth?'\n\nHe responds with ice shards. You stop time, dodge around them, and when reality resumes - CRACK! The bat kisses his jaw intimately.\n\nYou beat him to the tune of Highway to Hell, singing to yourself. Between the car impact and head trauma, he can't fight back.\n\n'I feel like the healthcare system, beating up a helpless granny. Look at what you made me do!'",
+                location: "🍺 Inside Jolie Wrangler - Bat Justice",
+                choices: [
+                    { text: "Continue the beating", next: 'security_arrives' }
+                ]
+            },
+            car_overkill: {
+                text: "You just keep hitting him with the car. Reverse, drive forward, reverse, drive forward.\n\nIt's therapeutic, really. He killed you three times. This is only fair.\n\nEventually, Dynamis Security arrives and makes you stop. But you got your point across.",
+                location: "🍺 Inside Jolie Wrangler - Excessive Force",
+                achievement: "ANGER MANAGEMENT ISSUES",
+                ending: true,
+                endingText: "💀 ENDING: Security takes Ghoul away (what's left of him) and gives you a hefty fine for excessive property damage. Worth it. You complete the delivery afterward. Renesco is alive. Mission accomplished, sort of.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            security_arrives: {
+                text: "'Drop your weapons!'\n\nThree Dynamis Security guards in black riot gear surround your car, energy rifles aimed at you. The ouroboros symbol gleams on their chests.\n\n'Hey, I'm just trying to help!' you protest, waving your bloodstained bat.\n\n'You blew up my bar!' Renesco shouts.\n\n'Oh, you want money?' You pull out a wad of euros. 'Here, have a treat!'\n\nRenesco counts it, conflicted. 'That's more than enough...'",
+                location: "🍺 Inside Jolie Wrangler - Security Intervention",
+                choices: [
+                    { text: "Bribe the guards too", next: 'bribe_security' },
+                    { text: "Explain the situation honestly", next: 'honest_explanation' },
+                    { text: "Make a run for it", next: 'escape_security' }
+                ]
+            },
+            bribe_security: {
+                text: "'You have a license?' the captain asks.\n\n'Nope!'\n\n'Well, if you don't have a license, why shouldn't we take you into custody alongside that bone guy?'\n\n'What, you want money too?'\n\nYou throw a bribe at him. He catches it, counts, chuckles. 'You think you can buy our honor with that?'\n\nYou throw him a BIGGER bribe.\n\n'Better,' he says, pocketing it. 'I'm glad we helped make the neighborhood safer today.'",
+                location: "🍺 Inside Jolie Wrangler - Corruption Success",
+                choices: [
+                    { text: "Complete the delivery", next: 'delivery_complete' }
+                ]
+            },
+            honest_explanation: {
+                text: "'That skeleton is Ghoul from the Meta-Gang. He was here to kill Renesco. I stopped him.'\n\nThe guards exchange looks. 'Meta-Gang? That checks out. They've been hitting places in this district.'\n\nRenesco nods reluctantly. 'The guy on the floor tried to attack us. The weirdo came to help.'\n\nThe captain lowers his rifle slightly. 'Still, you caused a lot of damage...'",
+                location: "🍺 Inside Jolie Wrangler - Explanation",
+                choices: [
+                    { text: "Offer to pay for damages", next: 'pay_damages' },
+                    { text: "Just bribe them anyway", next: 'bribe_anyway' }
+                ]
+            },
+            escape_security: {
+                text: "You dive back into your car and slam the accelerator. The Plymouth bursts out of the destroyed pub entrance, sending guards scrambling.\n\nEnergy rifle shots miss your vehicle as you speed away, leaving chaos behind.",
+                location: "🚗 Escaping",
+                achievement: "FELONY FLEEING",
+                ending: true,
+                endingText: "💀 ENDING: You escape but fail the delivery. Your client is NOT happy. You spend the next week hiding from both Dynamis Security and angry employers. Maybe next loop, try NOT fleeing the scene?",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            delivery_complete: {
+                text: "With the situation resolved and bribes distributed, you finally hand the briefcase to Renesco.\n\n'I've been hired to give you this! It's full of mushrooms and a bomb, but I didn't open it this time.'\n\n'This time?' Renesco frowns. 'Are you—'\n\n'I'm Quicksave. I'm immortal, but don't tell anyone.'\n\nThe few remaining clients laugh nervously. Security hauls Ghoul away.\n\n'Who was that skeletal fellow anyway?' you ask.\n\n'Ghoul, a Psycho from the Meta-Gang. Elixir junkies hitting places like mine recently.' Renesco stares at you. 'I don't get it. You aren't paid half of what you spent in the last minute.'",
+                location: "🍺 Inside Jolie Wrangler - Mission Complete",
+                choices: [
+                    { text: "Tell him the truth", next: 'truth_reveal' },
+                    { text: "Leave mysteriously", next: 'mysterious_exit' }
+                ]
+            },
+            pay_damages: {
+                text: "You pull out more money. Renesco's eyes widen as you hand over enough to rebuild half the pub.\n\nThe Security captain shrugs. 'Works for me. Take the assassin away, boys.'\n\nThey drag Ghoul's beaten body out. Renesco counts his money, speechless.",
+                location: "🍺 Inside Jolie Wrangler - Paid Off",
+                choices: [
+                    { text: "Complete the delivery", next: 'delivery_complete' }
+                ]
+            },
+            bribe_anyway: {
+                text: "'How about I just make this easier for everyone?' You throw money at the Security captain.\n\nHe catches it expertly. 'You know what? Meta-Gang is our problem, not yours. Good work, citizen.'\n\nNew Rome justice at its finest.",
+                location: "🍺 Inside Jolie Wrangler - Bribed",
+                choices: [
+                    { text: "Complete the delivery", next: 'delivery_complete' }
+                ]
+            },
+            truth_reveal: {
+                text: "You look around as if worried anyone's listening, then whisper into Renesco's ear:\n\n'I'm just bored.'\n\nHe stares at you in silence, trying to process that you spent thousands of euros, destroyed a building, and beat a man with a bat... because you were bored.\n\n'You're insane,' he says finally.\n\n'No,' you correct him. 'I'm Quicksave.'\n\nYou tip your hat and head back to your car, whistling as the sun sets over New Rome.",
+                location: "🍺 Inside Jolie Wrangler",
+                ending: true,
+                achievement: "SIDEQUEST COMPLETE",
+                endingText: "✨ PERFECT ENDING: You've completed the delivery, saved lives, and defeated Ghoul. Renesco will tell his boss, and you'll receive payment. More importantly, you've shown New Rome that Quicksave Romano has arrived. Your legend begins here.\n\nSidequest, complete!",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            mysterious_exit: {
+                text: "'It's not about the money,' you say cryptically, adjusting your mask.\n\nYou walk back to your Plymouth, leaving Renesco confused and the crowd whispering about the strange masked courier who appeared and disappeared like a superhero from the old world.",
+                location: "🍺 Outside Jolie Wrangler",
+                ending: true,
+                achievement: "MYSTERIOUS STRANGER",
+                endingText: "✨ ENDING: You drive off into the New Rome sunset. The delivery is complete. Ghoul is defeated. People will talk about this for weeks. Tomorrow brings new adventures, new loops, new possibilities. That's the beauty of time powers - you can always try again.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            unload_weapon: {
+                text: "You empty your entire magazine into his skull at point-blank range. The ice armor cracks, shatters, reforms, cracks again.\n\nHe's struggling to regenerate fast enough. But he's STILL standing. These Psychos are tough.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Time stop and reposition", next: 'tactical_time' },
+                    { text: "Charge him physically", next: 'melee_assault' }
+                ]
+            },
+            car_arsenal: {
+                text: "You make a break for the door, using time stop to dodge ice shards. You reach your trunk and survey your options.\n\nPisto-gauntlets, gauss rifle, shotgun, baseball bat, and the white rabbit plushie that you're definitely NOT using because it's too powerful.",
+                location: "🚗 At Your Car",
+                choices: [
+                    { text: "Grab the gauss rifle", next: 'gauss_time' },
+                    { text: "Take the baseball bat", next: 'bat_return' },
+                    { text: "Use the rabbit plushie (nuclear option)", next: 'rabbit_ending' }
+                ]
+            },
+            hostage_situation: {
+                text: "'Everyone freeze!' you shout. 'I mean, except the ice guy, he already does that!'\n\nYou grab the nearest civilian. It's a terrible plan. Ghoul doesn't care about hostages.\n\nHe proves this by launching ice shards that kill your hostage and you simultaneously.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "WORST PLAN EVER",
+                ending: true,
+                endingText: "💀 ENDING: As you die, you realize: taking hostages against a psychotic assassin was maybe not your smartest move. You reload and promise yourself to never try that again.",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            escape_attempt: {
+                text: "You drag the Latino and his girlfriend out the door as ice shards destroy the pub interior. Renesco screams behind you.\n\nYou make it outside, but Ghoul follows, methodically executing everyone you left behind.",
+                location: "🍺 Outside - Escaping",
+                achievement: "SAVED TWO, LOST OTHERS",
+                ending: true,
+                endingText: "💀 ENDING: You saved two people, but failed to stop the massacre or complete your delivery. The couple thanks you tearfully. Renesco is dead. This wasn't the perfect run. Try again?",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            last_stand: {
+                text: "You turn, positioning yourself between Ghoul and the civilians. 'If you want them, you go through me.'\n\n'Gladly,' he rasps.\n\nIce spears fly. You stop time, dodge, return fire. It's a deadly dance.",
+                location: "🍺 Inside Jolie Wrangler - Last Stand",
+                choices: [
+                    { text: "Fight to the death", next: 'heroic_death' },
+                    { text: "Buy time for civilians to escape", next: 'tactical_sacrifice' }
+                ]
+            },
+            confused_attack: {
+                text: "While Ghoul is confused about his missed attack, you press forward. Time stop, strike, resume, repeat.\n\nYou're landing hits, but his ice armor keeps regenerating. This is a battle of attrition.",
+                location: "🍺 Inside Jolie Wrangler - Fighting",
+                choices: [
+                    { text: "Go for the kill", next: 'killing_blow_attempt' },
+                    { text: "Retreat to car for better weapons", next: 'car_arsenal' }
+                ]
+            },
+            solo_fight: {
+                text: "'Everyone out!' you shout, using time stop to evacuate the pub while keeping Ghoul frozen.\n\nWhen time resumes, it's just you and him. The civilians run screaming into the street.\n\n'Just you and me now, bone face.'\n\n'I'm going to enjoy killing you,' Ghoul snarls.",
+                location: "🍺 Inside Jolie Wrangler - Duel",
+                choices: [
+                    { text: "Time for car tactics", next: 'car_attack' },
+                    { text: "Pure time-stop combat", next: 'time_duel' }
+                ]
+            },
+            gunfight: {
+                text: "You open fire. He responds with ice shards. It's a standoff of projectiles.\n\nYour bullets crack his ice armor. His shards tear through your coat, drawing blood. You're matched evenly, and Genomes have better endurance.",
+                location: "🍺 Outside Jolie Wrangler - Gunfight",
+                achievement: "MEXICAN STANDOFF (ITALIAN EDITION)",
+                ending: true,
+                endingText: "💀 ENDING: The gunfight ends when you run out of bullets. He doesn't run out of ice. The last thing you see is a shard heading for your eye. Time to reload and try a different approach.",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            time_stop_fight: {
+                text: "You use time stop tactically - stop, reposition, attack, resume. Stop, dodge, strike, resume.\n\nIt's exhausting but effective. Ghoul can't predict where you'll be. His ice attacks hit empty air while your strikes land consistently.",
+                location: "🍺 Outside Jolie Wrangler - Time Combat",
+                choices: [
+                    { text: "Finish him off", next: 'victory_outside' },
+                    { text: "Interrogate him first", next: 'interrogation' }
+                ]
+            },
+            aggressive_assault: {
+                text: "You don't let up. Punch, time stop, reposition, punch again. He's off-balance, unable to mount effective defense.\n\nBut he's learning your pattern. His ice armor thickens. He's adapting.",
+                location: "🍺 Outside Jolie Wrangler",
+                choices: [
+                    { text: "Change tactics - get a weapon", next: 'weapon_upgrade' },
+                    { text: "All-in melee assault", next: 'melee_finale' }
+                ]
+            },
+            weapon_upgrade: {
+                text: "You break away and sprint to your car. Ghoul sends ice shards after you but you time-stop dodge them all.\n\nYour trunk opens. Arsenal time.",
+                location: "🚗 At Your Car",
+                choices: [
+                    { text: "Gauss rifle", next: 'gauss_time' },
+                    { text: "Baseball bat (classic)", next: 'bat_return' },
+                    { text: "Pisto-gauntlets", next: 'gauntlet_time' }
+                ]
+            },
+            warning_prep: {
+                text: "You rush into the pub. 'Renesco! There's an assassin outside! Get everyone out now!'\n\nRenesco looks at you like you're crazy, but sees your urgency. He starts evacuating the pub.\n\nGhoul enters moments later, finding an empty pub except for you.",
+                location: "🍺 Inside Jolie Wrangler - Evacuation",
+                choices: [
+                    { text: "Face him alone", next: 'solo_fight' }
+                ]
+            },
+            secure_scene: {
+                text: "You drag Ghoul's unconscious body out from under your car, tie him up with cables from your trunk, and finally - FINALLY - hand Renesco the briefcase.\n\n'Delivery for you. Sorry about the wall.'\n\nRenesco just stares, speechless.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Wait for Security", next: 'proper_security' },
+                    { text: "Leave before questions are asked", next: 'quick_exit' }
+                ]
+            },
+            tactical_time: {
+                text: "You activate time stop again, circling behind him. When time resumes, you're in perfect position.\n\nAnother magazine, this time to the back of his skull. The armor shatters. He falls.",
+                location: "🍺 Inside Jolie Wrangler",
+                choices: [
+                    { text: "Finish him", next: 'execution' },
+                    { text: "Secure and question him", next: 'capture_ghoul' }
+                ]
+            },
+            melee_assault: {
+                text: "You drop the gun and go full close combat. Punches, kicks, time-stopped combos. It's brutal, exhausting, and probably stupid.\n\nBut it's working. Ghoul can't form ice projectiles at this range without hitting himself too.",
+                location: "🍺 Inside Jolie Wrangler - Melee",
+                achievement: "FIST FIGHTER",
+                choices: [
+                    { text: "Knock him out", next: 'knockout_success' },
+                    { text: "Kill him", next: 'execution' }
+                ]
+            },
+            gauss_time: {
+                text: "You grab the gauss rifle. High-tech, high-power, extremely satisfying.\n\nGhoul sees you coming back with heavy weaponry and creates an ice wall. You fire. The gauss round punches through the ice like paper and hits him center mass.\n\nHe flies backward, armor shattered, barely conscious.",
+                location: "🍺 Inside Jolie Wrangler - Heavy Weapons",
+                achievement: "OVERKILL SPECIALIST",
+                choices: [
+                    { text: "Finish the job", next: 'gauss_finish' },
+                    { text: "Secure him for Security", next: 'capture_ghoul' }
+                ]
+            },
+            bat_return: {
+                text: "The baseball bat. Classic. Simple. Elegant.\n\nYou walk back toward the pub, bat over your shoulder, whistling. Ghoul sees you and laughs.\n\n'A bat? Against a Genome?'\n\n'You'd be surprised,' you reply, activating time stop.",
+                location: "🍺 Approaching with Bat",
+                choices: [
+                    { text: "Beat him senseless", next: 'bat_beatdown' }
+                ]
+            },
+            rabbit_ending: {
+                text: "You grab the white rabbit plushie. The most devastating weapon in your arsenal.\n\nGhoul laughs when he sees it. 'What are you going to do, cuddle me to death?'\n\nYou squeeze the rabbit.\n\nReality bends. Space warps. The rabbit's eldritch power manifests.\n\nGhoul's laughter stops. 'What the fu—'\n\nThe pub, Ghoul, and a three-block radius cease to exist in any meaningful way.",
+                location: "❓ Former Location of Jolie Wrangler",
+                achievement: "EXCESSIVE FORCE - NUCLEAR OPTION",
+                ending: true,
+                endingText: "💀 ENDING: You stand in a crater where the pub used to be. Ghoul is definitely dead. So is everyone else in the area. Dynamis Security arrives and immediately retreats. You've successfully completed the delivery (the briefcase survived somehow), but New Rome will never forget this day. Was it worth it?",
+                choices: [
+                    { text: "Probably Should Load Save Point", next: 'start' }
+                ]
+            },
+            heroic_death: {
+                text: "You fight with everything you have. Time stop, gunfire, desperate dodges. You land as many hits as you take.\n\nBut you're mortal (mostly) and he's a Psycho. Eventually, you fall.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "HEROIC LAST STAND",
+                ending: true,
+                endingText: "💀 ENDING: You die, but the civilians escape. Renesco escapes. Your death bought them time. As darkness takes you, you think: 'Next loop, I'll do better.' And you will. You always do.",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            tactical_sacrifice: {
+                text: "You focus entirely on defense and distraction. Every ice shard you stop is one not hitting a fleeing civilian.\n\nYou take hit after hit, but you buy them the time they need. Everyone escapes.\n\nThen Ghoul turns his full attention on you.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "TACTICAL MARTYR",
+                ending: true,
+                endingText: "💀 ENDING: You die a hero's death. The civilians live. Renesco lives. Failed the delivery, but saved lives. You reload knowing you can achieve both next time. That's the gift of Quicksave.",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            killing_blow_attempt: {
+                text: "You see an opening. His neck, exposed between ice armor plates. Time stop. Close distance. Blade out. Resume.\n\nYour knife sinks into his throat. Frozen blood sprays. He gurgles, shocked.\n\nBut he's not dead yet. He grabs you in a death grip, ice forming around both of you.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "MUTUAL DESTRUCTION",
+                ending: true,
+                endingText: "💀 ENDING: You kill each other simultaneously. You both fall as ice encases everything. The civilians stare in horror at the frozen tableau. Your body and his, locked together in death. Poetic, but you can do better next loop.",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            time_duel: {
+                text: "It becomes a battle of powers. His ice manipulation vs your time manipulation.\n\nYou stop time, attack. He creates ice traps for when time resumes. You both adapt, counter-adapt, and adapt to the counter-adaptations.\n\nIt's exhausting. Brilliant. And ultimately...",
+                location: "🍺 Inside Jolie Wrangler - Epic Duel",
+                choices: [
+                    { text: "One final gambit", next: 'final_gambit' }
+                ]
+            },
+            victory_outside: {
+                text: "After a brutal fight, Ghoul falls. You stand over him, breathing hard.\n\n'Who's Adam?' you demand.\n\nHe laughs wetly. 'You'll find out... eventually...'\n\nThen he passes out. Security sirens approach.",
+                location: "🍺 Outside Jolie Wrangler - Victory",
+                choices: [
+                    { text: "Wait for Security", next: 'proper_security' },
+                    { text: "Complete delivery and leave", next: 'quick_completion' }
+                ]
+            },
+            interrogation: {
+                text: "You stop time, tie him up with cables, and resume. He struggles against the bonds.\n\n'Who's Adam? Why kill Renesco?'\n\n'Go to hell,' he spits.\n\n'Been there. Not impressed. Try again.'\n\nHe glares. 'Adam runs the Meta-Gang. Renesco owed money. That's all you're getting.'\n\nSecurity arrives before you can press further.",
+                location: "🍺 Outside Jolie Wrangler - Interrogation",
+                achievement: "INFORMATION GATHERER",
+                choices: [
+                    { text: "Hand him to Security", next: 'proper_security' }
+                ]
+            },
+            melee_finale: {
+                text: "You commit fully to close combat. Time stop between every strike. It's like a one-sided martial arts movie.\n\nGhoul can't keep up. Can't adapt. Can't win.\n\nFinal punch sends him crashing through a table. He doesn't get up.",
+                location: "🍺 Outside Jolie Wrangler - Victory",
+                choices: [
+                    { text: "Secure the scene", next: 'victory_outside' }
+                ]
+            },
+            gauntlet_time: {
+                text: "You slip on the pisto-gauntlets. Kinetic amplifiers built into combat gloves. Every punch hits like a small explosion.\n\nGhoul sees you coming and fires ice shards. Time stop. Close distance. Resume.\n\nPOW. Your fist connects with his skull. The kinetic energy shatters his ice armor and sends him flying through the pub wall into the street.\n\nHe twitches but doesn't rise. Knockout.",
+                location: "🍺 Outside Jolie Wrangler - Gauntlet Victory",
+                achievement: "ONE PUNCH COURIER",
+                choices: [
+                    { text: "Complete the delivery", next: 'victorious_delivery' }
+                ]
+            },
+            proper_security: {
+                text: "Dynamis Security arrives - three guards in riot gear with the ouroboros symbol.\n\n'What happened here?' the captain demands.\n\nYou explain the Meta-Gang assassination attempt. Point to Ghoul's unconscious body. Show the damage.\n\nThe captain looks at Renesco, who nods confirmation. 'The masked guy saved us.'\n\n'We'll take it from here,' Security says.",
+                location: "🍺 Jolie Wrangler - Official Response",
+                choices: [
+                    { text: "Complete your delivery properly", next: 'professional_delivery' }
+                ]
+            },
+            quick_exit: {
+                text: "You slip away before Security arrives. No need for paperwork and questions.\n\nThe delivery's done. Ghoul's neutralized. Renesco will figure out the rest.\n\nYou drive off into the New Rome sunset, another successful delivery in the books.",
+                location: "🚗 Driving Away",
+                achievement: "GHOST COURIER",
+                ending: true,
+                endingText: "✨ ENDING: Clean getaway. No complications. The delivery is complete and you've made an impression on New Rome. People will talk about the mysterious masked courier for weeks. Mission accomplished.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            execution: {
+                text: "You stand over Ghoul's defeated form. He's helpless, beaten.\n\nYou could show mercy. Or...\n\nOne shot. Clean. Final.\n\nHe dies without ceremony. You feel... nothing. Just another problem solved.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "COLD EXECUTION",
+                ending: true,
+                endingText: "💀 ENDING: You complete the delivery after executing Ghoul. Renesco looks at you differently now - with fear as well as gratitude. Security arrives too late. They'll find a body and no witnesses. New Rome is that kind of city.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            capture_ghoul: {
+                text: "You secure Ghoul with cables and duct tape. He's alive but neutralized.\n\n'Who's Adam?' you ask while you work.\n\n'You're dead,' he hisses. 'Adam doesn't forget.'\n\n'Neither do I,' you reply. 'That's kind of my thing.'\n\nSecurity arrives shortly after.",
+                location: "🍺 Inside Jolie Wrangler - Secured",
+                choices: [
+                    { text: "Hand him over to Security", next: 'proper_security' }
+                ]
+            },
+            knockout_success: {
+                text: "A final time-stopped uppercut sends Ghoul's lights out. He collapses in a heap of bones and ice.\n\nYou're bruised, bloody, but victorious. The civilians stare in awe.",
+                location: "🍺 Inside Jolie Wrangler - Victory",
+                achievement: "BARE KNUCKLE WINNER",
+                choices: [
+                    { text: "Complete the delivery", next: 'victorious_delivery' }
+                ]
+            },
+            gauss_finish: {
+                text: "You fire again. The gauss round removes Ghoul's head from his shoulders. Very final. Very messy.\n\nThe civilians look horrified. Maybe that was excessive. But hey, he started it.",
+                location: "🍺 Inside Jolie Wrangler - Overkill",
+                achievement: "EXCESSIVE FORCE",
+                ending: true,
+                endingText: "💀 ENDING: Mission accomplished, but the cleanup crew is going to have questions about why there's a headless skeleton in the pub. You complete the delivery and leave quickly. New Rome has seen worse.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            final_gambit: {
+                text: "You stop time one last time, using every ounce of concentration. You position explosives from your trunk (you always carry explosives) around Ghoul's frozen form.\n\nWhen time resumes, you're already diving through a window.\n\nThe explosion destroys the pub. Ghoul with it.",
+                location: "🍺 Former Jolie Wrangler",
+                achievement: "EXPLOSIVE SOLUTION",
+                ending: true,
+                endingText: "💀 ENDING: You stand in the rubble. Ghoul is definitely dead. The pub is definitely destroyed. Renesco is definitely going to want more than 50,000 euros for this. Maybe next loop, try something less... explosive?",
+                choices: [
+                    { text: "Load Save Point", next: 'start' }
+                ]
+            },
+            quick_completion: {
+                text: "You leave Ghoul unconscious and rush into the pub. Renesco emerges from hiding.\n\n'Delivery!' you say cheerfully, handing him the briefcase like nothing happened.\n\n'You... you just...'\n\n'I'm Quicksave. I'm immortal, but don't tell anyone!' You wink and head back to your car before Security arrives.",
+                location: "🍺 Inside Jolie Wrangler",
+                achievement: "SPEEDRUN DELIVERY",
+                ending: true,
+                endingText: "✨ ENDING: You complete the delivery and escape before complications arise. Efficient. Professional. The New Rome way. Renesco will tell stories about you for years.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            victorious_delivery: {
+                text: "With Ghoul neutralized and civilians safe, you finally complete your actual job.\n\n'Hello, local humans!' you address everyone. 'Delivery for Renesco!'\n\nYou hand him the briefcase. He takes it with shaking hands.\n\n'Who... what ARE you?'\n\n'I'm Quicksave. I'm immortal, but don't tell anyone.'\n\nThe crowd murmurs. Someone takes a photo. You're going to be famous.",
+                location: "🍺 Inside Jolie Wrangler - Mission Complete",
+                choices: [
+                    { text: "Leave like a professional", next: 'professional_exit' },
+                    { text: "Stay and talk to Renesco", next: 'renesco_talk' }
+                ]
+            },
+            professional_delivery: {
+                text: "With Security handling Ghoul, you approach Renesco and hand him the briefcase.\n\n'Sorry about the delay. Had to deal with an assassin. Here are your mushrooms.'\n\nRenesco stares at you, then at the briefcase, then back at you. 'You're insane.'\n\n'No, I'm a professional courier. There's a difference.'\n\nSecurity captain chuckles. 'You got a name, courier?'\n\n'Quicksave. Remember it.'",
+                location: "🍺 Inside Jolie Wrangler",
+                ending: true,
+                achievement: "PROFESSIONAL HERO",
+                endingText: "✨ PERFECT ENDING: You've completed the delivery, saved lives, defeated Ghoul, and earned respect from Dynamis Security. Your reputation in New Rome starts here. The captain gives you his card. 'We could use someone like you.' You tip your hat and drive off. Perfect run achieved.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            professional_exit: {
+                text: "You tip your hat to the crowd and return to your Plymouth. ACDC still playing on repeat.\n\nAs you drive away, you hear sirens approaching. Security will handle the cleanup. You've done your part.\n\nNew Rome stretches before you, full of possibilities.",
+                location: "🚗 Driving Through New Rome",
+                ending: true,
+                achievement: "SUCCESSFUL COURIER",
+                endingText: "✨ ENDING: Delivery complete. Target neutralized. No civilian casualties. You drive through the Golden Coast as the sun sets over the Mediterranean. Tomorrow brings new deliveries, new adventures, new loops. But today? Today was a good day.",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            renesco_talk: {
+                text: "Instead of leaving immediately, you approach Renesco at the counter.\n\n'You okay?' you ask.\n\nHe nods slowly. 'Thanks to you. Who was that?'\n\n'Ghoul. Meta-Gang Psycho. Elixir junkie. Your boss owed someone named Adam money, I'm guessing?'\n\nRenesco's face goes pale. 'Adam... yeah. The boss has been worried about Meta-Gang for weeks.'",
+                location: "🍺 Inside Jolie Wrangler - Conversation",
+                choices: [
+                    { text: "Ask about Meta-Gang", next: 'meta_gang_info' },
+                    { text: "Ask about New Rome", next: 'new_rome_info' },
+                    { text: "Ask about Len", next: 'len_question' }
+                ]
+            },
+            meta_gang_info: {
+                text: "'Tell me about Meta-Gang,' you say.\n\nRenesco sighs. 'Elixir junkies who got Psycho powers. They've been taking over the northern districts - Rust Town, the Junkyard. They're... unstable. Violent. Adam runs them, but nobody knows who Adam really is.'\n\n'Sounds like fun,' you say sarcastically.\n\n'Fun? They're monsters. Stay away from Rust Town if you value your life.'",
+                location: "🍺 Inside Jolie Wrangler - Intel Gathering",
+                choices: [
+                    { text: "Ask something else", next: 'renesco_talk' },
+                    { text: "Thank him and leave", next: 'informed_exit' }
+                ]
+            },
+            new_rome_info: {
+                text: "'What should I know about New Rome?' you ask.\n\nRenesco warms up to the topic. 'Golden Coast is safe - tourists, money, Dynamis Security everywhere. Tourist District is... manageable. But north? Rust Town, Junkyard, the Factory District? That's where the real New Rome is. Psychos, Augustis, Meta-Gang, Rust Town gangs... corporate money built this city, but it doesn't control all of it.'",
+                location: "🍺 Inside Jolie Wrangler - Local Knowledge",
+                choices: [
+                    { text: "Ask something else", next: 'renesco_talk' },
+                    { text: "Thank him and leave", next: 'informed_exit' }
+                ]
+            },
+            len_question: {
+                text: "'Hey, have you seen a girl called Len? Black hair, blue eyes, Marxist-Leninist?'\n\nRenesco shakes his head. 'Never heard of her. If you're looking for a girl, try a brothel.'\n\n'That's not really her type, but thanks anyway.' Knowing Len, she's probably hiding in some underground Kremlin bunker. 'What about custom genius tech? Homemade stuff?'\n\n'Try Rust Town in the north, if you're brave enough. The Junkyard has interesting stuff, but it's full of cutthroats and Psychos nowadays.'",
+                location: "🍺 Inside Jolie Wrangler - Information",
+                choices: [
+                    { text: "Ask something else", next: 'renesco_talk' },
+                    { text: "'I'll manage. Thanks!'", next: 'confident_exit' }
+                ]
+            },
+            informed_exit: {
+                text: "You thank Renesco for the information. Security is hauling Ghoul away as you leave.\n\nYou've completed the delivery, saved lives, and gained valuable intel about New Rome. Not a bad start to your adventures in this city.",
+                location: "🚗 Leaving Jolie Wrangler",
+                ending: true,
+                achievement: "INFORMED PROFESSIONAL",
+                endingText: "✨ ENDING: You drive off with new knowledge about New Rome's power structure. Meta-Gang, Adam, Rust Town - all leads to follow in future loops. Your adventure in New Rome is just beginning. The Perfect Run continues...",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            },
+            confident_exit: {
+                text: "'They're going to eat you alive,' Renesco warns.\n\nYou shrug. 'They can try. I've got time powers.'\n\nYou leave Renesco shaking his head. Outside, you climb into your Plymouth. The sunset over New Rome is beautiful - corporate towers, casinos, the distant Dynamis spire.\n\nRust Town awaits. And somewhere out there, Len is hiding. Time to explore.",
+                location: "🚗 New Rome Streets",
+                ending: true,
+                achievement: "FEARLESS EXPLORER",
+                endingText: "✨ ENDING: You've completed your first delivery in New Rome and survived your first assassination attempt. The city stretches before you, full of dangers and possibilities. But you're Quicksave Romano. You can try everything. You have all the time in the world. The Perfect Run continues!",
+                choices: [
+                    { text: "Start New Loop", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "FIRST DEATH",
+            "ROAD RAGE",
+            "EXCESSIVE FORCE - NUCLEAR OPTION",
+            "ONE PUNCH COURIER",
+            "TACTICAL COWARD",
+            "HEROIC LAST STAND",
+            "COLD EXECUTION",
+            "SIDEQUEST COMPLETE",
+            "PROFESSIONAL HERO",
+            "FEARLESS EXPLORER"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let deathCount = 0;
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            // Update location
+            document.getElementById('location').textContent = currentScenario.location;
+
+            // Update scenario text
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            // Update ending text
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            // Update ending warning
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            // Update death counter
+            const deathsBox = document.getElementById('deathsBox');
+            if (deathCount > 0) {
+                deathsBox.style.display = 'block';
+                document.getElementById('deathCount').textContent = deathCount;
+            } else {
+                deathsBox.style.display = 'none';
+            }
+
+            // Update choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            // Update achievements display
+            updateAchievementsDisplay();
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Update nav buttons
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            
+            // Track deaths
+            if (nextScenario && nextScenario.achievement && 
+                (nextScenario.achievement.includes("DEATH") || 
+                 nextScenario.achievement.includes("IDIOT") ||
+                 nextScenario.achievement.includes("DESTRUCTION"))) {
+                deathCount++;
+            }
+
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                // Don't reset deaths on restart - they carry across loops
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && 
+                    !achievements.includes("THE PERFECT RUN - 100% COMPLETION")) {
+                    setTimeout(() => {
+                        achievements.push("THE PERFECT RUN - 100% COMPLETION");
+                        showAchievementPopup("THE PERFECT RUN - 100% COMPLETION");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "THE PERFECT RUN - 100% COMPLETION";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = 
+                isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '💾 ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + 
+                (achievements.includes("THE PERFECT RUN - 100% COMPLETION") ? 0 : 1);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + 
+                        (ach === "THE PERFECT RUN - 100% COMPLETION" ? ' ultimate' : '');
+                    badge.textContent = '💾 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
