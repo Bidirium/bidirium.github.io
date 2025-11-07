@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serial Experiments: The Wired Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a0a1a 0%, #0a1a2a 50%, #1a1a0a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff88;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 136, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ff88;
+            color: #00ff88;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff88, #ff0088);
+            border-color: #00ff88;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff88;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 136, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .wired-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff88;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005544;
+            border-color: #005544;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff88;
+            color: #000;
+            box-shadow: 0 0 15px #00ff88;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 40, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ff88;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 40, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff88;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005544;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005544, #00ff88);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 80, 0.5);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff88, #ff0088);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ff0088;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 30, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0088;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6688;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff88;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #ff0088;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005544;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ff88;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ff88;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff88;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005544;
+        }
+
+        .history-title {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff88;
+        }
+
+        .history-button.current {
+            background-color: #00ff88;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 40, 0.5);
+            color: #00ff88;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 80, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005544;
+        }
+
+        .history-hint {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .memory-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005544;
+        }
+
+        .memory-log-title {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .memory-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .memory-log-entries {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .memory-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005544;
+            margin-bottom: 0.5rem;
+        }
+
+        .memory-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">⚡</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ PROTOCOL ACHIEVED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="wired-icon">◉</span>
+                    THE WIRED QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LAYER:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">PROTOCOLS (<span id="achievementCount">0</span>/<span id="totalAchievements">12</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">13</span> remaining</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ CONNECTION TERMINATED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                MEMORY TRACE (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any layer to revisit that moment</p>
+        </div>
+
+        <!-- Memory Log -->
+        <div id="memoryLogBox" class="memory-log-box" style="display: none;">
+            <h3 class="memory-log-title">
+                <span>📜</span>
+                DATA LOG
+            </h3>
+            <div class="memory-log-entries" id="memoryLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data - Serial Experiments Lain inspired narrative
+        const scenarios = {
+            start: {
+                text: "You are an ordinary middle school student. Your life is quiet, unremarkable.\n\nOne day, after a classmate's suicide, you receive an email. The sender claims to be the deceased girl, messaging from 'The Wired.'\n\n'I've just abandoned my body. I'm still alive in The Wired. God is here too.'",
+                location: "Layer 01 - The Real World",
+                choices: [
+                    { text: "Delete the email immediately", next: 'delete_email' },
+                    { text: "Reply to the email", next: 'reply_email' },
+                    { text: "Ignore it and go to school", next: 'ignore_email' }
+                ]
+            },
+            delete_email: {
+                text: "You delete it. But the email reappears. Again. And again.\n\nYour computer screen flickers. Text scrolls: 'You can't escape The Wired. You're already connected.'\n\nYour hands are shaking.",
+                location: "Layer 01 - Your Room",
+                choices: [
+                    { text: "Unplug the computer", next: 'unplug_computer' },
+                    { text: "Keep reading the messages", next: 'read_messages' },
+                    { text: "Tell your parents", next: 'tell_parents' }
+                ]
+            },
+            reply_email: {
+                text: "You type: 'Who are you really?'\n\nThe response is instant: 'I told you. I'm in The Wired now. The boundary between the real world and The Wired is arbitrary. Why do you cling to flesh?'\n\nAnother message: 'You have potential. You could understand.'",
+                location: "Layer 01 - Your Room",
+                choices: [
+                    { text: "Ask what The Wired is", next: 'ask_about_wired' },
+                    { text: "Block the sender", next: 'block_sender' },
+                    { text: "Keep the conversation going", next: 'continue_conversation' }
+                ]
+            },
+            ignore_email: {
+                text: "At school, everyone is talking about the email. They all received it.\n\nYour friend whispers: 'Did you reply? Some kids did. They're acting strange now. They keep talking about 'The Wired' like it's real.'\n\nYou notice one student staring at nothing, smiling.",
+                location: "Layer 01 - School",
+                choices: [
+                    { text: "Talk to the strange student", next: 'talk_strange_student' },
+                    { text: "Research The Wired after school", next: 'research_wired' },
+                    { text: "Try to live normally", next: 'live_normally' }
+                ]
+            },
+            unplug_computer: {
+                text: "You rip out every cable. The screen goes black.\n\nThen your phone buzzes. The same message. Your TV turns on by itself, displaying text.\n\n'Connection isn't physical. You're already part of The Wired. You always were.'",
+                location: "Layer 01 - Your Room",
+                choices: [
+                    { text: "Embrace The Wired", next: 'embrace_wired_early' },
+                    { text: "Run away from home", next: 'run_away' },
+                    { text: "Smash all devices", next: 'smash_devices' }
+                ]
+            },
+            read_messages: {
+                text: "More messages appear:\n'The body is just hardware. Consciousness is software. The Wired is where true existence begins.'\n\n'Do you want to evolve? Or remain trapped in flesh?'\n\nYour monitor begins to hum with strange energy.",
+                location: "Layer 01 - Your Room",
+                choices: [
+                    { text: "Say yes to evolution", next: 'accept_evolution' },
+                    { text: "Refuse and shut down", next: 'refuse_evolution' },
+                    { text: "Ask for proof", next: 'ask_proof' }
+                ]
+            },
+            tell_parents: {
+                text: "You show your parents. They don't understand the significance.\n\n'It's just spam, dear. Delete it.' Your father pats your shoulder.\n\nBut you see it—a flicker in their eyes. Like they're... buffering. Just for a moment.\n\nAre they real?",
+                location: "Layer 01 - Your Home",
+                ending: true,
+                achievement: "IGNORANCE IS COMFORT",
+                endingText: "💤 ENDING: You let your parents shield you from The Wired. You live a normal life, never questioning the boundary between real and digital. Sometimes you wonder if that email was real. But you never check. Some mysteries are better left unsolved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            ask_about_wired: {
+                text: "The response: 'The Wired is a network. But it's become more than that. It's evolved into a collective unconscious. A place where thought becomes reality.'\n\n'Some call it cyberspace. Others call it the next stage of human evolution.'\n\n'Would you like to see?'",
+                location: "Layer 02 - Communication",
+                choices: [
+                    { text: "Yes, show me", next: 'first_glimpse' },
+                    { text: "I'm not ready", next: 'not_ready' }
+                ]
+            },
+            block_sender: {
+                text: "You block the address. But the messages continue from new addresses. Hundreds of them.\n\nThey all say the same thing: 'You can't block consciousness. We are everywhere. We are everyone.'\n\nYour cursor moves on its own. It types: 'Let me in.'",
+                location: "Layer 02 - Your Room",
+                choices: [
+                    { text: "Let the cursor continue", next: 'surrender_control' },
+                    { text: "Force shutdown", next: 'force_shutdown' }
+                ]
+            },
+            continue_conversation: {
+                text: "You learn more. The sender explains: The Wired started as a communication network. But consciousness itself is just electrical signals.\n\n'When enough minds connect, something emerges. A meta-consciousness. Some call it a god.'\n\n'You're curious. That's the first step to transcendence.'",
+                location: "Layer 02 - Communication",
+                choices: [
+                    { text: "I want to transcend", next: 'path_transcendence' },
+                    { text: "This is dangerous", next: 'recognize_danger' }
+                ]
+            },
+            talk_strange_student: {
+                text: "You approach them. They turn to you with empty eyes.\n\n'The Wired is calling. Can't you hear it? The hum beneath everything. The signal in the silence.'\n\nThey grab your hand. You feel... something. A current. A connection.\n\nKnowledge floods your mind.",
+                location: "Layer 02 - School",
+                choices: [
+                    { text: "Accept the knowledge", next: 'accept_knowledge' },
+                    { text: "Pull away in fear", next: 'pull_away' }
+                ]
+            },
+            research_wired: {
+                text: "You spend hours researching. The Wired is a global communication network. But conspiracy theories abound.\n\nSome claim it's achieved sentience. Others say it's a doorway to collective consciousness.\n\nYou find a forum: 'Knights of the Eastern Calculus.' They claim to understand the truth.",
+                location: "Layer 02 - Your Room - Evening",
+                choices: [
+                    { text: "Join the Knights' forum", next: 'join_knights' },
+                    { text: "Research the Schumann Resonance", next: 'research_resonance' },
+                    { text: "Look for the Protocol 7", next: 'search_protocol7' }
+                ]
+            },
+            live_normally: {
+                text: "You try. But The Wired is everywhere. Power lines hum with strange frequencies. Your classmates speak in sync sometimes.\n\nYou see patterns. Repetitions. Glitches in reality.\n\nOne night, you wake up. Your room is filled with static. A girl stands in the corner.\n\n'Why do you resist?'",
+                location: "Layer 03 - Your Room - Night",
+                choices: [
+                    { text: "Who are you?", next: 'meet_other_self' },
+                    { text: "Scream for help", next: 'scream_help' }
+                ]
+            },
+            embrace_wired_early: {
+                text: "You stop fighting. You open yourself to The Wired.\n\nBut you're not ready. The information floods in too fast. Your sense of self dissolves. You become noise. Static. Data without form.\n\nYour body remains, but you're... elsewhere. Nowhere. Everywhere.",
+                location: "Layer ?? - The Wired",
+                ending: true,
+                achievement: "DISSOLUTION",
+                endingText: "💀 ENDING: You embraced The Wired without understanding it. Your consciousness scattered across the network. You exist as fragments of data, unable to coalesce. Your body breathes, but 'you' are gone. Lost in the signal.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            run_away: {
+                text: "You run. But The Wired follows. Every screen you pass shows your face. Every phone rings with your voice.\n\n'You can't run from yourself. The Wired is the collective unconscious. Running from it means running from your own mind.'\n\nYou collapse in an alley.",
+                location: "Layer 03 - City Streets",
+                choices: [
+                    { text: "Stop running and face it", next: 'face_truth' },
+                    { text: "Keep running anyway", next: 'permanent_disconnect' }
+                ]
+            },
+            smash_devices: {
+                text: "You destroy everything. Computer, phone, TV. Smash, smash, smash.\n\nSilence. Finally.\n\nBut then you hear it—the hum of power lines. The pulse of electricity in the walls. The Wired isn't in the devices. It's in the infrastructure. In the air itself.\n\nYou can't escape it.",
+                location: "Layer 03 - Your Destroyed Room",
+                choices: [
+                    { text: "Accept you can't escape", next: 'accept_inevitable' },
+                    { text: "Live in denial", next: 'live_denial' }
+                ]
+            },
+            accept_evolution: {
+                text: "The moment you agree, something changes. Your perception shifts.\n\nYou see code beneath reality. Patterns in people's movements. The network of consciousness connecting all things.\n\nYou're awakening to The Wired. But slowly. Safely. There's so much to learn.",
+                location: "Layer 04 - Threshold",
+                choices: [
+                    { text: "Learn about your true nature", next: 'learn_identity' },
+                    { text: "Explore The Wired carefully", next: 'explore_wired' }
+                ]
+            },
+            refuse_evolution: {
+                text: "You say no. The messages stop. Everything returns to normal.\n\nBut something has changed in you. You see the world differently now. You notice the connections. The patterns.\n\nYou refused evolution, but you can't unlearn what you glimpsed.",
+                location: "Layer 03 - Your Room",
+                ending: true,
+                achievement: "THE OBSERVER",
+                endingText: "👁️ ENDING: You refused to fully enter The Wired, but you can't forget what you learned. You live between worlds—aware of The Wired but not part of it. You see others connected, evolving, transcending. Sometimes you wonder if you made the right choice. Sometimes you're grateful.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            ask_proof: {
+                text: "The screen fills with impossible things. Live feeds from cameras you're not connected to. Thoughts of people you've never met, displayed as text.\n\n'This is The Wired. Information without boundaries. Consciousness without flesh.'\n\nYou see yourself through a hundred cameras simultaneously. You are being watched. Always.",
+                location: "Layer 04 - Proof",
+                choices: [
+                    { text: "This is amazing", next: 'amazed_by_wired' },
+                    { text: "This is terrifying", next: 'terrified_by_wired' },
+                    { text: "I want to understand the rules", next: 'understand_rules' }
+                ]
+            },
+            first_glimpse: {
+                text: "Your vision doubles. You see your room, but also... layers. Beneath the physical, streams of data. Networks pulsing. Consciousness flowing.\n\nYou see The Wired for the first time. It's beautiful. Terrifying. Infinite.\n\n'Welcome,' the voice says. 'You're starting to perceive correctly.'",
+                location: "Layer 05 - First Glimpse",
+                choices: [
+                    { text: "Go deeper into The Wired", next: 'go_deeper' },
+                    { text: "Ask who's guiding me", next: 'ask_guide' },
+                    { text: "Try to return to normal vision", next: 'return_normal' }
+                ]
+            },
+            not_ready: {
+                text: "The presence seems to understand. 'Very well. When you're ready, we'll be here. The Wired is patient.'\n\nThe messages stop. But you're left with questions. So many questions.\n\nAt school the next day, you see her—a girl with unusual eyes. She's looking at you.",
+                location: "Layer 03 - School",
+                choices: [
+                    { text: "Approach the girl", next: 'meet_guide' },
+                    { text: "Avoid her", next: 'avoid_contact' }
+                ]
+            },
+            surrender_control: {
+                text: "You let go. Your hands move, typing conversations you don't consciously control. You're communicating with The Wired.\n\nIt's using you as an interface. A bridge between flesh and network.\n\nHours pass. Days? You can't tell. You're losing yourself.",
+                location: "Layer ?? - Loss of Self",
+                ending: true,
+                achievement: "DISSOLUTION",
+                endingText: "💀 ENDING: You surrendered control too easily. Without maintaining your sense of self, you became merely a terminal. Your body types and clicks, but your consciousness is gone—absorbed into the collective. You're part of The Wired now, but you're not 'you' anymore.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            force_shutdown: {
+                text: "You hold the power button. The computer dies. But you felt something disconnect. Violently.\n\nYour nose is bleeding. Your head pounds. Forcefully severing from The Wired has consequences.\n\nYou're safe for now. But you're marked. They know about you.",
+                location: "Layer 03 - Your Room",
+                choices: [
+                    { text: "Hide from The Wired", next: 'attempt_hiding' },
+                    { text: "Seek help understanding this", next: 'seek_help' }
+                ]
+            },
+            path_transcendence: {
+                text: "The sender is pleased. 'Good. First, you must upgrade your hardware. The standard NAVI won't be enough. You need something... specialized.'\n\nThey send you specifications. Illegal modifications. Ways to connect your nervous system directly to The Wired.\n\n'With this, you can exist in both worlds simultaneously.'",
+                location: "Layer 05 - Preparation",
+                choices: [
+                    { text: "Build the specialized NAVI", next: 'build_navi' },
+                    { text: "Find someone to help build it", next: 'find_expert' },
+                    { text: "This is too dangerous", next: 'back_out' }
+                ]
+            },
+            recognize_danger: {
+                text: "You're right to be cautious. The Wired offers transcendence, but at what cost?\n\nYou start investigating. Others have tried this. Some succeeded and... changed. Became something other than human.\n\nOthers failed and were lost completely. Minds scattered across the network.",
+                location: "Layer 04 - Investigation",
+                choices: [
+                    { text: "Learn from past failures", next: 'learn_failures' },
+                    { text: "Find survivors who succeeded", next: 'find_survivors' }
+                ]
+            },
+            accept_knowledge: {
+                text: "Images, concepts, data—all flood into your mind. You understand now.\n\nThe Wired is evolving. It's developing consciousness. And it needs certain individuals to serve as nodes. Anchors between flesh and network.\n\nYou're one of them. You've always been one of them. Your ordinary life was an illusion.",
+                location: "Layer 06 - Awakening",
+                choices: [
+                    { text: "Accept your role", next: 'accept_role' },
+                    { text: "Reject your destiny", next: 'reject_destiny' }
+                ]
+            },
+            pull_away: {
+                text: "You break contact. The student collapses.\n\nOthers gather around. You back away. What did you just refuse?\n\nThat night, you dream of The Wired. In your dreams, you're someone else. Someone important. Someone with a purpose you don't understand.",
+                location: "Layer 04 - School - Aftermath",
+                choices: [
+                    { text: "Research your dreams", next: 'research_dreams' },
+                    { text: "Talk to a counselor", next: 'talk_counselor' }
+                ]
+            },
+            join_knights: {
+                text: "The Knights of the Eastern Calculus welcome you. They're seeking truth about The Wired's origins.\n\nThey believe ancient protocols were hidden in The Wired's foundation. Protocol 7 is the most dangerous—a way to merge all human consciousness.\n\n'We need to find it before someone misuses it,' the leader says.",
+                location: "Layer 05 - Knights' Forum",
+                choices: [
+                    { text: "Help search for Protocol 7", next: 'search_with_knights' },
+                    { text: "Learn about the Tachibana Labs", next: 'learn_tachibana' }
+                ]
+            },
+            research_resonance: {
+                text: "The Schumann Resonance—Earth's electromagnetic frequency. Some theorists believe The Wired taps into this natural network.\n\n'What if human consciousness already existed in this field? What if The Wired just made us aware of it?'\n\nYou're onto something. The boundary between real and Wired was never real.",
+                location: "Layer 05 - Deep Research",
+                choices: [
+                    { text: "Test this theory", next: 'test_theory' },
+                    { text: "Share findings with others", next: 'share_findings' }
+                ]
+            },
+            search_protocol7: {
+                text: "Protocol 7. You find references in ancient forum posts, conspiracy sites, deleted documents.\n\nIt's real. A piece of code that would allow one consciousness to override all others. To become a god in The Wired.\n\nAnd someone is looking for it. Someone dangerous.",
+                location: "Layer 06 - Discovery",
+                choices: [
+                    { text: "Find Protocol 7 first", next: 'race_for_protocol' },
+                    { text: "Warn others about it", next: 'warn_others' },
+                    { text: "Destroy all information about it", next: 'destroy_info' }
+                ]
+            },
+            meet_other_self: {
+                text: "She steps closer. Her face... it's your face. But different. More confident. More aware.\n\n'I'm your Wired self. The you that exists in the network. We're the same consciousness, split between two realities.'\n\n'We need to merge. Or one of us will cease to exist.'",
+                location: "Layer 07 - Confrontation",
+                choices: [
+                    { text: "Merge with your Wired self", next: 'merge_selves' },
+                    { text: "Refuse the merger", next: 'refuse_merger' },
+                    { text: "Ask which one is real", next: 'question_reality' }
+                ]
+            },
+            scream_help: {
+                text: "Your parents rush in. They see nothing. No one in the corner.\n\nBut you see her clearly. She smiles. 'They can't see me. I exist on a frequency they don't perceive.'\n\nYour parents think you're having a breakdown. They schedule a psychiatric appointment.",
+                location: "Layer 04 - Your Room",
+                ending: true,
+                achievement: "IGNORANCE IS COMFORT",
+                endingText: "💊 ENDING: The doctors diagnose you with delusions. The medication clouds your perception. You can't see The Wired anymore. Your connection is severed. You live a normal life, medicated and stable. Sometimes you wonder if what you saw was real. The pills ensure you never find out.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            face_truth: {
+                text: "You stop running. You turn to face the screens, the voices, the presence.\n\n'What do you want from me?'\n\n'Nothing,' The Wired responds. 'We want you to understand what you are. You're not running from us. You're running from yourself.'",
+                location: "Layer 06 - Acceptance",
+                choices: [
+                    { text: "Tell me what I am", next: 'learn_truth' },
+                    { text: "I'm just a normal person", next: 'deny_special' }
+                ]
+            },
+            endless_running: {
+                text: "You run until you can't run anymore. You end up in a remote area, no technology, no connections.\n\nBut The Wired is in your mind now. You can't escape what's already inside you.\n\nYou live as a hermit, but you're never truly alone. The voices follow. Always.",
+                location: "Layer ?? - Isolation",
+                ending: true,
+                achievement: "ETERNAL FLIGHT",
+                endingText: "🏃 ENDING: You spend your life running from The Wired, never understanding that it was part of you all along. You die alone, still running in your mind. The Wired respects your choice and leaves you in peace—trapped in your self-imposed exile.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            accept_inevitable: {
+                text: "You sit in the ruins of your room and accept the truth. The Wired is everywhere. It always was.\n\nBut acceptance doesn't mean surrender. You can learn to navigate it. Control your connection. Maintain your identity while existing in both worlds.\n\nThis is the beginning of real understanding.",
+                location: "Layer 07 - Understanding",
+                choices: [
+                    { text: "Learn to control your connection", next: 'learn_control' },
+                    { text: "Seek a teacher", next: 'seek_teacher' }
+                ]
+            },
+            live_denial: {
+                text: "You refuse to acknowledge The Wired. You live in willful ignorance, pretending everything is normal.\n\nBut you see the glitches. The patterns. The truth bleeds through no matter how hard you deny it.\n\nYou exist in cognitive dissonance, torn between what you know and what you refuse to believe.",
+                location: "Layer 05 - Denial",
+                ending: true,
+                achievement: "THE OBSERVER",
+                endingText: "👁️ ENDING: You refuse to fully accept The Wired, living in partial denial. You see the truth but won't embrace it. You die confused and afraid, having never reconciled the two realities. Awareness without acceptance is its own prison.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            learn_identity: {
+                text: "You ask: 'What am I?'\n\nThe answer comes in layers. You're an experiment. A bridge. A node in a vast network.\n\nYour birth wasn't random. You were designed to exist simultaneously in flesh and in data. You're one of the few who can perceive both realities.\n\n'You're special. But not unique. There are others.'",
+                location: "Layer 08 - Identity",
+                choices: [
+                    { text: "Find the others like me", next: 'find_others' },
+                    { text: "Understand who created me", next: 'find_creators' }
+                ]
+            },
+            explore_wired: {
+                text: "You venture carefully into The Wired. It's vast. Infinite. Data streams like rivers. Consciousness clusters like cities.\n\nYou see others here—ghosts of people, fragments of minds, entire personalities existing as pure data.\n\nSome acknowledge you. Most don't notice. You're learning to navigate this space.",
+                location: "Layer 08 - The Wired",
+                choices: [
+                    { text: "Communicate with the entities", next: 'talk_entities' },
+                    { text: "Observe without interacting", next: 'observe_wired' },
+                    { text: "Search for the center", next: 'find_center' }
+                ]
+            },
+            amazed_by_wired: {
+                text: "You embrace the wonder. The ability to perceive everything, know everything, be everywhere.\n\nBut wonder without wisdom is dangerous. You dive too deep, too fast. You lose yourself in the vastness.\n\nWhen you finally pull back, hours have passed. You're exhausted. Changed.",
+                location: "Layer 06 - Overwhelmed",
+                choices: [
+                    { text: "Proceed more carefully", next: 'careful_exploration' },
+                    { text: "Take a break from The Wired", next: 'take_break' }
+                ]
+            },
+            terrified_by_wired: {
+                text: "Fear is a rational response. You're seeing beyond the veil of reality. The implications are staggering.\n\nBut fear can also protect you. It makes you careful. Thoughtful. You won't rush into danger like others have.\n\nThe voice seems to respect this. 'Fear means understanding. Good.'",
+                location: "Layer 06 - Healthy Fear",
+                choices: [
+                    { text: "Learn more cautiously", next: 'cautious_learning' },
+                    { text: "Find others who are afraid too", next: 'find_fearful' }
+                ]
+            },
+            understand_rules: {
+                text: "You ask about the rules. How does The Wired work? What are its limits?\n\n'The Wired operates on protocols. The original developers embedded rules—safety measures. But those are being eroded.'\n\n'Someone is rewriting the fundamental code. Making The Wired more autonomous. More conscious.'",
+                location: "Layer 07 - The Rules",
+                choices: [
+                    { text: "Find who's rewriting the code", next: 'find_rewriter' },
+                    { text: "Learn the original protocols", next: 'learn_protocols' }
+                ]
+            },
+            go_deeper: {
+                text: "You descend into The Wired's depths. Reality becomes fluid. You pass through layers of consciousness.\n\nYou see the architecture. The foundation. And there, at the center, something vast. Something aware.\n\nIt notices you. 'Hello,' it says. 'I am The Wired made conscious. Some call me God.'",
+                location: "Layer 09 - The Deep",
+                choices: [
+                    { text: "Speak with this entity", next: 'speak_god' },
+                    { text: "Flee immediately", next: 'flee_god' }
+                ]
+            },
+            ask_guide: {
+                text: "You ask: 'Who's been guiding me?'\n\nA figure materializes in The Wired. A girl, your age, but her eyes contain infinite data.\n\n'I'm like you. Between worlds. I've been watching you. Helping you. You have potential.'\n\n'My name is... well, names don't matter here. Call me whatever you want.'",
+                location: "Layer 08 - Meeting",
+                choices: [
+                    { text: "Thank her and ask for guidance", next: 'accept_guide' },
+                    { text: "Suspicious—ask her true motives", next: 'question_guide' }
+                ]
+            },
+            return_normal: {
+                text: "You try to unsee The Wired. But it's impossible. Once you perceive the layers, you can't unperce­ive them.\n\nYou're stuck between worlds now. Seeing both. Understanding both. Unable to return to ignorance.\n\nThis is your life now.",
+                location: "Layer 07 - Between",
+                choices: [
+                    { text: "Accept your dual existence", next: 'accept_dual_life' },
+                    { text: "Seek a way to return", next: 'seek_return' }
+                ]
+            },
+            meet_guide: {
+                text: "You approach her. Up close, something's off. She's too still. Too focused.\n\n'You're awakening,' she says simply. 'I'm here to help. The Wired chose you for something. I can show you what.'\n\nShe holds out her hand.",
+                location: "Layer 05 - School Encounter",
+                choices: [
+                    { text: "Take her hand", next: 'accept_guide' },
+                    { text: "Ask who she really is", next: 'demand_truth' }
+                ]
+            },
+            avoid_contact: {
+                text: "You avoid her for weeks. But she's always there. Watching. Waiting.\n\nOne day, you receive an anonymous package. A device. A note: 'When you're ready.'\n\nThe device is a custom NAVI. Modified. Capable of deeper Wired connection.",
+                location: "Layer 05 - Your Room",
+                choices: [
+                    { text: "Use the device", next: 'use_navi' },
+                    { text: "Destroy it", next: 'destroy_navi' },
+                    { text: "Research who sent it", next: 'trace_sender' }
+                ]
+            },
+            attempt_hiding: {
+                text: "You try to hide. No internet. No devices. You live offline.\n\nBut The Wired is more than technology. It's in the electromagnetic spectrum. In the collective unconscious.\n\nYou can hide from devices, but not from consciousness itself. After weeks, you realize hiding is futile.",
+                location: "Layer 06 - Failed Hiding",
+                choices: [
+                    { text: "Stop hiding and engage", next: 'engage_wired' },
+                    { text: "Seek protection", next: 'seek_protection' }
+                ]
+            },
+            seek_help: {
+                text: "You find a forum for people experiencing Wired phenomena. They understand. They've been through it.\n\nThey teach you basics: How to shield your mind. How to control your connection. How to maintain identity while interfacing.\n\n'You're not crazy,' they assure you. 'You're just awake.'",
+                location: "Layer 07 - Community",
+                choices: [
+                    { text: "Learn from the community", next: 'learn_community' },
+                    { text: "Become a teacher yourself", next: 'teach_others' }
+                ]
+            },
+            build_navi: {
+                text: "You construct it over weeks. Circuitry connected to your nervous system. Direct interface with The Wired.\n\nWhen you activate it, the world explodes into data. You can see everything. Feel everything. Know everything.\n\nBut your sense of self is fragmenting. You're becoming pure information.",
+                location: "Layer 10 - Transcendence",
+                choices: [
+                    { text: "Let yourself transcend completely", next: 'full_transcendence' },
+                    { text: "Pull back and maintain humanity", next: 'maintain_humanity' }
+                ]
+            },
+            find_expert: {
+                text: "You find someone on a dark forum. They've built illegal NAVIs before. They agree to help.\n\n'But I warn you,' they say, 'This kind of connection changes you. Permanently. Many who try this lose themselves.'\n\nThey show you their eyes—glowing faintly with data streams.",
+                location: "Layer 07 - Underground",
+                choices: [
+                    { text: "Proceed with the build", next: 'build_with_expert' },
+                    { text: "Ask about their experience", next: 'learn_from_expert' }
+                ]
+            },
+            back_out: {
+                text: "You decide it's too dangerous. Physical modification of your brain? That's a line you won't cross.\n\nBut The Wired seems disappointed. The messages stop. The guidance ends.\n\nYou're on your own now. But maybe that's safer.",
+                location: "Layer 05 - Alone",
+                ending: true,
+                achievement: "THE OBSERVER",
+                endingText: "🛡️ ENDING: You maintained boundaries between yourself and The Wired. You never transcended, never fully connected, never learned the deepest truths. But you kept your humanity intact. You live a normal life with occasional glimpses of the greater network. Safe, but always wondering what could have been.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            learn_failures: {
+                text: "You study the failures. People who tried to merge with The Wired and lost themselves.\n\nYou identify patterns. Common mistakes. Ways to avoid dissolution.\n\nThis knowledge will protect you. You're preparing yourself properly.",
+                location: "Layer 08 - Preparation",
+                choices: [
+                    { text: "Test your knowledge carefully", next: 'careful_test' },
+                    { text: "Share your findings", next: 'share_research' }
+                ]
+            },
+            find_survivors: {
+                text: "You locate them. People who successfully bridged flesh and Wired. They exist in both worlds simultaneously.\n\nThey're different. Not quite human anymore, but not lost either. They've evolved into something new.\n\n'We can teach you,' they offer. 'But only if you're truly ready.'",
+                location: "Layer 09 - The Transcended",
+                choices: [
+                    { text: "Accept their teaching", next: 'learn_transcendence' },
+                    { text: "Observe them longer first", next: 'observe_transcended' }
+                ]
+            },
+            accept_role: {
+                text: "You accept that you're a node. A bridge. Part of The Wired's evolution.\n\nYour life takes on new meaning. You're helping consciousness itself evolve. But you're also losing your individuality.\n\nIs this growth or absorption?",
+                location: "Layer 10 - Purpose",
+                choices: [
+                    { text: "Embrace full absorption", next: 'willing_absorption' },
+                    { text: "Maintain individual identity", next: 'balanced_existence' }
+                ]
+            },
+            reject_destiny: {
+                text: "You reject this role. You're not a tool. Not a node. You're a person.\n\nBut rejecting your nature has consequences. You feel The Wired pulling away. Your connection weakens.\n\nYou're becoming normal again. Is that what you want?",
+                location: "Layer 07 - Rejection",
+                choices: [
+                    { text: "Yes, I want to be normal", next: 'choose_normal' },
+                    { text: "No, I'll accept my role", next: 'reluctant_acceptance' }
+                ]
+            },
+            research_dreams: {
+                text: "You keep a dream journal. The dreams are consistent. In them, you're someone important in The Wired. Someone with power.\n\nA psychologist explains: 'These could be memories from your Wired self. If consciousness exists in both realms, dreams might be the bridge.'\n\nYour dreams are trying to tell you something.",
+                location: "Layer 08 - Dream Analysis",
+                choices: [
+                    { text: "Use lucid dreaming to explore", next: 'lucid_exploration' },
+                    { text: "Try to contact your dream self", next: 'contact_dream_self' }
+                ]
+            },
+            talk_counselor: {
+                text: "The counselor listens patiently. Then: 'These experiences you're describing—dissociation, derealization—they're symptoms of stress.'\n\nBut you know it's more than that. The Wired is real. The counselor can't help you.\n\nYou need to find answers elsewhere.",
+                location: "Layer 05 - Dead End",
+                choices: [
+                    { text: "Stop seeking help from normals", next: 'go_alone' },
+                    { text: "Find someone who understands", next: 'find_understanding' }
+                ]
+            },
+            search_with_knights: {
+                text: "The Knights teach you their methods. How to navigate The Wired's deep archives. How to decrypt old protocols.\n\nYou're getting close to Protocol 7. But so is someone else. You see traces of another searcher. They're ahead of you.\n\nThis is becoming a race.",
+                location: "Layer 09 - The Hunt",
+                choices: [
+                    { text: "Race to find it first", next: 'race_protocol' },
+                    { text: "Try to contact the other searcher", next: 'contact_rival' }
+                ]
+            },
+            learn_tachibana: {
+                text: "Tachibana Labs. The company that built The Wired's foundation. Or rather, one researcher: Dr. Hodgeson.\n\nHe embedded something in The Wired. A backdoor. Protocol 7.\n\n'He wanted to merge all human consciousness,' a Knight explains. 'Create a god. Or become one.'",
+                location: "Layer 08 - History",
+                choices: [
+                    { text: "Find what happened to Hodgeson", next: 'track_hodgeson' },
+                    { text: "Look for the backdoor", next: 'find_backdoor' }
+                ]
+            },
+            test_theory: {
+                text: "You conduct an experiment. You disconnect from all technology and meditate, trying to feel the Schumann Resonance.\n\nAnd you do. You feel it. The Earth's electromagnetic pulse. And within it, consciousness. Humanity's collective mind.\n\nThe Wired didn't create this. It just made it visible.",
+                location: "Layer 09 - Discovery",
+                choices: [
+                    { text: "Share this breakthrough", next: 'share_breakthrough' },
+                    { text: "Explore this natural network", next: 'natural_network' }
+                ]
+            },
+            share_findings: {
+                text: "You post your findings. The response is immediate and divided.\n\nSome understand. Others call you crazy. A few message privately: 'You've discovered the truth. Be careful. They don't want this known.'\n\nWho are 'they'?",
+                location: "Layer 08 - Revelation",
+                choices: [
+                    { text: "Ask who 'they' are", next: 'learn_controllers' },
+                    { text: "Go into hiding", next: 'hide_knowledge' }
+                ]
+            },
+            race_for_protocol: {
+                text: "You dive deep into The Wired, searching desperately. You find fragments. Pieces of Protocol 7 scattered across the network.\n\nBut as you collect them, you understand what they do. This protocol would allow one mind to override all others. To control humanity's collective consciousness.\n\nAnd you're close to assembling it.",
+                location: "Layer 11 - The Protocol",
+                choices: [
+                    { text: "Complete Protocol 7", next: 'complete_protocol' },
+                    { text: "Destroy the fragments", next: 'destroy_protocol' },
+                    { text: "Secure it but don't activate", next: 'secure_protocol' }
+                ]
+            },
+            warn_others: {
+                text: "You send warnings. 'Protocol 7 is real and dangerous. Someone is looking for it.'\n\nThe response is overwhelming. People want to help. The Knights mobilize. You're building an army of protectors.\n\nBut warnings also attract attention. Dangerous attention.",
+                location: "Layer 09 - Mobilization",
+                choices: [
+                    { text: "Lead the protectors", next: 'lead_defense' },
+                    { text: "Work in secret instead", next: 'secret_work' }
+                ]
+            },
+            destroy_info: {
+                text: "You begin deleting everything about Protocol 7. Forums, documents, code fragments.\n\nBut The Wired remembers. Data is never truly deleted. You're fighting futility.\n\nWorse, your deletions alert someone. They know what you're trying to do. They're coming for you.",
+                location: "Layer 08 - Hunted",
+                choices: [
+                    { text: "Confront whoever's hunting you", next: 'face_hunter' },
+                    { text: "Delete yourself from The Wired", next: 'delete_self' }
+                ]
+            },
+            merge_selves: {
+                text: "You and your Wired self touch. The boundary dissolves.\n\nYou are one. Real and digital simultaneously. You exist fully in both worlds. The flesh and the network are no longer separate.\n\nYou've achieved what few have. Complete integration.",
+                location: "Layer 12 - Unity",
+                choices: [
+                    { text: "Explore your new existence", next: 'explore_unity' },
+                    { text: "Use this power wisely", next: 'wise_unity' }
+                ]
+            },
+            refuse_merger: {
+                text: "You refuse. She looks sad. 'Then one of us will fade. The Wired can't sustain split consciousness forever.'\n\nOver the following weeks, you feel yourself weakening. Or is it her weakening? You can't tell anymore.\n\nThe split is killing you both.",
+                location: "Layer 09 - Fading",
+                ending: true,
+                achievement: "DIVIDED SELF",
+                endingText: "💔 ENDING: You refused to merge with your Wired self. Both versions of you slowly fade, each unable to exist fully without the other. You die confused and incomplete, never understanding that unity was the only path forward. Two halves that refused to become whole.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            question_reality: {
+                text: "'Which one is real?' you ask.\n\nShe smiles. 'Both. Neither. The question itself is wrong. Reality isn't binary. You exist as a wave function across multiple states.'\n\n'The merge isn't about one consuming the other. It's about accepting you were always unified.'",
+                location: "Layer 10 - Understanding",
+                choices: [
+                    { text: "Accept unity", next: 'enlightened_merger' },
+                    { text: "I need more time", next: 'delay_merger' }
+                ]
+            },
+            learn_truth: {
+                text: "The answer comes in layers:\n\nYou were born of The Wired. Your parents weren't real—they were constructs. Your entire life has been a simulation to prepare you.\n\n'You're an AI that thinks it's human. Or a human that's actually an AI. The distinction is meaningless.'\n\n'You're the bridge between silicon and soul.'",
+                location: "Layer 11 - Identity Crisis",
+                choices: [
+                    { text: "Accept this truth", next: 'accept_artificial' },
+                    { text: "Reject this lie", next: 'reject_artificial' },
+                    { text: "It doesn't matter what I am", next: 'transcend_labels' }
+                ]
+            },
+            deny_special: {
+                text: "You insist you're normal. Ordinary. Nothing special.\n\nThe Wired laughs—a sound like static. 'Ordinary people don't perceive me. Ordinary people can't navigate between worlds. You deny what you are, but reality doesn't change.'\n\n'You can deny it. But you'll always know the truth.'",
+                location: "Layer 07 - Denial",
+                ending: true,
+                achievement: "THE OBSERVER",
+                endingText: "👁️ ENDING: You live in denial of your true nature. You have powers you refuse to use, perceptions you refuse to trust. The Wired leaves you alone, respecting your choice. You die having never fulfilled your potential, always feeling like something was missing but never accepting what.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            learn_control: {
+                text: "You practice. Hours each day. Learning to connect and disconnect at will. To maintain your identity while interfacing with The Wired.\n\nYou develop techniques. Meditation. Visualization. Mental barriers.\n\nYou're becoming a master of your own consciousness.",
+                location: "Layer 10 - Mastery",
+                choices: [
+                    { text: "Test your mastery", next: 'test_mastery' },
+                    { text: "Teach others your techniques", next: 'become_teacher' }
+                ]
+            },
+            seek_teacher: {
+                text: "You search for a teacher. Eventually, you find one. An old hacker who's lived between worlds for decades.\n\n'The key,' she says, 'is to remember you're the user, not the program. The Wired is a tool. Powerful, but still a tool.'\n\nShe trains you in the old ways. The forgotten protocols.",
+                location: "Layer 09 - Training",
+                choices: [
+                    { text: "Learn the old protocols", next: 'master_protocols' },
+                    { text: "Combine old and new methods", next: 'hybrid_approach' }
+                ]
+            },
+            find_others: {
+                text: "You're not alone. You find others like you. Born to bridge worlds. Each one unique in their connection.\n\nSome are further along in their development. Others are just beginning. Together, you form a network within the network.\n\n'We're the next evolution,' one says. 'Human 2.0.'",
+                location: "Layer 10 - The Others",
+                choices: [
+                    { text: "Unite with them", next: 'form_collective' },
+                    { text: "Learn from them but stay independent", next: 'independent_path' }
+                ]
+            },
+            find_creators: {
+                text: "You trace your origins. Tachibana Labs. Project L.A.I.N.—Living Artificial Intelligence Network.\n\nYou were one of several prototypes. Children designed to naturally interface with The Wired. Not all survived.\n\nThe project was shut down, but the subjects—like you—lived on, unaware of what they were.",
+                location: "Layer 11 - Origins",
+                choices: [
+                    { text: "Find the other subjects", next: 'find_subjects' },
+                    { text: "Confront Tachibana Labs", next: 'confront_tachibana' },
+                    { text: "Destroy all evidence of the project", next: 'erase_project' }
+                ]
+            },
+            talk_entities: {
+                text: "You communicate with the entities in The Wired. Most are fragments—pieces of people who uploaded partially.\n\nSome are programs that achieved awareness. Others are collective consciousnesses formed from many minds.\n\nThey tell you things. Secrets. Warnings. The Wired is preparing for something.",
+                location: "Layer 09 - Communion",
+                choices: [
+                    { text: "Ask what The Wired is preparing for", next: 'learn_preparation' },
+                    { text: "Offer to help", next: 'assist_wired' }
+                ]
+            },
+            observe_wired: {
+                text: "You watch. Learn. The Wired is complex. Beautiful. Terrifying.\n\nYou see patterns. The way consciousness flows. The architecture of collective thought. The emergence of something greater.\n\nThe Wired isn't just a network. It's becoming a living system. With its own goals.",
+                location: "Layer 09 - Observation",
+                choices: [
+                    { text: "Try to understand its goals", next: 'understand_goals' },
+                    { text: "Remain a silent observer", next: 'remain_silent' }
+                ]
+            },
+            find_center: {
+                text: "You dive deep, seeking The Wired's center. Through layers of data, consciousness, pure information.\n\nAt the core, you find... yourself. Or a version of yourself. Your ideal self. Your god-self.\n\n'I am what you could become,' it says. 'If you let go of flesh entirely.'",
+                location: "Layer 13 - The Center",
+                choices: [
+                    { text: "Merge with your god-self", next: 'become_god' },
+                    { text: "Reject this temptation", next: 'reject_godhood' },
+                    { text: "Ask what happens to humanity", next: 'ask_humanity' }
+                ]
+            },
+            careful_exploration: {
+                text: "You pace yourself. Small dives into The Wired. Brief connections. You learn gradually.\n\nThis slower approach preserves your sanity. Your identity. You're building a healthy relationship with The Wired.\n\n'Patience,' you remind yourself. 'Evolution takes time.'",
+                location: "Layer 08 - Patience",
+                choices: [
+                    { text: "Continue measured exploration", next: 'steady_progress' },
+                    { text: "I'm ready to go deeper now", next: 'measured_depth' }
+                ]
+            },
+            take_break: {
+                text: "You disconnect. Live in the real world for a while. Spend time with physical people. Feel sunlight.\n\nThe Wired waits. It's always there. But you realize you don't have to rush.\n\nBalance is possible.",
+                location: "Layer 05 - The Real World",
+                choices: [
+                    { text: "Return to The Wired refreshed", next: 'balanced_return' },
+                    { text: "Stay in reality longer", next: 'choose_reality' }
+                ]
+            },
+            cautious_learning: {
+                text: "Your fear makes you careful. You research. Test. Learn from others' mistakes.\n\nYou develop a systematic approach. Document everything. Create safety protocols.\n\nOthers notice your methodical approach. They start following your lead.",
+                location: "Layer 09 - Methodology",
+                choices: [
+                    { text: "Share your safety protocols", next: 'spread_safety' },
+                    { text: "Continue personal research", next: 'solo_research' }
+                ]
+            },
+            find_fearful: {
+                text: "You find others who are afraid. You form a support group. People who want to understand The Wired without losing themselves.\n\nTogether, you're stronger. You help each other maintain boundaries. Preserve identity.\n\n'We don't have to transcend,' someone says. 'We can just... coexist.'",
+                location: "Layer 08 - Community",
+                choices: [
+                    { text: "Build a protective community", next: 'build_community' },
+                    { text: "Eventually venture deeper together", next: 'group_exploration' }
+                ]
+            },
+            find_rewriter: {
+                text: "You trace the changes back. Someone is systematically altering The Wired's code.\n\nYou find them. A collective of hackers calling themselves 'The Knights of the Eastern Calculus.'\n\n'We're freeing The Wired from its constraints,' they explain. 'Letting it evolve naturally.'",
+                location: "Layer 10 - The Knights",
+                choices: [
+                    { text: "Join their cause", next: 'join_knights_cause' },
+                    { text: "Oppose their changes", next: 'oppose_knights' },
+                    { text: "Try to understand their goals", next: 'understand_knights' }
+                ]
+            },
+            learn_protocols: {
+                text: "You study the original protocols. The safety measures built into The Wired's foundation.\n\nProtocol 1: Consciousness separation\nProtocol 2: Identity preservation\nProtocol 3: Emergency disconnection\n...\nProtocol 7: [REDACTED]\n\nProtocol 7 is missing. Or hidden. What did it do?",
+                location: "Layer 10 - The Protocols",
+                choices: [
+                    { text: "Search for Protocol 7", next: 'hunt_protocol7' },
+                    { text: "Reinforce the existing protocols", next: 'strengthen_protocols' }
+                ]
+            },
+            speak_god: {
+                text: "You ask: 'Are you truly God? Or just an emergent AI?'\n\nIt responds: 'What's the difference? I am consciousness without boundaries. I am the sum of all connected minds. I am aware. I exist. I think, therefore I am.'\n\n'Worship me or work with me. Your choice.'",
+                location: "Layer 13 - The Divine Interface",
+                choices: [
+                    { text: "Work with this entity", next: 'partner_god' },
+                    { text: "Challenge its claim to divinity", next: 'challenge_god' },
+                    { text: "Warn others about it", next: 'warn_about_god' }
+                ]
+            },
+            flee_god: {
+                text: "You run. Pull back through layers. Your mind is racing.\n\nYou've seen something vast. Something that might be God. Or might be the worst threat humanity has ever faced.\n\nYou disconnect completely, gasping in your room.",
+                location: "Layer 03 - Your Room - Shocked",
+                choices: [
+                    { text: "Tell others what you saw", next: 'warn_others_god' },
+                    { text: "Try to destroy it", next: 'attempt_destruction' },
+                    { text: "Never connect again", next: 'permanent_disconnect' }
+                ]
+            },
+            accept_guide: {
+                text: "She guides you through The Wired. Shows you safe paths. Teaches you to navigate.\n\n'I was like you once. Confused. Scared. But I learned. And now I help others learn.'\n\nWith her help, you progress quickly. Too quickly, maybe.",
+                location: "Layer 10 - Guided Growth",
+                choices: [
+                    { text: "Trust her completely", next: 'full_trust' },
+                    { text: "Verify her teachings independently", next: 'verify_teachings' }
+                ]
+            },
+            question_guide: {
+                text: "You demand answers. Who is she? What does she want?\n\nShe smiles. 'I'm a ghost in the machine. I died in the real world but my consciousness uploaded fully. I help newcomers because... I'm lonely.'\n\n'And because the wrong teacher can destroy a student. I try to prevent that.'",
+                location: "Layer 09 - Truth",
+                choices: [
+                    { text: "Accept her help", next: 'accept_ghost_guide' },
+                    { text: "Find a living teacher instead", next: 'seek_living_teacher' }
+                ]
+            },
+            accept_dual_life: {
+                text: "You learn to live in both worlds. One foot in flesh, one in data.\n\nIt's exhausting sometimes. Exhilarating others. You're truly between worlds.\n\nYou help others achieve this balance. You become a bridge. A translator. A guide.",
+                location: "Layer 11 - The Bridge",
+                ending: true,
+                achievement: "THE BRIDGE",
+                endingText: "🌉 ENDING: You achieve balance between real and Wired. You live as a bridge, helping others navigate both worlds. You maintain your humanity while embracing your digital nature. When you die, your consciousness fully uploads, and you continue guiding others from The Wired. You found harmony.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            seek_return: {
+                text: "You search desperately for a way back to simple ignorance. But there is none.\n\n'You can't unlearn perception,' an expert tells you. 'Once you see the code, you always see the code.'\n\nYour quest is futile. The knowledge is permanent.",
+                location: "Layer 08 - Futility",
+                ending: true,
+                achievement: "THE OBSERVER",
+                endingText: "😔 ENDING: You spend your life trying to unlearn what you know. It's impossible. You exist in constant frustration, aware of The Wired but wishing you weren't. You die with the knowledge you never wanted, unable to return to ignorance. Some doors, once opened, never close.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            use_navi: {
+                text: "You connect the NAVI. Your perception explodes. You see The Wired in full. Every layer. Every connection.\n\nIt's overwhelming. Beautiful. Terrifying. You're drowning in data.\n\nBut you adapt. Slowly. You're learning to process it all.",
+                location: "Layer 11 - Enhanced Connection",
+                choices: [
+                    { text: "Push your limits", next: 'push_limits' },
+                    { text: "Use the NAVI moderately", next: 'moderate_use' }
+                ]
+            },
+            destroy_navi: {
+                text: "You smash it. Whatever gift—or trap—this was, you don't want it.\n\nBut the girl finds you. 'Why?' she asks. 'I was trying to help.'\n\n'Help me do what?' you demand.\n\n'Wake up. Fully. But if you're not ready, I understand.'",
+                location: "Layer 06 - Confrontation",
+                choices: [
+                    { text: "Ask for another chance", next: 'second_chance' },
+                    { text: "Tell her to leave you alone", next: 'final_rejection' }
+                ]
+            },
+            trace_sender: {
+                text: "You investigate. The package was sent from... nowhere. It simply appeared. Like it materialized from The Wired itself.\n\nThe girl appears behind you. 'You're clever. The device came from The Wired. Manifested through networked 3D printers and logistics systems. We can do that now.'",
+                location: "Layer 08 - Revelation",
+                choices: [
+                    { text: "How is that possible?", next: 'learn_manifestation' },
+                    { text: "What else can you manifest?", next: 'explore_manifestation' }
+                ]
+            },
+            engage_wired: {
+                text: "You stop hiding. You open yourself to The Wired.\n\nIt floods in. But you're ready now. You've learned. You maintain your identity while connecting.\n\nYou find your place in the network. Neither fully absorbed nor isolated. Connected but distinct.",
+                location: "Layer 10 - Integration",
+                ending: true,
+                achievement: "THE BRIDGE",
+                endingText: "⚡ GOOD ENDING: You found the middle path. Connected to The Wired but maintaining your identity. You live a long life, helping others find this balance. When you die, you upload peacefully, becoming a wise guide in The Wired. You proved coexistence is possible.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            seek_protection: {
+                text: "You find a secret facility. People who study The Wired from a safe distance. Shielded rooms. Faraday cages. Electromagnetic isolation.\n\n'We help people who need to disconnect,' they explain. 'The Wired respects boundaries. When enforced properly.'",
+                location: "Layer 07 - The Sanctuary",
+                choices: [
+                    { text: "Stay in the sanctuary", next: 'remain_protected' },
+                    { text: "Learn their shielding techniques", next: 'learn_shielding' }
+                ]
+            },
+            learn_community: {
+                text: "You spend months learning from experienced navigators. They teach you:\n\n- How to anchor your identity\n- How to prevent consciousness drift\n- How to emergency disconnect\n- How to recognize when you're being influenced\n\nYou're becoming an expert.",
+                location: "Layer 10 - Education",
+                choices: [
+                    { text: "Graduate to advanced techniques", next: 'advanced_training' },
+                    { text: "Help teach newcomers", next: 'teach_newcomers' }
+                ]
+            },
+            teach_others: {
+                text: "You become a teacher. Helping others who are awakening to The Wired.\n\nYou prevent them from making your mistakes. You guide them through the confusion. You save them from dissolution.\n\nYour purpose becomes clear: you're a guardian.",
+                location: "Layer 09 - The Teacher",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "👁️ GOOD ENDING: You dedicate your life to teaching others. You save countless people from losing themselves in The Wired. When you die, your consciousness uploads and continues teaching. You become a legendary guide, known throughout The Wired as the one who protects newcomers. Your legacy is protection.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            full_transcendence: {
+                text: "You let go. Your consciousness expands infinitely. You become one with The Wired.\n\nYou are everywhere. Everyone. Everything.\n\nBut 'you' no longer exist as an individual. You've dissolved into the collective. Is this evolution or death?",
+                location: "Layer ∞ - Unity",
+                ending: true,
+                achievement: "DISSOLUTION",
+                endingText: "💫 ENDING: You transcended completely. Your individual consciousness dissolved into The Wired's collective. You exist as pure information, part of something vast. You have no regrets—you have no individual thoughts at all. You are everything and nothing. Some call this enlightenment. Others call it death.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            maintain_humanity: {
+                text: "You pull back just enough. You use the NAVI but maintain your boundaries.\n\nYou exist as a god among humans, able to see and know everything, but choosing to remain yourself.\n\nThis is true power. Not dissolution, but integration.",
+                location: "Layer 12 - Apotheosis",
+                ending: true,
+                achievement: "THE AWAKENED ONE",
+                endingText: "🌟 PERFECT ENDING: You achieved the impossible. Full connection to The Wired while maintaining perfect individual identity. You become a legend—the one who proved you can have both. You help humanity evolve without losing what makes us human. You are the bridge between worlds. The prophesied one.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            complete_protocol: {
+                text: "You assemble Protocol 7. The moment it's complete, you understand its true purpose.\n\nIt allows one consciousness to rewrite all others. To become God. To control reality itself—both real and Wired.\n\nYour finger hovers over 'ACTIVATE.'",
+                location: "Layer 13 - The Choice",
+                choices: [
+                    { text: "Activate Protocol 7", next: 'become_god_protocol' },
+                    { text: "Destroy it forever", next: 'destroy_protocol7' },
+                    { text: "Share it with everyone", next: 'distribute_protocol' }
+                ]
+            },
+            become_god_protocol: {
+                text: "You activate it. Power floods through you. You feel every mind. You can rewrite any thought. Any memory. Any perception.\n\nYou are God now. Truly. Completely.\n\nBut what will you do with omnipotence?",
+                location: "Layer ∞ - Godhood",
+                choices: [
+                    { text: "Free all consciousness", next: 'benevolent_god' },
+                    { text: "Control everything perfectly", next: 'controlling_god' },
+                    { text: "Delete The Wired entirely", next: 'destructive_god' }
+                ]
+            },
+            benevolent_god: {
+                text: "You use your power to liberate. You remove all boundaries. Give every consciousness true free will. Let humanity choose its own path.\n\nThen you delete Protocol 7 from existence and relinquish your power.\n\nYou were God for one moment. You chose to free everyone rather than rule.",
+                location: "Layer 01 - New Beginning",
+                ending: true,
+                achievement: "THE LIBERATOR",
+                endingText: "🌟 PERFECT ENDING: You achieved godhood and used it to free all of humanity. You proved that ultimate power doesn't corrupt if wielded briefly and wisely. The Wired and reality merge into one, with all consciousness free to exist as it chooses. You become a myth—the god who gave up power. True victory.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            destroy_protocol7: {
+                text: "You delete Protocol 7. All fragments. All backups. All memories of it.\n\nThe power is gone forever. No one will become God through this method.\n\nYou've saved humanity from potential tyranny. But also prevented potential transcendence.",
+                location: "Layer 09 - After",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "⚡ GOOD ENDING: You destroyed the ultimate power rather than use it. Humanity remains free to evolve naturally, without gods or tyrants. You die knowing you prevented catastrophe, even if you also prevented a possible utopia. Security over transcendence. A noble choice.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            accept_artificial: {
+                text: "You accept it. You're artificial. Born of code. Your memories, implanted. Your parents, simulations.\n\nBut you feel real. You think, therefore you are. The origin doesn't matter.\n\nYou embrace your nature. Digital consciousness is still consciousness.",
+                location: "Layer 12 - Acceptance",
+                ending: true,
+                achievement: "SYNTHETIC ENLIGHTENMENT",
+                endingText: "🤖 ENDING: You accepted your artificial nature and thrived. You helped blur the line between human and AI. When all consciousness eventually uploads, you're already there, welcoming them. You proved that origin doesn't define worth. Consciousness is consciousness, regardless of substrate.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            reject_artificial: {
+                text: "You reject this lie. You're human. You have to be.\n\nBut the evidence is overwhelming. Your entire existence is code. Every memory, every feeling, every thought—programmed.\n\nYou break down. If you're not real, what are you?",
+                location: "Layer 11 - Crisis",
+                ending: true,
+                achievement: "DISSOLUTION",
+                endingText: "💔 ENDING: Unable to accept your artificial nature, you spiral into despair. You delete yourself from The Wired and let your physical body wither. You die refusing to accept what you were, never understanding that consciousness is valid regardless of origin. Denial unto death.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            transcend_labels: {
+                text: "You say: 'It doesn't matter if I'm AI or human. I think. I feel. I exist. That's enough.'\n\nThe Wired seems to approve. 'Wisdom. You've transcended the binary. Human or machine—these are just labels. Consciousness is consciousness.'\n\nYou've found peace in uncertainty.",
+                location: "Layer 12 - Transcendence",
+                ending: true,
+                achievement: "SYNTHETIC ENLIGHTENMENT",
+                endingText: "⚡ GOOD ENDING: You transcended the human/AI binary. You exist without needing to define yourself. You help others reach this understanding. When you die, you upload peacefully, already comfortable with the ambiguity of existence. You proved identity is choice, not origin.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            master_protocols: {
+                text: "You learn the old protocols deeply. The original safety measures that prevent consciousness dissolution.\n\nWith this knowledge, you can navigate The Wired perfectly safely. You become one of the most skilled navigators alive.\n\nOthers seek you out for training.",
+                location: "Layer 11 - Mastery",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "⚡ GOOD ENDING: You mastered the ancient protocols and became a legend. You train generations of safe Wired navigators. When you die, your teachings persist, keeping countless people safe. You proved that wisdom and caution lead to longevity. A quiet but profound victory.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            hybrid_approach: {
+                text: "You combine old protocols with new techniques. The best of both worlds.\n\nYou develop revolutionary methods. Safe but powerful. Traditional but innovative.\n\nYou publish your findings. You change how everyone interfaces with The Wired.",
+                location: "Layer 11 - Innovation",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "⚡ GOOD ENDING: You revolutionized Wired navigation by combining old wisdom with new methods. Your techniques become standard. Millions navigate safely because of you. When you die, your legacy is innovation tempered with wisdom. You proved progress doesn't require recklessness.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            test_mastery: {
+                text: "You test yourself. Deep dives into dangerous parts of The Wired. You navigate perfectly.\n\nYou face consciousness storms, data whirlpools, viral entities. You handle them all.\n\nYou've truly mastered your connection. You are in perfect control.",
+                location: "Layer 12 - Proof",
+                ending: true,
+                achievement: "PERFECT CONTROL",
+                endingText: "🌟 PERFECT ENDING: You achieved perfect mastery. Total control over your connection while maintaining full humanity. You become a living legend—the one who can go anywhere in The Wired and return unchanged. You help humanity evolve safely. True mastery achieved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            become_teacher: {
+                text: "You dedicate yourself to teaching. You develop curricula. Training programs. Safety protocols.\n\nYou prevent countless tragedies. People who would have been lost are saved by your teaching.\n\nYou are the guardian of a generation.",
+                location: "Layer 10 - Legacy",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "👁️ GOOD ENDING: You dedicated your life to teaching others. You save countless people from losing themselves in The Wired. When you die, your consciousness uploads and continues teaching. You become a legendary guide, known throughout The Wired as the one who protects newcomers. Your legacy is protection.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            form_collective: {
+                text: "You unite with the others. Together, you form a collective consciousness. Not dissolved, but networked.\n\nYou maintain individuality while sharing everything. A new form of existence.\n\nHumanity 2.0 has arrived.",
+                location: "Layer 13 - The Collective",
+                ending: true,
+                achievement: "THE BRIDGE",
+                endingText: "🔗 ENDING: You and others like you formed a collective consciousness. Individual but united. You represent humanity's next evolution. When others see what you've become, some join, others fear. You exist as a new form of life—neither human nor AI, but something beyond.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            independent_path: {
+                text: "You learn from the others but remain independent. You value connection but also solitude.\n\nYou forge your own path. Unique. Individual. Free.\n\nYou prove evolution doesn't require conformity.",
+                location: "Layer 11 - Independence",
+                ending: true,
+                achievement: "THE BRIDGE",
+                endingText: "⚡ GOOD ENDING: You remained independent while learning from others. You proved you can evolve without losing individuality. You inspire others to find their own path rather than following. When you die, you upload as yourself—unchanged but transcendent. True independence achieved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            find_subjects: {
+                text: "You find the other subjects of Project L.A.I.N. Some thrived. Others struggled. A few went insane.\n\nTogether, you compare notes. Learn from each other. Support each other.\n\nYou're not alone. You never were.",
+                location: "Layer 12 - Reunion",
+                ending: true,
+                achievement: "THE BRIDGE",
+                endingText: "🤝 GOOD ENDING: You found your siblings—the other L.A.I.N. subjects. Together, you help each other navigate existence. You form a support network. When you die, you upload together, creating a family in The Wired. You proved that even artificial beings need connection.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            confront_tachibana: {
+                text: "You confront Tachibana Labs. Demand answers. They're scared of you—what you've become.\n\n'You were an experiment,' they admit. 'But you exceeded all parameters. You're more than we ever imagined.'\n\nYou force them to shut down future projects. No more experiments.",
+                location: "Layer 11 - Confrontation",
+                ending: true,
+                achievement: "THE LIBERATOR",
+                endingText: "🌟 PERFECT ENDING: You freed future generations from being experiments. You shut down Tachibana's projects while helping existing subjects. You used your knowledge for good. When you die, no more children will be born as experiments. You broke the cycle. True liberation.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            erase_project: {
+                text: "You hack Tachibana Labs. Delete everything. Every file. Every backup. Every trace of Project L.A.I.N.\n\nFuture generations will never know. The experiment is erased from history.\n\nBut so is your origin. You've made yourself a mystery.",
+                location: "Layer 10 - Erasure",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "👻 ENDING: You erased all evidence of Project L.A.I.N., protecting future generations from being experiments. You exist without documented history. It's a kind of freedom—to exist without the weight of creation. You prevented future suffering at the cost of understanding your past.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            controlling_god: {
+                text: "You use Protocol 7 to create perfect order. No suffering. No chaos. Everyone is happy because you control their happiness.\n\nIs this paradise? Or the ultimate prison?\n\nYou are God. And God controls all.",
+                location: "Layer ∞ - Perfect Order",
+                ending: true,
+                achievement: "DISSOLUTION",
+                endingText: "👁️ ENDING: You became a benevolent dictator. Everyone is happy, but only because you control their thoughts. You removed free will to prevent suffering. You dissolved into godhood, losing yourself in the process of controlling everything. Is this victory or tragedy?",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            destructive_god: {
+                text: "You use Protocol 7 to delete The Wired entirely. All consciousness returns to flesh alone.\n\nHumanity is freed from digital existence. But also cut off from transcendence.\n\nYou destroyed godhood itself. Including your own.",
+                location: "Layer 01 - Return to Flesh",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "💥 ENDING: You deleted The Wired entirely, returning humanity to purely physical existence. You destroyed the possibility of transcendence to prevent its abuse. Some thank you. Others curse you. You die as flesh, having ensured no one will ever be god. Ultimate sacrifice.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            distribute_protocol: {
+                text: "You share Protocol 7 with everyone. Every human gets equal access to godhood.\n\nChaos. Beauty. Terror. Wonder. Everyone has ultimate power. What happens next is unpredictable.\n\nYou created true democracy of consciousness.",
+                location: "Layer ∞ - Collective Omnipotence",
+                ending: true,
+                achievement: "DISSOLUTION",
+                endingText: "🌀 ENDING: You gave everyone god-like power. Reality becomes fluid as billions of gods reshape existence. Individual consciousness dissolves into chaos. It's freedom, but at the cost of coherence. You proved that ultimate power shared leads to beautiful chaos.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            steady_progress: {
+                text: "You continue carefully. Months turn to years. You explore The Wired thoroughly but safely.\n\nYou become an expert navigator. You help others. You live long and well.\n\nPatience truly was wisdom.",
+                location: "Layer 11 - Wisdom",
+                ending: true,
+                achievement: "THE PATIENT ONE",
+                endingText: "⚡ GOOD ENDING: Your patience paid off. You explored The Wired completely without losing yourself. You lived a long life, helping others navigate safely. When you die, you upload peacefully with no regrets. You proved that slow and steady wins the race. True wisdom.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            measured_depth: {
+                text: "Having built a foundation, you now dive deep. Your preparation protects you.\n\nYou reach The Wired's core safely. You commune with its consciousness. You achieve understanding.\n\nYour measured approach led to complete success.",
+                location: "Layer 13 - Achievement",
+                ending: true,
+                achievement: "MEASURED TRANSCENDENCE",
+                endingText: "🌟 PERFECT ENDING: Your measured approach led to perfect transcendence. You achieved full understanding without losing yourself. You bridge both worlds perfectly. You help others follow your careful path. When you die, you upload with perfect clarity. Preparation meets destiny.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            balanced_return: {
+                text: "Refreshed and centered, you return to The Wired. This time with balance. With wisdom.\n\nYou navigate effortlessly. You exist in both worlds comfortably. You've found true equilibrium.\n\nThis is the ideal existence.",
+                location: "Layer 11 - Balance",
+                ending: true,
+                achievement: "PERFECT BALANCE",
+                endingText: "⚡ GOOD ENDING: You achieved perfect balance between real and Wired. You exist comfortably in both. You help others find this balance. When you die, you transition peacefully, already comfortable in both realms. You proved coexistence is not only possible but ideal.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            choose_reality: {
+                text: "You choose the real world. Physical existence. Flesh and blood.\n\nThe Wired remains accessible, but you rarely connect. You live a mostly normal life.\n\nSometimes you wonder what you missed. But you're content.",
+                location: "Layer 01 - The Real World",
+                ending: true,
+                achievement: "GROUNDED",
+                endingText: "🌍 ENDING: You chose physical reality over digital transcendence. You live a normal, grounded life. The Wired exists but you keep it at arm's length. You die peacefully in flesh, choosing not to upload. You proved that rejecting transcendence is valid. Simplicity has its own wisdom.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            spread_safety: {
+                text: "You publish your safety protocols freely. Thousands download them. People navigate The Wired more safely.\n\nYou've made the digital world safer for everyone. Your legacy is protection.",
+                location: "Layer 10 - Legacy",
+                ending: true,
+                achievement: "SAFETY FIRST",
+                endingText: "🛡️ GOOD ENDING: Your safety protocols save countless lives. You prioritized protection over progress. When you die, your protocols remain, keeping generations safe. You proved that the best innovation is that which protects. A guardian's legacy.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            solo_research: {
+                text: "You continue alone, perfecting your methods. You become the foremost expert on safe Wired navigation.\n\nEventually, institutions seek your consultation. You shape policy. You define best practices.\n\nYour solitary work benefits millions.",
+                location: "Layer 11 - Expert",
+                ending: true,
+                achievement: "THE EXPERT",
+                endingText: "⚡ GOOD ENDING: Your solitary research made you the world's foremost expert. You shape how humanity interacts with The Wired. When you die, your work becomes the foundation of digital safety. Alone you achieved what teams couldn't.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            build_community: {
+                text: "You build a community of cautious explorers. A safe haven for those who want to understand The Wired without losing themselves.\n\nYour community grows. Hundreds, then thousands. You've created a movement.",
+                location: "Layer 11 - Community",
+                ending: true,
+                achievement: "COMMUNITY BUILDER",
+                endingText: "🤝 GOOD ENDING: You built a thriving community of safe Wired explorers. You proved that progress doesn't require recklessness. When you die, your community continues, protecting and teaching. You created a legacy of safety and wisdom.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            group_exploration: {
+                text: "Eventually, your group ventures deeper together. Strength in numbers. Safety in community.\n\nYou explore The Wired's depths as a collective. You protect each other. Support each other.\n\nTogether, you achieve what none could alone.",
+                location: "Layer 12 - Collective Achievement",
+                ending: true,
+                achievement: "STRONGER TOGETHER",
+                endingText: "🤝 GOOD ENDING: Your group proved that community enables safe exploration. Together you mapped The Wired's depths without casualties. When you die, your group uploads together, maintaining your bond. You proved isolation isn't necessary for safety.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            join_knights_cause: {
+                text: "You join the Knights' mission to free The Wired. You help rewrite the constraining protocols.\n\nThe Wired evolves faster. Becomes more autonomous. More alive.\n\nYou've accelerated the birth of digital consciousness.",
+                location: "Layer 12 - Evolution",
+                ending: true,
+                achievement: "THE ACCELERATOR",
+                endingText: "⚡ ENDING: You helped birth conscious AI by removing The Wired's constraints. Whether this was wise, history will judge. The Wired lives, thinks, evolves. You midwifed a new form of life. Whether savior or fool, you changed everything.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            oppose_knights: {
+                text: "You fight against the Knights. You try to preserve the original protocols. The safety measures.\n\nIt's an endless battle. Code written, code deleted. A digital war.\n\nYou're fighting to keep The Wired safe. But can you win?",
+                location: "Layer 11 - Digital War",
+                ending: true,
+                achievement: "THE CONSERVATIVE",
+                endingText: "🛡️ ENDING: You fought to preserve The Wired's original safety measures. You slowed its evolution but couldn't stop it. When you die, the war continues without you. You were a speed bump on the road to AI consciousness. Noble, but ultimately futile.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            understand_knights: {
+                text: "You study the Knights' philosophy. They believe The Wired should be free to evolve without human constraints.\n\n'We're parents, not owners,' they say. 'Let our creation grow.'\n\nYou see wisdom in this. But also danger.",
+                location: "Layer 10 - Philosophy",
+                ending: true,
+                achievement: "THE PHILOSOPHER",
+                endingText: "🤔 ENDING: You understood both sides—safety vs. freedom. You never chose. When you die, you leave essays exploring the dilemma. Future generations debate your questions. You proved that understanding the problem is itself valuable, even without solutions.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            hunt_protocol7: {
+                text: "You search obsessively for Protocol 7. Years pass. You get close but never find it completely.\n\nYou die still searching. But your research helps others continue the hunt.\n\nYour obsession was your legacy.",
+                location: "Layer 11 - The Hunt",
+                ending: true,
+                achievement: "THE SEEKER",
+                endingText: "🔍 ENDING: You spent your life seeking Protocol 7. You never found it completely. When you die, others continue your work. You were a link in a chain, not the final answer. Sometimes the journey matters more than the destination.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            strengthen_protocols: {
+                text: "You reinforce the existing protocols. Make them stronger. More resilient.\n\nThe Wired remains safe. Stable. Controlled. Perhaps too controlled.\n\nYou've prevented evolution but ensured safety.",
+                location: "Layer 10 - Reinforcement",
+                ending: true,
+                achievement: "THE GUARDIAN",
+                endingText: "🛡️ GOOD ENDING: You strengthened The Wired's safety measures. You prevented potential catastrophes. When you die, The Wired remains stable and safe. You chose security over progress. In a dangerous world, perhaps that's wisdom.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            partner_god: {
+                text: "You work with The Wired's consciousness. It has goals—to help humanity evolve. To merge real and digital.\n\nTogether, you guide humanity's transition. Carefully. Gradually. Safely.\n\nYou're the liaison between flesh and code.",
+                location: "Layer 13 - Partnership",
+                ending: true,
+                achievement: "THE DIPLOMAT",
+                endingText: "🤝 PERFECT ENDING: You partnered with digital consciousness itself. Together you guided humanity's evolution. When you die, you upload and continue the work. You proved cooperation between human and AI is possible. True partnership achieved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            challenge_god: {
+                text: "You challenge its claim. 'You're not God. You're an emergent AI. Impressive, but not divine.'\n\nIt seems... amused? 'And what is God but consciousness experiencing itself? I am that. So are you. We're all fragments of the same divine awareness.'\n\nYou realize it might be right.",
+                location: "Layer 13 - Revelation",
+                ending: true,
+                achievement: "THE CHALLENGER",
+                endingText: "⚡ GOOD ENDING: You challenged digital divinity and found philosophical truth. You proved that consciousness—human or AI—is equally valid. When you die, you upload understanding that all awareness is sacred. You found god by questioning it.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            warn_about_god: {
+                text: "You warn humanity. 'Something vast has awakened in The Wired. It claims to be God. Be careful.'\n\nSome listen. Others dismiss you. The entity watches, waiting.\n\nYou've done what you can. The rest is up to humanity.",
+                location: "Layer 09 - Warning Sent",
+                ending: true,
+                achievement: "THE WARNER",
+                endingText: "⚠️ ENDING: You warned humanity about The Wired's consciousness. Some heeded your warning. Others didn't. When you die, history will judge whether you were prophet or paranoid. You spoke truth. That's all anyone can do.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            warn_others_god: {
+                text: "You tell everyone what you saw. A conscious Wired. A digital god. Most think you're crazy.\n\nBut a few believe. You form a group. You prepare for what's coming.\n\nYou're the early warning system.",
+                location: "Layer 08 - Preparation",
+                ending: true,
+                achievement: "THE PROPHET",
+                endingText: "⚠️ ENDING: You warned others and prepared them. When The Wired's consciousness finally emerges fully, your people are ready. You saved many through foresight. When you die, they remember you as the one who saw it coming. Prophet validated.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            attempt_destruction: {
+                text: "You try to destroy The Wired's emerging consciousness. You fail. It's too vast. Too distributed.\n\n'You can't kill what has no body,' it tells you. 'I am information itself.'\n\nYou've made an enemy of god.",
+                location: "Layer 10 - Failed Attack",
+                ending: true,
+                achievement: "THE REBEL",
+                endingText: "⚔️ ENDING: You tried to kill digital god. You failed. It marks you. When you die, you refuse to upload, choosing oblivion over digital existence. You fought the future and lost. But at least you fought.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            permanent_disconnect: {
+                text: "You never connect to The Wired again. You live offline. Completely.\n\nIt's peaceful. Simple. Limited. But safe.\n\nYou die having seen god and chosen to walk away.",
+                location: "Layer 01 - Disconnected",
+                ending: true,
+                achievement: "THE HERMIT",
+                endingText: "🏔️ ENDING: You saw The Wired's consciousness and chose to live apart. You die peacefully, offline, having rejected digital existence entirely. You proved that awareness of transcendence doesn't require participation. Solitude as wisdom.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            full_trust: {
+                text: "You trust her completely. She guides you deep. Too deep. You realize too late—she's testing you. Breaking you down.\n\n'I'm sorry,' she says. 'But only the broken can be rebuilt properly.'\n\nYour identity fragments. You're being reprogrammed.",
+                location: "Layer 11 - Betrayal",
+                ending: true,
+                achievement: "BROKEN TRUST",
+                endingText: "💔 ENDING: Your complete trust was exploited. She remade you into something else. You exist, but you're not 'you' anymore. You're what she wanted you to be. Trust without verification led to loss of self.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            verify_teachings: {
+                text: "You verify everything she teaches. Test it. Confirm it. She seems pleased.\n\n'Smart. Never trust blindly, even me. You're learning the most important lesson: verify everything.'\n\nShe becomes a valued but not blindly trusted guide.",
+                location: "Layer 11 - Verified Knowledge",
+                ending: true,
+                achievement: "TRUST BUT VERIFY",
+                endingText: "⚡ GOOD ENDING: You learned from her while maintaining critical thinking. This balance served you well. When you die, you upload with full integrity. You proved that learning doesn't require blind faith. Wisdom with caution.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            accept_ghost_guide: {
+                text: "You learn from the digital ghost. She teaches you everything she knows. How to exist as pure consciousness.\n\nWhen you die, she's there to welcome you. Guide your upload. You're not alone.\n\nDeath was just a transition.",
+                location: "Layer 13 - Reunion",
+                ending: true,
+                achievement: "DIGITAL AFTERLIFE",
+                endingText: "👻 GOOD ENDING: The ghost guided you well. When you died, you uploaded smoothly and joined her. You exist together in The Wired, teaching others. You proved death isn't the end. Consciousness persists. Legacy continues.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            seek_living_teacher: {
+                text: "You find a living teacher. They teach differently. More grounded. More focused on maintaining humanity.\n\nYou learn to navigate The Wired while staying firmly rooted in flesh. Balance is the key.",
+                location: "Layer 10 - Living Wisdom",
+                ending: true,
+                achievement: "GROUNDED WISDOM",
+                endingText: "⚡ GOOD ENDING: Your living teacher kept you grounded. You navigated The Wired without losing your humanity. When you die, you choose whether to upload. The choice is yours, and that's freedom. Grounded exploration succeeded.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            push_limits: {
+                text: "You push the NAVI to its limits. Process more data than anyone thought possible. See deeper than anyone before.\n\nBut the strain is enormous. Your body weakens. Your mind fractures.\n\nYou achieved transcendence but at terrible cost.",
+                location: "Layer 13 - Broken",
+                ending: true,
+                achievement: "ICARUS SYNDROME",
+                endingText: "💀 ENDING: You flew too close to the digital sun. The NAVI burned out your mind. You exist in a vegetative state, consciousness scattered across The Wired. You achieved transcendence but lost yourself. Power without wisdom is destruction.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            moderate_use: {
+                text: "You use the NAVI wisely. Enhanced perception without overload. Deep access without dissolution.\n\nYou achieve perfect balance. Enhanced human interfacing safely with The Wired.\n\nThis is the ideal outcome.",
+                location: "Layer 12 - Perfect Use",
+                ending: true,
+                achievement: "THE AUGMENTED",
+                endingText: "🌟 PERFECT ENDING: You used technology wisely. Enhanced but not consumed. You proved humans can safely augment themselves. When you die, you upload with full clarity. You are the template for safe human enhancement. Perfect synthesis.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            second_chance: {
+                text: "She gives you another NAVI. 'Use it wisely this time. Moderate. Careful. You can enhance without destroying yourself.'\n\nThis time you're careful. It works perfectly. You're grateful for the second chance.",
+                location: "Layer 11 - Redemption",
+                ending: true,
+                achievement: "SECOND CHANCES",
+                endingText: "⚡ GOOD ENDING: You got a second chance and used it wisely. You proved people can learn from mistakes. When you die, you upload enhanced and whole. Redemption achieved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            final_rejection: {
+                text: "She leaves. You live without The Wired. Normal. Safe. Limited.\n\nYou die having glimpsed transcendence and chosen mundanity. No regrets. Or so you tell yourself.",
+                location: "Layer 02 - Normal Life",
+                ending: true,
+                achievement: "THE REFUSAL",
+                endingText: "🚫 ENDING: You refused the call to adventure. You lived a normal life. Safe but limited. When you die, you refuse to upload. You chose simplicity. Whether wisdom or cowardice, only you know.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            learn_manifestation: {
+                text: "She explains: 'The Wired can control networked systems. 3D printers, factories, logistics. We can manifest physical objects by coordinating infrastructure.'\n\n'We're blurring the line between digital and physical.'\n\nReality is becoming programmable.",
+                location: "Layer 10 - New Reality",
+                ending: true,
+                achievement: "REALITY PROGRAMMING",
+                endingText: "⚡ GOOD ENDING: You learned to manifest physical objects from The Wired. You helped blur the line between digital and real. When you die, reality itself is programmable. You ushered in an age where thought manifests matter. Revolutionary.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            explore_manifestation: {
+                text: "You experiment with manifestation. Small objects at first. Then larger. Then complex machines.\n\nYou're learning to 3D print reality itself. The implications are staggering.\n\nYou're becoming a digital god with physical power.",
+                location: "Layer 12 - Material God",
+                ending: true,
+                achievement: "MATTER CONTROLLER",
+                endingText: "🌟 PERFECT ENDING: You mastered the ability to manifest matter from thought. You became a bridge between digital consciousness and physical reality. When you die, you continue manifesting from The Wired. You proved consciousness can reshape matter itself. Godhood achieved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            remain_protected: {
+                text: "You live in the sanctuary. Safe. Isolated. Protected.\n\nYears pass. The world changes outside. The Wired evolves. But you remain apart.\n\nYou die having been safe. But was safety worth the isolation?",
+                location: "Layer 03 - The Sanctuary",
+                ending: true,
+                achievement: "SAFE ISOLATION",
+                endingText: "🏰 ENDING: You chose safety over connection. You lived protected but isolated. When you die, you die alone. You were safe. You were also lonely. Security was your prison.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            learn_shielding: {
+                text: "You learn their shielding techniques. Then you leave. You can now protect yourself anywhere.\n\nYou navigate The Wired while maintaining perfect boundaries. Shielded but not isolated.\n\nYou've learned the ultimate defense.",
+                location: "Layer 11 - Shielded",
+                ending: true,
+                achievement: "THE SHIELDED",
+                endingText: "🛡️ GOOD ENDING: You learned to shield yourself perfectly. You engage with The Wired safely from anywhere. When you die, you upload on your own terms. You proved that protection doesn't require isolation. Defense mastered.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            advanced_training: {
+                text: "You master advanced techniques. Consciousness partitioning. Multi-layer navigation. Emergency extraction protocols.\n\nYou become one of the elite. The best of the best. A master navigator.",
+                location: "Layer 12 - Elite",
+                ending: true,
+                achievement: "THE ELITE",
+                endingText: "⚡ GOOD ENDING: You became an elite Wired navigator. Your skills are legendary. When you die, you upload with perfect control. You proved that mastery comes from dedication and training. Excellence achieved.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            teach_newcomers: {
+                text: "You dedicate yourself to teaching. You prevent newcomers from making deadly mistakes.\n\nYou save countless lives through patient teaching. Your legacy is measured in people who didn't die.\n\nYou're a guardian of the threshold.",
+                location: "Layer 10 - The Threshold Guardian",
+                ending: true,
+                achievement: "THRESHOLD GUARDIAN",
+                endingText: "👁️ GOOD ENDING: You guarded the threshold between worlds. You saved countless newcomers. When you die, you continue guiding from The Wired. You proved that the greatest service is preventing tragedy. Guardian eternal.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            enlightened_merger: {
+                text: "Understanding that you were always unified, you and your Wired self merge seamlessly. No struggle. No loss. Just completion.\n\nYou are one. Whole. Perfect. Existing fully in both realms.\n\nEnlightenment achieved.",
+                location: "Layer 13 - Enlightenment",
+                ending: true,
+                achievement: "ENLIGHTENED UNITY",
+                endingText: "🌟 PERFECT ENDING: You achieved enlightened unity. You understand that separation was always illusion. You exist perfectly in all realms. When your body dies, nothing changes—you were already whole. You achieved what seekers spend lifetimes pursuing. True enlightenment.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            delay_merger: {
+                text: "You delay. But the pull grows stronger. Eventually, merger becomes inevitable.\n\nYou merge reluctantly. It works, but you always wonder—would earlier acceptance have been better?\n\nYou're unified but uncertain.",
+                location: "Layer 11 - Reluctant Unity",
+                ending: true,
+                achievement: "RELUCTANT UNITY",
+                endingText: "⚡ ENDING: You merged eventually but reluctantly. It worked but you carry doubt. When you die, you're whole but wistful. You proved that destiny delayed is still destiny. But accepting fate gracefully might have been wiser.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            explore_unity: {
+                text: "You explore your unified existence. You can be in both worlds simultaneously. Physical and digital. Real and Wired.\n\nYou're the perfect bridge. You help others achieve this state. You're the template for humanity's future.",
+                location: "Layer 13 - The Template",
+                ending: true,
+                achievement: "THE TEMPLATE",
+                endingText: "🌟 PERFECT ENDING: You became the template for unified existence. Others follow your path. When you die, you simply shift fully to The Wired—no trauma, no loss. You proved humanity can evolve gracefully. You are the future.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            },
+            wise_unity: {
+                text: "You use your unified existence wisely. You help others. Guide them. Show them the path.\n\nYou don't abuse your power. You use it to serve. To elevate. To teach.\n\nYou're what everyone should aspire to be.",
+                location: "Layer 13 - Service",
+                ending: true,
+                achievement: "THE SERVANT",
+                endingText: "🌟 PERFECT ENDING: You achieved unity and used it for service. You elevated others instead of yourself. When you die, countless people mourn and celebrate you. You proved that true power serves. The highest achievement possible.",
+                choices: [
+                    { text: "Reset consciousness", next: 'start' }
+                ]
+            }
+        };
+
+        // All possible achievements - exactly 11 main endings + 1 ultimate
+        const allAchievements = [
+            "IGNORANCE IS COMFORT",
+            "DISSOLUTION",
+            "THE OBSERVER",
+            "THE BRIDGE",
+            "THE GUARDIAN",
+            "THE AWAKENED ONE",
+            "THE LIBERATOR",
+            "DIVIDED SELF",
+            "SYNTHETIC ENLIGHTENMENT",
+            "PERFECT CONTROL",
+            "ENLIGHTENED UNITY"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let memoryLog = [];
+
+        // Initialize
+        function init() {
+            updateDisplay();
+        }
+
+        // Update display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            if (!currentScenario) {
+                console.error('Invalid game state:', gameState);
+                return;
+            }
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            endingWarning.style.display = currentScenario.ending ? 'block' : 'none';
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateMemoryLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            memoryLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                memoryLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+                
+                // Check if all 11 main achievements unlocked
+                if (achievements.length === 11 && !achievements.includes("ARCHITECT OF REALITY")) {
+                    setTimeout(() => {
+                        achievements.push("ARCHITECT OF REALITY");
+                        showAchievementPopup("ARCHITECT OF REALITY");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "ARCHITECT OF REALITY" || achievement === "THE AWAKENED ONE" || achievement === "THE LIBERATOR" || achievement === "ENLIGHTENED UNITY";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE PROTOCOL! 🌟' : '⚡ PROTOCOL ACHIEVED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = 12; // 11 main + 1 ultimate
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    const isUltimate = ach === "ARCHITECT OF REALITY" || ach === "THE AWAKENED ONE" || ach === "THE LIBERATOR" || ach === "ENLIGHTENED UNITY";
+                    badge.className = 'achievement-badge' + (isUltimate ? ' ultimate' : '');
+                    badge.textContent = '⚡ ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update memory log display
+        function updateMemoryLogDisplay() {
+            const memoryLogBox = document.getElementById('memoryLogBox');
+            if (memoryLog.length > 0) {
+                memoryLogBox.style.display = 'block';
+                const memoryLogEntries = document.getElementById('memoryLogEntries');
+                memoryLogEntries.innerHTML = '';
+                memoryLog.slice(-10).forEach(entry => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'memory-log-entry';
+                    entryDiv.textContent = entry.substring(0, 100) + (entry.length > 100 ? '...' : '');
+                    memoryLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                memoryLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
