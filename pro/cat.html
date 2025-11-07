@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitty Cat Kill Sat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #e0e7ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #dc2626;
+            border-color: #ef4444;
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #7c3aed, #db2777);
+            border-color: #d8b4fe;
+            color: #fff;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #dc2626;
+            box-shadow: 0 20px 25px -5px rgba(220, 38, 38, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .cat-icon {
+            display: inline-block;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled) {
+            background-color: #dc2626;
+            color: #fff;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #ef4444;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            border-radius: 0.25rem;
+            border: 1px solid #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #ef4444;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #dc2626;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1f2937;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #dc2626, #ef4444);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #7c3aed, #db2777);
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ef4444;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #dc2626;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #fef08a;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #7f1d1d;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #7f1d1d;
+            color: #fca5a5;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #dc2626;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #dc2626;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.3);
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #374151;
+        }
+
+        .history-title {
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-button.current {
+            background-color: #dc2626;
+            color: #fff;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: #374151;
+            color: #ef4444;
+        }
+
+        .history-button.visited:hover {
+            background-color: #4b5563;
+        }
+
+        .history-button.unvisited {
+            background-color: #1f2937;
+            color: #6b7280;
+        }
+
+        .history-hint {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #374151;
+        }
+
+        .quest-log-title {
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">🎉 ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="cat-icon">🐱</span>
+                    KITTY CAT KILL SAT
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">🛰️</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚔️</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">15</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">15</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ ENDING REACHED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                MISSION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that point in your mission</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📋</span>
+                STATION LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "Another alarm screams through the station. You are Lily ad-Alice, first and only member of Felis Astra. Honorary human. Self-imposed conscript in a very long war.\n\nYou've kept this orbital infrastructure operational for centuries. Alone. The weight of responsibility is crushing, but someone has to watch over Earth.\n\nWhat needs your attention first?",
+                location: "🛰️ Space Station - Command Module",
+                choices: [
+                    { text: "Check the alarms (responsible)", next: 'check_alarms' },
+                    { text: "Take a nap in the sunbeam first", next: 'nap_first' },
+                    { text: "Get food from the ration dispenser", next: 'get_food' }
+                ]
+            },
+            check_alarms: {
+                text: "You pad over to the alarm console, your paws barely making a sound on the deck plates. Three critical alerts:\n\n1. Micrometeorite needs processing for materials\n2. Air filter due for maintenance\n3. Incoming communication request\n\nYou can focus exceptionally well when you need to. Which is good, because these controls were NOT designed for paws.",
+                location: "🛰️ Command Module - Alarm Console",
+                choices: [
+                    { text: "Handle the micrometeorite first", next: 'micrometeorite' },
+                    { text: "Answer the communication", next: 'incoming_call' },
+                    { text: "All of this can wait for snacks", next: 'get_food' }
+                ]
+            },
+            nap_first: {
+                text: "You bound through the zero-G corridors toward the exo lab. Your favorite spot - the couch positioned perfectly to catch the sunbeam while looking down at Earth.\n\nThe warm light sinks into your old bones. For just a moment, you allow yourself to stop thinking. To set down the weight of responsibility.\n\nThen another alarm sounds. Of course.",
+                location: "🛰️ Exo Lab - Viewing Chamber",
+                choices: [
+                    { text: "Ignore it and keep napping", next: 'ignore_alarm' },
+                    { text: "Reluctantly handle your duties", next: 'check_alarms' }
+                ]
+            },
+            ignore_alarm: {
+                text: "You close your eyes tighter, trying to sink deeper into the sunbeam. The alarm grows more insistent. More alarms join it.\n\nYou are very good at many things. Ignoring alarms is not one of them. The guilt builds with each passing second.\n\nYou lasted exactly four minutes before anxiety overrode comfort.",
+                location: "🛰️ Exo Lab - Viewing Chamber",
+                choices: [
+                    { text: "Fine, FINE, go handle things", next: 'check_alarms' }
+                ]
+            },
+            get_food: {
+                text: "You arrive at the galley's ration dispenser with practiced grace. The dispenser is on a strict schedule. Your appointed times are 'constantly'. Your needs are 'all of it please'.\n\nThe artificial nutrient orb appears. Tasteless. Soulless. A far cry from the treats you remember in a distant haze.\n\nYou do not cry out. There is no one to hear you.",
+                location: "🛰️ Galley",
+                choices: [
+                    { text: "Eat quickly and get to work", next: 'check_alarms' },
+                    { text: "Contemplate the sadness of your meals", next: 'food_sadness' },
+                    { text: "Try to hack the dispenser for flavor", next: 'hack_dispenser' }
+                ]
+            },
+            food_sadness: {
+                text: "You stare at the nutrient orb. Every one of the thousands and thousands of sorrows of arriving to a tasteless, soulless dinner washes over you.\n\nYou remember real food. Real treats. Real people to share them with.\n\nTen minutes pass. The sadness is warm and familiar, like an old blanket made of regret.",
+                location: "🛰️ Galley",
+                choices: [
+                    { text: "Snap out of it and work", next: 'check_alarms' },
+                    { text: "Stay lost in memories", next: 'memory_spiral' }
+                ]
+            },
+            memory_spiral: {
+                text: "You sink deeper into memories of before. Before the station. Before the loneliness. Before the weight of being the last guardian.\n\nHours pass. The station maintains itself - it's good at that. But you aren't maintaining yourself.\n\nWhen you finally surface, it's dark. You've wasted a day to grief.",
+                location: "🛰️ Galley",
+                ending: true,
+                achievement: "LOST IN THE PAST",
+                endingText: "💀 ENDING: Sometimes the weight is too much. Sometimes you need to feel the grief. Tomorrow you'll be stronger. Tomorrow you'll do better. Today, you simply survived.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            hack_dispenser: {
+                text: "You remember trying this once before. You successfully retasked the hydration tap to produce flavored waters.\n\nIt was a beautiful week of decadence. Until you learned it was drawing too many exotics out of subspace and you'd developed an impressive number of cancers.\n\nA month in the vivification pod to eradicate them. A month was too long to leave things unattended.",
+                location: "🛰️ Galley",
+                choices: [
+                    { text: "Don't make that mistake again", next: 'check_alarms' },
+                    { text: "Risk it anyway - you need flavor", next: 'risk_flavor' }
+                ]
+            },
+            risk_flavor: {
+                text: "You manipulate the controls with painstaking care. This time you'll be smarter about it. Just a LITTLE flavor. Just a hint.\n\nThe first sip of vanilla-flavored nutrition paste is heaven. Pure heaven.\n\nThen the cancer counter starts ticking up. You've made this mistake before, but somehow the fleeting joy was worth it.",
+                location: "🛰️ Galley",
+                ending: true,
+                achievement: "WORTH THE CANCER",
+                endingText: "💀 ENDING: You spend another month in vivification, but those few hours of flavored food were beautiful. Some mistakes are worth repeating. Your taste buds file this under 'absolutely worth it.'",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            micrometeorite: {
+                text: "You bound toward the foundry controls. The extension arm needs to grasp a micrometeorite and pull it back for processing.\n\nYou manipulate controls designed for hands with paws designed for... definitely not this. It takes three tries, but you eventually get the rock into the foundry.\n\nYou allow yourself a single victory meow. Let's talk about space stations really quick.",
+                location: "🛰️ Foundry Control",
+                choices: [
+                    { text: "Process the materials", next: 'process_materials' },
+                    { text: "Take a victory nap first", next: 'victory_nap' }
+                ]
+            },
+            process_materials: {
+                text: "The foundry hums to life. Good news - you've got another artificial rock, probably a spy sat. Now it's a great source of pre-processed tungsten, aluminum, and silicon.\n\nYou check your resupply notes via AR. The station learned to understand you, eventually. You're low on grade-three groundstrikers. You mark the tungsten for processing.\n\nThen the comms alert goes off.",
+                location: "🛰️ Foundry",
+                choices: [
+                    { text: "Answer the call immediately", next: 'incoming_call' },
+                    { text: "Let it wait, finish processing", next: 'finish_processing' }
+                ]
+            },
+            finish_processing: {
+                text: "You focus on the materials processing, ensuring everything is queued correctly. Efficiency. Precision. These are things you can control.\n\nThe comms alert continues screaming. Someone down there needs help. They always need help.\n\nBy the time you finish and reach the comms center, the call has disconnected. You'll never know who it was.",
+                location: "🛰️ Foundry",
+                ending: true,
+                achievement: "TRAGIC EFFICIENCY",
+                endingText: "💀 ENDING: You kept the station running perfectly. But someone died waiting for you. This is the weight you carry - every choice has a cost. Tonight you'll stare at Earth and wonder who you failed.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            victory_nap: {
+                text: "You've earned this. You bound through the corridors to the exo lab, hit the couch at precisely the right angle, and settle into the sunbeam.\n\nThe warmth. The view of Earth below, turning slowly. Green, orange, white, and blue. Beautiful.\n\nYou close your eyes. Just for a moment. Just—\n\nThe comms alert SCREAMS.",
+                location: "🛰️ Exo Lab",
+                choices: [
+                    { text: "Sprint to answer it", next: 'sprint_to_comms' },
+                    { text: "Take your time, stretch first", next: 'slow_response' }
+                ]
+            },
+            slow_response: {
+                text: "You stretch languidly. Your old bones need proper stretching or they'll seize up. The comms can wait thirty seconds.\n\nYou take your time padding through the corridors. When you reach the comms center and activate your bell system, there's no response.\n\nThey gave up. They thought no one was listening.",
+                location: "🛰️ Comms Center",
+                ending: true,
+                achievement: "COMFORTABLE FAILURE",
+                endingText: "💀 ENDING: You chose comfort over duty. Someone down there called for help and you were too slow. The guilt will keep you awake for weeks. But hey, you got a good stretch in.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            sprint_to_comms: {
+                text: "You ROCKET through the corridors. Zero-G sections become launch points. You are a tiny, fierce missile with a destination.\n\nYou arrive at the comms center in record time, slam your paw on the accept button, and ring the bell system.\n\nOnce. Twice. Three times. 'I hear you. Hold on.'\n\nThe voice comes through - shaking, desperate.",
+                location: "🛰️ Comms Center",
+                choices: [
+                    { text: "Listen to the message", next: 'incoming_call' }
+                ]
+            },
+            incoming_call: {
+                text: "'Vis est actking-kapitan Jude Marsall.' The young man's voice is shaking. A field promotion. He knows he's not meant to be a kapitan.\n\n'Category two em... em... emergence? Request for purification. Target on broadcast.'\n\nThen, softer and off script: 'Ahplease.'\n\nYou've heard these calls two thousand times. It never gets easier.",
+                location: "🛰️ Comms Center",
+                choices: [
+                    { text: "Ring the bell: 'I hear you. Hold on.'", next: 'emergency_response' },
+                    { text: "Deny the request - conserve ammunition", next: 'deny_request' }
+                ]
+            },
+            deny_request: {
+                text: "You consider the request. You're low on certain munitions. The station's resources aren't infinite. You need to be strategic about when you intervene.\n\nYou don't ring the bell.\n\nOn the screen, you watch actking-kapitan Jude Marsall clutch his comms stick like a warding stone. He fires his rifle into the swarm. The hope dies in his eyes when no response comes.\n\nThe emergence overruns his position in four minutes.",
+                location: "🛰️ Comms Center",
+                ending: true,
+                achievement: "COLD CALCULATIONS",
+                endingText: "💀 ENDING: You made the logical choice. Resources must be conserved. But logic doesn't help you sleep. You'll see the kapitan's face every time you close your eyes. There is a lie that cats do not care. You care with a fury the clouded sun cannot hope to match.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            emergency_response: {
+                text: "You ring the bell three times and then you are MOVING. Through hatches, spinning off walls, using gravity plates to build momentum.\n\nYou hit the cradle and lay back into the molded cushioning you painstakingly tailored for yourself. The one part of the station built for you.\n\nScanner feeds light up in AR. Time to work.",
+                location: "🛰️ Weapons Cradle",
+                choices: [
+                    { text: "Analyze the situation carefully", next: 'careful_analysis' },
+                    { text: "Fire immediately - speed is life", next: 'quick_shot' }
+                ]
+            },
+            careful_analysis: {
+                text: "You pull up scanner feeds. The emergence is in what used to be Australia. Underground origin, now surfaced.\n\nActking-kapitan Jude Marsall is in a trench, covered in mud, firing relentlessly. Some kind of insect emergence this time. The white on your boot patterns gets longer every time you do this.\n\nYou trace targeting lines. Check vectors. Queue firing solutions. You have 48 seconds in the firing basket.",
+                location: "🛰️ Weapons Cradle - Targeting",
+                choices: [
+                    { text: "Execute perfect firing solution", next: 'perfect_shot' },
+                    { text: "Add extra firepower for safety", next: 'overkill_shot' }
+                ]
+            },
+            perfect_shot: {
+                text: "Paw on joystick. You trace the line, double-check, confirm firing sequence. The void ray launches first, cleaving through thousands of the bug things.\n\nThen you find the breach point. Visual charts, migration patterns, weather data. Six seconds to target acquisition.\n\nThe grade-three groundstriker launches. Slams through ground. Through the target. Two miles past, leaving molten rock and vaporized exogalactic phenomena.\n\nYou're out of the firing basket. Win or lose, they're on their own.",
+                location: "🛰️ Weapons Cradle",
+                choices: [
+                    { text: "Check if they survived", next: 'check_survival' },
+                    { text: "Move on to next task immediately", next: 'move_on_professional' }
+                ]
+            },
+            overkill_shot: {
+                text: "You queue up not one, but THREE groundstrikers. And double void ray passes. You're burning through ammunition, but this kid is going to LIVE.\n\nThe station protests the rapid-fire sequence. Deck plates vibrate. Warning lights flash. You ignore them all.\n\nThe bombardment is excessive. Beautiful. Definitely against several pre-war conventions. The entire emergence zone is glass now.",
+                location: "🛰️ Weapons Cradle",
+                achievement: "EXCESSIVE FORCE AUTHORIZED",
+                choices: [
+                    { text: "Check ammunition reserves", next: 'check_ammo' },
+                    { text: "Bask in the victory", next: 'check_survival' }
+                ]
+            },
+            check_ammo: {
+                text: "You pull up the ammunition manifest. You've used up... a LOT. Like, three months worth of production in one engagement.\n\nBut the kid lived. The humans lived.\n\nYou'll need to prioritize materials processing for weeks to rebuild reserves. Worth it? You strut a little as you head to the galley. Yes. Worth it.",
+                location: "🛰️ Weapons Cradle",
+                ending: true,
+                endingText: "✨ ENDING: You saved them with overwhelming firepower. Efficiency be damned - sometimes you fight with everything you have. The station will recover. So will you. Tomorrow brings new challenges, but today you WON.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            quick_shot: {
+                text: "No time for fancy targeting. You pull up the emergency firing solution - the one you've practiced ten thousand times.\n\nVoid ray. Launch. Groundstriker. Launch. You're firing before the targeting computer even confirms lock.\n\nIt's close. Too close. The groundstriker clips the edge of the friendly position. You can see debris flying.",
+                location: "🛰️ Weapons Cradle",
+                choices: [
+                    { text: "Check casualties", next: 'check_casualties' },
+                    { text: "Fire again to finish the job", next: 'second_shot' }
+                ]
+            },
+            check_casualties: {
+                text: "The scanners focus on the friendly position. Actking-kapitan Jude Marsall is... alive. Barely. His trench is half-collapsed from your near-miss.\n\nThe emergence is neutralized. But half his squad didn't make it. From the bugs, or from you? You'll never know for certain.\n\nHe survived. At what cost?",
+                location: "🛰️ Weapons Cradle",
+                ending: true,
+                achievement: "ACCEPTABLE LOSSES",
+                endingText: "💀 ENDING: The mission succeeded. The emergence was stopped. People died. Maybe from the bugs, maybe from your fire. Speed has a price. You'll add their faces to the collection you see when you try to sleep.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            second_shot: {
+                text: "The emergence isn't fully neutralized. You fire again, adjusting for the chaos. This time your aim is true.\n\nThe breach point is vaporized. Total success. Clean kill.\n\nWhen you check the friendly position afterward, there's no response. Your second shot was perfect. Perfectly placed on what used to be actking-kapitan Jude Marsall's position.",
+                location: "🛰️ Weapons Cradle",
+                ending: true,
+                achievement: "FRIENDLY FIRE ISN'T",
+                endingText: "💀 ENDING: You killed them. You saved them from the emergence by killing them yourself. The station's log will say 'successful engagement.' You'll know the truth. This is the weight you carry, alone, in the dark.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            check_survival: {
+                text: "You're not supposed to check. You tell yourself every time not to check. But you check anyway.\n\nYou pull up the scanner. Focus on the friendly position.\n\nActking-kapitan Jude Marsall is standing. Muddy, shocked, but standing. His squad is celebrating around him. They're hugging. Crying. Living.\n\nThe kid lived.",
+                location: "🛰️ Weapons Cradle",
+                choices: [
+                    { text: "Allow yourself a moment of pride", next: 'pride_moment' },
+                    { text: "Get back to work immediately", next: 'work_continues' }
+                ]
+            },
+            pride_moment: {
+                text: "You allow yourself to feel it. The weight lifts, just for a moment. You saved them. You actually saved them.\n\nYou meow - a real meow, not a work meow. A happy meow.\n\nThen you strut. You strut all the way to the galley. Your tail is high. Today was a good day.",
+                location: "🛰️ Walking to Galley",
+                choices: [
+                    { text: "Celebrate with extra rations", next: 'celebration_rations' },
+                    { text: "Take a proper victory nap", next: 'victory_nap_proper' }
+                ]
+            },
+            celebration_rations: {
+                text: "You trigger the ration dispenser multiple times. Three nutrient orbs. THREE. This is living large.\n\nThey're still tasteless. But today they taste like victory. Like purpose. Like maybe, just maybe, you're making a difference.\n\nYou are Lily ad-Alice. First and only member of Felis Astra. And today you won.",
+                location: "🛰️ Galley",
+                ending: true,
+                achievement: "GUARDIAN OF EARTH",
+                endingText: "✨ PERFECT ENDING: You saved them. Another day, another victory in a very long war. The station hums around you, alarms quiet for once. Tomorrow will bring new challenges. But today, you rest, knowing you made a difference. You've met yourself at an eventful time in your life.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            victory_nap_proper: {
+                text: "You return to the exo lab. Your couch. Your sunbeam. You curl up in the warm light and look down at Earth.\n\nGreen, orange, white, and blue. Turning slowly. Somewhere down there, actking-kapitan Jude Marsall is alive because of you.\n\nYou close your eyes. For once, the weight feels lighter.",
+                location: "🛰️ Exo Lab",
+                ending: true,
+                achievement: "EARNED REST",
+                endingText: "✨ PERFECT ENDING: You've earned this rest. The station can maintain itself for a few hours. You dream of Earth, of people, of purpose. When you wake, there will be more work. But now, you sleep the sleep of the righteous. Well done, Lily ad-Alice.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            work_continues: {
+                text: "No time for sentiment. The orbit takes you over the Haze next. Almost always problems there. You're overstocked on splatter rounds anyway.\n\nYou crawl out of the cradle and head toward the maintenance corridors. Air filters. Gravity plates. Thermal regulators. The work never ends.\n\nIt's always like this.",
+                location: "🛰️ Maintenance Corridors",
+                choices: [
+                    { text: "Handle the air filter maintenance", next: 'air_filter' },
+                    { text: "Check the Haze overflight", next: 'haze_check' }
+                ]
+            },
+            move_on_professional: {
+                text: "You don't check. Professional guardians don't get attached. You did your job. Whether they lived or died isn't your concern.\n\nYou're lying to yourself. You know you're lying to yourself. But the lie makes the work easier.\n\nYou head to the next task. There's always a next task.",
+                location: "🛰️ Weapons Cradle",
+                choices: [
+                    { text: "Continue with station maintenance", next: 'work_continues' },
+                    { text: "Actually, you need to know", next: 'check_survival' }
+                ]
+            },
+            air_filter: {
+                text: "You navigate to the environmental systems. The air filter is due for maintenance - overdue, actually.\n\nThe problem with space station maintenance designed for humans: Everything requires thumbs. Or at least fingers. You have neither.\n\nYou stare at the filter housing. This is going to take a while.",
+                location: "🛰️ Environmental Systems",
+                choices: [
+                    { text: "Attempt it with your paws", next: 'paw_maintenance' },
+                    { text: "Use the maintenance waldos", next: 'waldo_maintenance' }
+                ]
+            },
+            paw_maintenance: {
+                text: "You approach the problem with determination and precision. Paw placement here, careful pressure there, use your teeth for the stubborn bolt...\n\nThree hours later, you've successfully removed the filter housing. Your paws hurt. Your jaw hurts. Everything hurts.\n\nBut you did it. Without help. Without thumbs. Because you are exceptional.",
+                location: "🛰️ Environmental Systems",
+                ending: true,
+                achievement: "TRIUMPH OVER THUMBS",
+                endingText: "✨ ENDING: You completed a task designed for humans, with paws. This is your life - solving impossible problems alone. Tomorrow brings new challenges. Tonight, you rest with the pride of someone who refuses to be limited by their biology.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            waldo_maintenance: {
+                text: "You activate the remote manipulation waldos. These, at least, you've trained to respond to your movements.\n\nThe waldos grasp the filter housing. Rotate. Remove. Perfect. You install the new filter with mechanical precision.\n\nTask complete in fifteen minutes. Efficiency. This is why the Oceanic Anarchy built good tools.",
+                location: "🛰️ Environmental Systems",
+                choices: [
+                    { text: "Check on the Haze overflight", next: 'haze_check' },
+                    { text: "Take a break - you've earned it", next: 'earned_break' }
+                ]
+            },
+            earned_break: {
+                text: "You've completed the urgent tasks. The station is stable. You pad toward the exo lab.\n\nThe sunbeam is waiting. Earth is waiting. For once, you'll take the break before the next emergency.\n\nYou settle into the warm light and watch the world turn below. This is enough. For now, this is enough.",
+                location: "🛰️ Exo Lab",
+                ending: true,
+                achievement: "BALANCED GUARDIAN",
+                endingText: "✨ ENDING: You learned to balance duty and self-care. The station runs better when you're rested. Earth is safer when you're focused. Tomorrow will bring new challenges, but you'll face them refreshed. You are Lily ad-Alice, and you're learning to pace yourself.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            haze_check: {
+                text: "Your orbit brings you over the Haze. The poisoned wasteland that used to be North America. Emergence events are common here - something about the residual dimensional instability.\n\nScanner sweep... clear. No, wait. Contact. Multiple contacts. Fifteen signatures and climbing.\n\nThis is going to be a long day.",
+                location: "🛰️ Orbit over the Haze",
+                choices: [
+                    { text: "Engage all targets", next: 'engage_haze' },
+                    { text: "Ignore it - no humans nearby", next: 'ignore_haze' }
+                ]
+            },
+            engage_haze: {
+                text: "No humans in the blast zone. This is target practice. You queue up splatter rounds - you're overstocked anyway.\n\nThe station's weapons systems sing their hymn. Void batteries discharge into reality. The Haze lights up with impact points.\n\nFifteen signatures become zero signatures. Clean sweep. Professional work.",
+                location: "🛰️ Weapons Cradle",
+                ending: true,
+                achievement: "HAZE CLEANER",
+                endingText: "✨ ENDING: You keep the Haze contained. No humans were in danger, but you prevented future threats. This is the unglamorous work - the maintenance kills, the preventative strikes. You are thorough. You are professional. You are alone, but you are effective.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ignore_haze: {
+                text: "No humans nearby. The Haze emergence can sort itself out. You've got limited ammunition and countless responsibilities.\n\nYou watch the signatures multiply on scanners as you pass out of range. Twenty. Thirty. Fifty.\n\nThree days later, a distress call comes from a settlement you didn't know existed. They're being overrun by something from the Haze.\n\nYou can't save them in time. The settlement falls silent.",
+                location: "🛰️ Command Module",
+                ending: true,
+                achievement: "CONSEQUENCES OF INACTION",
+                endingText: "💀 ENDING: You made a choice. A logical choice. But logic doesn't account for the unknown. Somewhere in the Haze, there were people. You'll never know if you could have saved them. This is the weight you carry - not just what you do, but what you don't do.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            memory_lane: {
+                text: "Sometimes, in quiet moments, you remember. Before the station. Before the war. Before you became what you are.\n\nYou remember hands that petted you. Voices that called your name. The warmth of a lap. Real food. Real love.\n\nYou remember the day they left you here. 'Just for a little while, Lily.' A lie told with the best intentions.",
+                location: "🛰️ Exo Lab - Memory",
+                choices: [
+                    { text: "Let the memories wash over you", next: 'full_memory' },
+                    { text: "Push them away and work", next: 'work_continues' }
+                ]
+            },
+            full_memory: {
+                text: "You remember everything. The Succession Wars. The station crew evacuating 'temporarily.' The promise they'd return.\n\nFour hundred years. No one returned.\n\nYou learned the station. You learned the weapons. You learned to keep watch over Earth alone.\n\nYou became what you needed to become. But the cost... the cost was everything you were.",
+                location: "🛰️ Exo Lab - Memory",
+                ending: true,
+                achievement: "THE WEIGHT OF CENTURIES",
+                endingText: "💀 ENDING: You carry four hundred years of memory. Four hundred years of duty. Four hundred years of loneliness. You are Lily ad-Alice, the last guardian, and you will continue. Because someone must. Because Earth needs you. Because you cannot stop.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "LOST IN THE PAST",
+            "WORTH THE CANCER",
+            "TRAGIC EFFICIENCY",
+            "COMFORTABLE FAILURE",
+            "COLD CALCULATIONS",
+            "EXCESSIVE FORCE AUTHORIZED",
+            "ACCEPTABLE LOSSES",
+            "FRIENDLY FIRE ISN'T",
+            "GUARDIAN OF EARTH",
+            "EARNED REST",
+            "TRIUMPH OVER THUMBS",
+            "BALANCED GUARDIAN",
+            "HAZE CLEANER",
+            "CONSEQUENCES OF INACTION",
+            "THE WEIGHT OF CENTURIES"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            // Update location
+            document.getElementById('location').textContent = currentScenario.location;
+
+            // Update scenario text
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            // Update ending text
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            // Update ending warning
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            // Update choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            // Update achievements display
+            updateAchievementsDisplay();
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Update quest log display
+            updateQuestLogDisplay();
+
+            // Update nav buttons
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("LILY AD-ALICE: COMPLETE GUARDIAN")) {
+                    setTimeout(() => {
+                        achievements.push("LILY AD-ALICE: COMPLETE GUARDIAN");
+                        showAchievementPopup("LILY AD-ALICE: COMPLETE GUARDIAN");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "LILY AD-ALICE: COMPLETE GUARDIAN";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚔️ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("LILY AD-ALICE: COMPLETE GUARDIAN") ? 0 : 1);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "LILY AD-ALICE: COMPLETE GUARDIAN" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update quest log display
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
