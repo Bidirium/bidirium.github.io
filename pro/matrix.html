@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Red Pill Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a3a1a 50%, #0a2a0a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff00;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            border-color: #00ff00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff00;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .matrix-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005500;
+            border-color: #005500;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ff00;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005500;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005500, #00ff00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 0, 0.5);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #00ffff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005500;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005500;
+        }
+
+        .history-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .history-button.current {
+            background-color: #00ff00;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 0, 0.5);
+            color: #00ff00;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 0, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005500;
+        }
+
+        .history-hint {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005500;
+        }
+
+        .quest-log-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005500;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="matrix-icon">◉</span>
+                    THE RED PILL QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">12</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">12</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ SIMULATION CONCLUDED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                MEMORY LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "You sit alone in your small apartment, staring at your computer screen. It's 2:30 AM. You should be sleeping, but something keeps you online.\n\nA message appears: 'Follow the white rabbit.'\n\nYour phone rings. Unknown number.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Answer the phone", next: 'answer_phone' },
+                    { text: "Ignore it and keep searching", next: 'ignore_call' },
+                    { text: "Turn off everything and sleep", next: 'go_sleep' }
+                ]
+            },
+            answer_phone: {
+                text: "A voice: 'They're watching you. You've been asking questions. Meet me at the club on 5th street. Come alone.'\n\nThe line goes dead. Your heart races.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Go to the club immediately", next: 'go_club' },
+                    { text: "Research the number first", next: 'research' },
+                    { text: "This is crazy, go to sleep", next: 'go_sleep' }
+                ]
+            },
+            ignore_call: {
+                text: "You let it ring. Another message appears: 'You can't hide from the truth forever.'\n\nThe messages stop. Everything goes quiet. Too quiet.\n\nYou feel you've missed something important.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Keep searching online", next: 'deep_search' },
+                    { text: "Call the number back", next: 'call_back' },
+                    { text: "Shut down and sleep", next: 'go_sleep' }
+                ]
+            },
+            go_sleep: {
+                text: "You close your laptop and climb into bed. As you drift off, you wonder if you'll remember any of this tomorrow.\n\nYou wake up. Everything feels normal. Your alarm clock shows 9:00 AM. Time for work.",
+                location: "🏠 Your Apartment - Morning",
+                ending: true,
+                achievement: "IGNORANCE IS BLISS",
+                endingText: "💤 ENDING: You chose the comfortable lie. You go about your normal life, never knowing what you missed. The questions fade. The mystery remains unsolved. You are content.",
+                choices: [
+                    { text: "Wake up and start over", next: 'start' }
+                ]
+            },
+            research: {
+                text: "You trace the number. It's a burner phone, last pinged near the club district. Your search leads to encrypted forums discussing 'glitches in reality.'\n\nPeople talking about seeing the same thing twice. Déjà vu on a massive scale.\n\nYou're learning. Knowledge is power.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Go to the club now", next: 'go_club_prepared' },
+                    { text: "Dive deeper into the forums", next: 'deep_search' },
+                    { text: "This is too much, shut it down", next: 'go_sleep' }
+                ]
+            },
+            go_club_prepared: {
+                text: "You arrive at the club, having done your homework. The woman in white notices your awareness immediately.\n\n'You researched. Smart. Most people just rush in blind.' She seems impressed.\n\n'You might actually be ready for this.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "I want to know everything", next: 'want_truth_prepared' }
+                ]
+            },
+            want_truth_prepared: {
+                text: "She produces the two pills. 'Red or blue. But I'll tell you this—you prepared. You questioned. That matters.'\n\nShe leans closer. 'The red pill is harder than you think. But you seem like someone who can handle it.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Take the red pill", next: 'red_pill_prepared' },
+                    { text: "Take the blue pill", next: 'blue_pill' }
+                ]
+            },
+            red_pill_prepared: {
+                text: "You take the red pill. She smiles. 'Hold on.'\n\nThe transition is smoother than it should be. Your mind was already questioning reality. The shift feels almost... natural.\n\nYou wake in the real world with unusual clarity.",
+                location: "⚡ Unknown Location",
+                choices: [
+                    { text: "Where am I?", next: 'awakening_prepared' }
+                ]
+            },
+            awakening_prepared: {
+                text: "'Welcome to the real world. Most people panic at this stage. You look... ready.'\n\nA man approaches. 'You did your research. You questioned reality before we even found you. That's rare. Very rare.'\n\nYour readiness will serve you well.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "I'm ready to learn", next: 'training_start_bonus' }
+                ]
+            },
+            training_start_bonus: {
+                text: "'Let's see what you can do.' You enter the Construct. Your training progresses faster than normal. Your questioning mind adapts quickly.\n\n'Impressive,' your trainer says. 'You're already thinking like someone who can bend the rules.'",
+                location: "⚡ The Construct",
+                choices: [
+                    { text: "Continue training", next: 'first_training_prepared' }
+                ]
+            },
+            first_training_prepared: {
+                text: "You train intensively. Your preparation shows. You pick up techniques faster, understand the Matrix's nature deeper.\n\n'You're ready for a mission. But listen carefully—we need you to pay attention to EVERYTHING. Details matter.'",
+                location: "⚡ The Construct - Training Complete",
+                choices: [
+                    { text: "I'm ready, I'll be observant", next: 'first_mission_alert' }
+                ]
+            },
+            first_mission_alert: {
+                text: "You jack in to the Matrix. Your team briefs you: 'Pay attention to patterns. Agents have tells. People repeat actions before they're possessed. Stay sharp.'\n\nYou're on a busy street. Everything looks normal. But you're watching.",
+                location: "🌆 The Matrix - City Street",
+                choices: [
+                    { text: "Follow the mission plan carefully", next: 'follow_plan_observant' },
+                    { text: "Try to spot patterns first", next: 'observe_matrix' }
+                ]
+            },
+            observe_matrix: {
+                text: "You pause and observe. There—a woman walked past the same store twice. A man adjusted his tie in the exact same way, twice.\n\nGlitches. You're seeing the Matrix's patterns. This awareness will help you survive.",
+                location: "🌆 The Matrix - City Street",
+                choices: [
+                    { text: "Now follow the mission plan", next: 'follow_plan_expert' }
+                ]
+            },
+            follow_plan_expert: {
+                text: "You meet your contact. Before she speaks, you notice a man watching. His movements are too precise. Too identical to another person nearby.\n\n'Agent,' you whisper. Your contact's eyes go wide. 'How did you—nevermind. We leave. NOW.'",
+                location: "🌆 The Matrix - Cafe",
+                choices: [
+                    { text: "Lead the escape", next: 'expert_escape' }
+                ]
+            },
+            expert_escape: {
+                text: "You navigate the escape perfectly. You predicted the Agent's movements. You reached the exit with time to spare.\n\nBack in the real world: 'That was... exceptional. You have the gift. Real potential.'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "What's next?", next: 'oracle_recommended' }
+                ]
+            },
+            oracle_recommended: {
+                text: "'You need to see the Oracle. She can tell you more about your potential. This isn't optional—it's essential for what's coming.'\n\nYou jack in and visit her apartment. She's waiting.",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Ask about your path", next: 'oracle_deep_reading' }
+                ]
+            },
+            oracle_deep_reading: {
+                text: "'You're the one who prepared. Who questioned. Who observed.' She offers a cookie. 'But being The One isn't just about talent. It's about impossible choices.'\n\n'You'll face a choice: sacrifice or salvation. Only the truly ready can find the third path. Can you?'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Tell me how", next: 'oracle_teaches' },
+                    { text: "I'll figure it out", next: 'oracle_cryptic' }
+                ]
+            },
+            oracle_teaches: {
+                text: "'The Architect will give you two choices. Both lead to failure. The third path requires you to see beyond the code. To rewrite the rules themselves.'\n\nShe touches your forehead. 'Remember: Don't just think outside the box. Realize there is no box.'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "I understand", next: 'oracle_blessing' }
+                ]
+            },
+            oracle_cryptic: {
+                text: "'Good. The answer found is less valuable than the answer earned.' She smiles. 'But I'll give you this: The Architect's game has rules. You don't have to play by them.'\n\nYou leave with more questions, but somehow that feels right.",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Return to the real world", next: 'power_training_offered' }
+                ]
+            },
+            oracle_blessing: {
+                text: "'You're ready. Now go train. Master your power. You'll need every advantage.'\n\nShe watches you leave. 'That one might actually make it,' she whispers to herself.",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Return and train harder", next: 'power_training_offered' }
+                ]
+            },
+            power_training_offered: {
+                text: "'The Oracle said you're ready for advanced training. This is where you learn to truly bend the Matrix. To see the code. To rewrite reality.'\n\nYour trainer looks serious. 'This will push you to your limits. Ready?'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Yes, train me fully", next: 'power_training_complete' },
+                    { text: "Skip to the mission", next: 'final_mission_unprepared' }
+                ]
+            },
+            power_training_complete: {
+                text: "You train until you can see code cascading. Until you can stop bullets mid-air. Until you can rewrite small sections of the Matrix.\n\n'You're ready,' your trainer finally says. 'You're as prepared as anyone could be. Now comes the real test.'",
+                location: "⚡ The Construct - Mastery Achieved",
+                choices: [
+                    { text: "I'm ready for the Source", next: 'final_mission_prepared' }
+                ]
+            },
+            final_mission_unprepared: {
+                text: "'Your choice. But rushing into the Source without preparation... most who do that don't come back.'\n\nYou can see the concern in their eyes. This is a mistake, but it's your mistake to make.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Go to the Source anyway", next: 'source_approach_weak' }
+                ]
+            },
+            source_approach_weak: {
+                text: "You jack in and approach the Source building. Immediately, three Agents appear.\n\nYou're not ready. You didn't train enough. You fight hard but—",
+                location: "🌆 The Matrix - Source Building",
+                ending: true,
+                achievement: "INSUFFICIENT PREPARATION",
+                endingText: "💀 ENDING: You rushed the final mission without proper training. The Agents overwhelmed you. You died believing you were ready, but belief alone isn't enough. You needed preparation AND belief. Sometimes wisdom is knowing you're not ready yet.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            final_mission_prepared: {
+                text: "You jack in fully prepared. The Source building looms ahead. You've trained. You've learned. You've visited the Oracle. You understand the stakes.\n\n'This is it,' your leader says. 'Show us what The One can do.'",
+                location: "⚡ The Real World - Final Briefing",
+                choices: [
+                    { text: "Enter the Matrix", next: 'source_approach_ready' }
+                ]
+            },
+            source_approach_ready: {
+                text: "The Source building. You've prepared for this. You can see the code now. The Agents' patterns. The glitches in reality.\n\nYou have multiple approaches. Your training lets you choose wisely.",
+                location: "🌆 The Matrix - Source Building",
+                choices: [
+                    { text: "Scale the outside (use your training)", next: 'outside_climb_master' },
+                    { text: "Stealth approach (use your observation)", next: 'stealth_approach_master' },
+                    { text: "Direct approach (risky)", next: 'direct_approach' }
+                ]
+            },
+            outside_climb_master: {
+                text: "You step outside and start climbing. Your training kicks in. You're not just climbing—you're bending physics.\n\nBut halfway up, you realize: you're still following THEIR path. The building, the climb, the 'Source' at the top—it's all designed.\n\nYou pause. Think. What would happen if you didn't go up?",
+                location: "🌆 The Matrix - Outside Source Building",
+                choices: [
+                    { text: "Continue to the top (the obvious path)", next: 'top_floor_trap' },
+                    { text: "Stop and reconsider the whole approach", next: 'epiphany_moment' }
+                ]
+            },
+            top_floor_trap: {
+                text: "You reach the top. The Architect is waiting. 'Impressive. But predictable. You followed the path. Like all the others.'\n\nThe room transforms. A cage. You're trapped in a simulation within a simulation.",
+                location: "🌆 The Matrix - The Source",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: The 'Source' was a honey pot. A trap. The real Source was never in a building. The Architect tested whether you'd think beyond the obvious path. You failed the real test: recognizing when you're being led into a trap.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            epiphany_moment: {
+                text: "You stop mid-climb. Something's wrong. Why would the Source be in a building? Why would they make it this 'hard' but still achievable?\n\nIt's a test. The building itself is the trap. Those who fight their way up fail.\n\nYou need to think COMPLETELY different. Not stronger. Not faster. SMARTER.",
+                location: "🌆 The Matrix - Outside Source Building - Revelation",
+                choices: [
+                    { text: "Look for the REAL Source", next: 'true_source_search' }
+                ]
+            },
+            true_source_search: {
+                text: "You jack out temporarily. 'The building is a trap,' you tell your team. 'The real Source isn't a place. It's the code itself. I need to access it differently.'\n\nYour Oracle training kicks in. Don't think outside the box. Realize there IS no box.\n\n'Jack me back in. Different entry point. I'm going into the code directly.'",
+                location: "⚡ The Real World - Revelation",
+                choices: [
+                    { text: "Enter the Matrix at the code level", next: 'code_realm' }
+                ]
+            },
+            code_realm: {
+                text: "You don't enter a location. You enter the underlying code. Green cascading numbers. Pure data. You ARE in the Source now.\n\nThe Architect appears as raw code. 'Remarkable. You're the first to find the real test. Not strength. Not speed. Wisdom.'\n\n'But you still face a choice.'",
+                location: "💚 The Code - The REAL Source",
+                choices: [
+                    { text: "Face the ultimate choice", next: 'architect_final_test' }
+                ]
+            },
+            architect_final_test: {
+                text: "The Architect shows you the choice encoded in the Matrix's foundation: 'Save one life you love, or free humanity. Everyone before you chose. Both options lead to cycles. Endless loops.'\n\n'But you found the real Source. Perhaps you can see the real answer.'\n\nYou see it—the choice itself is code. Rewritable code.",
+                location: "💚 The Code - The REAL Source",
+                choices: [
+                    { text: "Rewrite the choice at its foundation", next: 'rewrite_reality' },
+                    { text: "Trust the Architect and choose", next: 'nearly_there_ending' }
+                ]
+            },
+            nearly_there_ending: {
+                text: "You make a choice. Either way, you've come further than anyone else. You found the real Source. You understood the test.\n\nBut at the final moment, you played by their rules. The Matrix reboots. You saved many, but not everyone. The cycle continues, though improved.",
+                location: "💚 The Code - The REAL Source",
+                ending: true,
+                achievement: "NEARLY THERE",
+                endingText: "⚡ GOOD ENDING: You came closer than anyone before. You found the real Source. You passed the wisdom test. But you still chose within the binary. The true victory required one more step: rewriting the choice itself. You were SO close. Try again?",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            stealth_approach_master: {
+                text: "You move like a ghost through the building. Perfect stealth. You reach high floors undetected.\n\nBut then you pause. Something feels wrong. Too easy? No—you're being ALLOWED to progress. This IS the trap. The building itself.\n\nReal stealth means not entering at all.",
+                location: "🌆 The Matrix - Source Building - Floor 80",
+                choices: [
+                    { text: "Continue to the top anyway", next: 'top_floor_trap' },
+                    { text: "Jack out and rethink everything", next: 'strategic_withdrawal' }
+                ]
+            },
+            strategic_withdrawal: {
+                text: "'What are you doing?' your team demands as you jack out. 'You were almost there!'\n\n'No. The building is the trap. Every One before me went to the top. All failed. I need to think differently.'\n\nYou remember the Oracle's words: 'Realize there is NO box.'",
+                location: "⚡ The Real World - Strategic Thinking",
+                choices: [
+                    { text: "Search for an alternative approach", next: 'true_source_search' }
+                ]
+            },
+            top_floor_prepared: {
+                text: "You reach what appears to be the Source. The Architect stands before you.\n\n'Remarkable preparation. But you still came to the building. You still followed the path.' He gestures around. 'This isn't the real Source. It's a filtration system. To catch those who think combat or speed is the answer.'\n\n'The real Source... you'll never reach it this way.'",
+                location: "🌆 The Matrix - False Source",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: You were well-prepared, well-trained, and wise. But you still played their game. The building was never the real test. Six versions of The One before you reached this room. All prepared. All skilled. All trapped. The real test was recognizing the entire scenario was a distraction.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            seek_third_way: {
+                text: "You close your eyes. Remember the Oracle. Remember your training. But something's wrong.\n\nYou're in the building. You followed their path. The third way isn't HERE. It's not about choosing differently in this room.\n\nThe third way was never entering the building at all.",
+                location: "🌆 The Matrix - False Source",
+                ending: true,
+                achievement: "NEARLY THERE",
+                endingText: "⚡ ENDING: You understood the choice was false. You sought the third path. But you sought it too late—after already walking into their trap. The real wisdom was recognizing the building itself was the test. You were close. So close. But close isn't victory.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            rewrite_reality: {
+                text: "You don't choose. You rewrite. Your fingers dance through code only you can see. You're changing the fundamental rules.\n\nThe Architect watches in disbelief. 'Impossible. No one has ever—'\n\nYou save both. You rewrite the Matrix. You create a world where the choice was false. Where there IS a third way.",
+                location: "🌆 The Matrix - The Source",
+                ending: true,
+                achievement: "TRUE ONE - PERFECT VICTORY",
+                endingText: "🌟 PERFECT ENDING: You achieved what no One before you could. Through preparation, wisdom, training, and insight, you found the third path. The Matrix is rewritten. Humans can choose freedom or comfort. The war ends in true peace. You didn't just win. You transcended the game itself. You are The One.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            follow_plan_observant: {
+                text: "You follow the plan but stay alert. At the cafe, you notice something—a person's movements are too synchronized with another.\n\n'Stay calm,' your contact says. 'We might have been made. Be ready to run.'",
+                location: "🌆 The Matrix - Cafe",
+                choices: [
+                    { text: "Point out the synchronized people", next: 'spot_agent_observant' },
+                    { text: "Continue carefully", next: 'continue_mission' }
+                ]
+            },
+            spot_agent_observant: {
+                text: "'Good eye. Those are people about to be possessed. We leave NOW.'\n\nYour observation skills just saved both of you. The mission was compromised, but you survived through awareness.",
+                location: "🌆 The Matrix - Running",
+                choices: [
+                    { text: "Escape successfully", next: 'mission_debrief_success' }
+                ]
+            },
+            mission_debrief_success: {
+                text: "'You've got the gift. Sharp eyes. Sharp mind. You survived your first mission not through luck, but through skill.'\n\nYour team is impressed. This is the beginning of something greater.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Request more training", next: 'humble_path_strategic' },
+                    { text: "Ask about advanced missions", next: 'eager_path' }
+                ]
+            },
+            humble_path_strategic: {
+                text: "'Smart. Most rookies get cocky after their first success. You're thinking long-term.'\n\nThey train you further. You learn more. Each lesson makes you sharper. More ready for what's coming.",
+                location: "⚡ The Real World - Training",
+                choices: [
+                    { text: "Visit the Oracle for guidance", next: 'oracle_visit_strategic' },
+                    { text: "Continue tactical training", next: 'tactical_training' }
+                ]
+            },
+            oracle_visit_strategic: {
+                text: "You visit the Oracle. She smiles. 'You seek wisdom before power. That's the mark of someone who might actually survive this.'\n\nShe tells you about the impossible choice coming. About looking beyond binary options.",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Learn everything you can", next: 'oracle_deep_reading' }
+                ]
+            },
+            tactical_training: {
+                text: "You focus on tactics. Pattern recognition. Combat efficiency. Strategic thinking.\n\n'You're becoming more than just a fighter,' your trainer says. 'You're becoming a tactician. The One needs both.'",
+                location: "⚡ The Construct - Tactical Training",
+                choices: [
+                    { text: "Now visit the Oracle", next: 'oracle_visit_strategic' }
+                ]
+            },
+            eager_path: {
+                text: "'Confidence is good. Overconfidence kills. You ready for something harder?'\n\nThey send you on a more dangerous mission. You handle it, but barely. You realize you need more preparation.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Request intensive training", next: 'humble_path_strategic' }
+                ]
+            },
+            deep_search: {
+                text: "You fall down the rabbit hole. Hours pass. You find encrypted messages, coded warnings, people disappearing after asking the wrong questions.\n\nSuddenly your screen flickers. Green text appears: 'Wake up.'",
+                location: "💻 Your Apartment - 4:47 AM",
+                choices: [
+                    { text: "Respond to the message", next: 'respond_message' },
+                    { text: "Unplug everything immediately", next: 'unplug' },
+                    { text: "Call that mysterious number", next: 'call_back' }
+                ]
+            },
+            call_back: {
+                text: "You dial. It rings once. 'Good. You're ready. The club. One hour. Look for the woman in the white coat.'\n\nClick. They hung up. You check the time. You need to decide now.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Go to the club", next: 'go_club' },
+                    { text: "Forget this and sleep", next: 'go_sleep' }
+                ]
+            },
+            respond_message: {
+                text: "You type: 'I'm awake.' The response is instant: 'No. Not yet. But you will be. The club. Now.'\n\nYour screen goes black, then returns to normal. As if nothing happened.",
+                location: "💻 Your Apartment",
+                choices: [
+                    { text: "Go to the club", next: 'go_club' },
+                    { text: "This is insane, shut down", next: 'unplug' }
+                ]
+            },
+            unplug: {
+                text: "You rip every cable from the wall. Silence. Then your phone buzzes. A text: 'You can't unplug from this.'\n\nAnother buzz: An address. The club.",
+                location: "💻 Your Apartment - Unplugged",
+                choices: [
+                    { text: "Fine. Go to the club", next: 'go_club' },
+                    { text: "Throw phone away and hide", next: 'paranoid' }
+                ]
+            },
+            paranoid: {
+                text: "You throw your phone in the trash. You cover your laptop camera. You close all the blinds.\n\nYou sit in darkness. Waiting. For what, you don't know anymore.",
+                location: "🏠 Your Apartment - Dark",
+                ending: true,
+                achievement: "BROKEN MIND",
+                endingText: "💀 ENDING: You spend three days in your apartment, afraid to leave. Eventually, you emerge. Life goes on. The messages never return. Sometimes you wonder what would have happened if you'd been braver.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            go_club: {
+                text: "The club is dark, loud, pulsing with music. You scan the crowd. There—a woman in a white coat, watching you.\n\nShe approaches: 'You've been looking for answers. I have them. But first, I need to know: Do you want the truth, no matter what it costs?'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Yes, I want the truth", next: 'want_truth' },
+                    { text: "Maybe I should leave", next: 'leave_club' },
+                    { text: "Who are you?", next: 'ask_identity' }
+                ]
+            },
+            leave_club: {
+                text: "You turn to leave. She grabs your arm. 'Once you start asking questions, they don't stop noticing you. Leaving now won't change that.'\n\nShe releases you. 'Your choice. But you're already in this.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Stay and hear the truth", next: 'want_truth' },
+                    { text: "Leave anyway", next: 'leave_anyway' }
+                ]
+            },
+            leave_anyway: {
+                text: "You walk out. The street is empty. Too empty. A black car pulls up.\n\nTwo men in suits step out. 'Come with us. We have questions.'\n\nYou run. They don't chase. They don't need to. They know where you live.",
+                location: "🌃 Outside the Club",
+                ending: true,
+                achievement: "BROKEN MIND",
+                endingText: "💀 ENDING: Three days later, you wake up in your bed. The last few days are fuzzy. Your computer history is wiped. You never return to those forums. Some memories are better left buried.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ask_identity: {
+                text: "'Names don't matter. What matters is what I can show you.' She pulls out two pills—one red, one blue.\n\n'Red pill: you see how deep this goes. Blue pill: you go home, forget all this, wake up tomorrow believing whatever you want.'\n\nShe holds them out. 'Choose.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Take the red pill", next: 'red_pill' },
+                    { text: "Take the blue pill", next: 'blue_pill' },
+                    { text: "Ask more questions first", next: 'more_questions' }
+                ]
+            },
+            want_truth: {
+                text: "She nods. From her coat, she produces two pills—one red, one blue.\n\n'Red pill: the truth. Blue pill: comfortable ignorance. The choice is yours, but you can only choose once.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Take the red pill", next: 'red_pill' },
+                    { text: "Take the blue pill", next: 'blue_pill' },
+                    { text: "What happens after?", next: 'ask_after' }
+                ]
+            },
+            more_questions: {
+                text: "'No more questions. Time to choose.' She presses the pills toward you.\n\n'I can explain everything... after. But first, you need to decide if you really want to know.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Take the red pill", next: 'red_pill' },
+                    { text: "Take the blue pill", next: 'blue_pill' }
+                ]
+            },
+            ask_after: {
+                text: "'After the red pill? Everything changes. You can't go back. Your old life, your old beliefs—gone.'\n\n'After the blue pill? You wake up tomorrow. This conversation never happened. Life continues.'\n\n'Choose.'",
+                location: "🎵 The Club",
+                choices: [
+                    { text: "Take the red pill", next: 'red_pill' },
+                    { text: "Take the blue pill", next: 'blue_pill' }
+                ]
+            },
+            blue_pill: {
+                text: "You take the blue pill. She nods, understanding.\n\n'See you around.' She walks away, disappearing into the crowd.\n\nYou feel dizzy. The room spins. You stumble outside, catch a cab home...",
+                location: "🚕 In a Cab",
+                ending: true,
+                achievement: "THE COMFORTABLE LIE",
+                endingText: "💤 ENDING: You wake up in your bed. The sun is shining. You remember going to a club, but the details are fuzzy. You have a normal day. A normal life. Sometimes you dream of green code and a woman in white, but you never quite remember why.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            red_pill: {
+                text: "You take the red pill. She smiles. 'Hold on to something.'\n\nThe room shifts. Colors bleed. The music distorts. You feel like you're falling...\n\nWhen your vision clears, you're somewhere else. A dark room. Machines humming. People working at screens.",
+                location: "⚡ Unknown Location",
+                choices: [
+                    { text: "Where am I?", next: 'awakening' }
+                ]
+            },
+            awakening: {
+                text: "'Welcome to the real world.' A man approaches. Behind him, screens show green cascading code.\n\n'Everything you knew was a simulation. A prison for your mind. But you're free now.'\n\nHe extends his hand. 'Ready to learn the truth?'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Take his hand", next: 'training_start' },
+                    { text: "This can't be real", next: 'denial' },
+                    { text: "Send me back", next: 'reject_reality' }
+                ]
+            },
+            denial: {
+                text: "'It's a lot to process. Everyone reacts differently.' He shows you a mirror. Your reflection stares back, but something's different about your eyes.\n\n'You've been living in a dream. But denial won't change reality.'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Accept the truth", next: 'training_start' },
+                    { text: "I want to go back", next: 'reject_reality' }
+                ]
+            },
+            reject_reality: {
+                text: "'You can't go back. The red pill freed your mind. Your body is already awake.'\n\nHe looks at you with pity. 'Some people aren't ready. They fight. They reject it. Eventually... they break.'",
+                location: "⚡ The Real World - Operations",
+                ending: true,
+                achievement: "BROKEN MIND",
+                endingText: "💀 ENDING: You spend weeks refusing to accept reality. You close your eyes, wishing for your old life. Eventually, they let you go. You live in the real world, but your mind never truly leaves the Matrix. You exist, but you don't live.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            training_start: {
+                text: "'Good. First lesson: This isn't the real world either. We're still jacked in, but this is OUR construct. Here, we make the rules.'\n\nSuddenly you're standing in an empty white space. Infinite in every direction.",
+                location: "⚡ The Construct",
+                choices: [
+                    { text: "What is this place?", next: 'construct_explain' },
+                    { text: "Show me what I can do", next: 'eager_training' }
+                ]
+            },
+            construct_explain: {
+                text: "'This is the loading program. We use it for training. You can load anything—weapons, vehicles, simulations of any place.'\n\nA rack of weapons appears. Then a dojo. Then a city street.\n\n'In the Matrix, the rules can be bent. Some can be broken. Ready to try?'",
+                location: "⚡ The Construct",
+                choices: [
+                    { text: "I'm ready", next: 'first_training' },
+                    { text: "I need more explanation", next: 'ask_more' }
+                ]
+            },
+            eager_training: {
+                text: "'That's the spirit.' Weapons materialize around you. 'In the Matrix, what you believe becomes real. If you think you can move faster—you will. Think you can jump farther—you'll fly.'\n\n'But first, you need to free your mind.'",
+                location: "⚡ The Construct",
+                choices: [
+                    { text: "Begin training", next: 'first_training' }
+                ]
+            },
+            ask_more: {
+                text: "'The Matrix is a computer simulation. Your real body is in a pod, feeding energy to the machines. We jack in using technology to free people.'\n\nHe gestures to the empty space. 'This construct is our safe space for learning. Ready to begin?'",
+                location: "⚡ The Construct",
+                choices: [
+                    { text: "Yes, train me", next: 'first_training' }
+                ]
+            },
+            first_training: {
+                text: "You train for what feels like weeks. Combat, hacking, vehicle operation. You die a hundred times in simulations, then get back up.\n\n'You're a natural,' your trainer says. 'Time for a real mission. We're jacking into the Matrix. Stay close.'",
+                location: "⚡ The Construct - Training Complete",
+                choices: [
+                    { text: "I'm ready for the real thing", next: 'first_mission' },
+                    { text: "I need more practice", next: 'more_practice' }
+                ]
+            },
+            more_practice: {
+                text: "'There's no practice that fully prepares you for the real thing. But we can run one more simulation.'\n\nYou train harder. Push further. Master new skills. Eventually, you can't delay anymore.",
+                location: "⚡ The Construct",
+                choices: [
+                    { text: "Okay, I'm ready now", next: 'first_mission' }
+                ]
+            },
+            first_mission: {
+                text: "You jack in. Suddenly you're on a busy city street. People everywhere. Cars honking. Everything looks... normal.\n\n'Remember,' a voice in your ear, 'they look like us, talk like us, but some of them are Agents. Programs designed to protect the system. Stay alert.'",
+                location: "🌆 The Matrix - City Street",
+                choices: [
+                    { text: "Follow the mission plan", next: 'follow_plan' },
+                    { text: "Explore on your own", next: 'explore_solo' }
+                ]
+            },
+            follow_plan: {
+                text: "You meet your contact in a crowded cafe. She slides you a phone. 'Use this. We'll guide you to the target—a person ready to be freed.'\n\nAcross the cafe, you notice someone watching you. Too intently. His eyes... something's wrong.",
+                location: "🌆 The Matrix - Cafe",
+                choices: [
+                    { text: "Point out the watcher", next: 'spot_agent' },
+                    { text: "Ignore and continue mission", next: 'continue_mission' }
+                ]
+            },
+            explore_solo: {
+                text: "'Negative! Stick to the plan!' your team yells through the comm.\n\nBut you're curious. You wander into an alley. The Matrix feels different here—glitchy. You see it: green code flickering at the edges of your vision.\n\nThen you see him. A man in a black suit. An Agent.",
+                location: "🌆 The Matrix - Dark Alley",
+                choices: [
+                    { text: "Run immediately", next: 'run_agent' },
+                    { text: "Try to fight", next: 'fight_agent' }
+                ]
+            },
+            spot_agent: {
+                text: "'Good eye. That's an Agent. We need to leave. Now.'\n\nYou follow your contact out the back. The Agent stands, begins moving toward the exit with inhuman speed.\n\n'The exit is two blocks away. Run!'",
+                location: "🌆 The Matrix - Running",
+                choices: [
+                    { text: "Sprint for the exit", next: 'race_exit' },
+                    { text: "Try to lose him in the crowd", next: 'lose_crowd' }
+                ]
+            },
+            continue_mission: {
+                text: "You proceed to find the target—a corporate programmer who's been seeing glitches. You make contact.\n\nBut as you're explaining, your phone rings. 'GET OUT. NOW. Agents are converging on your position.'\n\nThe target looks terrified. 'What's happening?'",
+                location: "🌆 The Matrix - Office Building",
+                choices: [
+                    { text: "Take the target with you", next: 'save_target' },
+                    { text: "Abort and escape alone", next: 'abort_mission' }
+                ]
+            },
+            run_agent: {
+                text: "You run. The Agent pursues with impossible speed, leaping from building to building, warping through the environment.\n\n'Exit at the phone booth! Thirty seconds!' your team screams.\n\nYou can see it. So can the Agent.",
+                location: "🌆 The Matrix - Running",
+                choices: [
+                    { text: "Push yourself to superhuman speed", next: 'breakthrough_fail' },
+                    { text: "Dive for the exit", next: 'desperate_exit' },
+                    { text: "Hide and wait for an opening", next: 'hide_strategy' }
+                ]
+            },
+            breakthrough_fail: {
+                text: "You push hard, trying to tap into superhuman speed. But you haven't trained for this. You stumble, fall.\n\nThe Agent is on you in seconds. Gun raised.",
+                location: "🌆 The Matrix - Combat",
+                ending: true,
+                achievement: "ROOKIE MISTAKE",
+                endingText: "💀 ENDING: You tried to bend the Matrix without understanding it. Belief alone isn't enough—you need training, preparation, wisdom. You died believing you could be more than you were. Maybe in another life, with more preparation, you would have succeeded.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            hide_strategy: {
+                text: "You duck into a store, blending with civilians. The Agent scans, searching. His gaze passes over you.\n\nHe moves on. Your team guides you to a secondary exit. You escape, barely.",
+                location: "🌆 The Matrix - Hidden",
+                choices: [
+                    { text: "Jack out successfully", next: 'mission_debrief_survival' }
+                ]
+            },
+            mission_debrief_survival: {
+                text: "'You survived by being smart, not flashy. Good.' Your trainer nods. 'Most first-timers try to fight. They die. You thought tactically. That matters.'\n\nYou're learning that in the Matrix, cleverness beats bravery.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Request tactical training", next: 'humble_path_strategic' }
+                ]
+            },
+            fight_agent: {
+                text: "You stand your ground. The Agent smiles—they always do before a kill.\n\nYou engage. He's faster. Stronger. You land one hit. He lands ten. You're down.\n\n'No one fights an Agent on their first mission,' he says, raising his gun.",
+                location: "🌆 The Matrix - Combat",
+                ending: true,
+                achievement: "ROOKIE MISTAKE",
+                endingText: "💀 ENDING: You die in the Matrix. Your body in the real world dies too. They bury you with the others who believed too soon, tried too hard. Your tombstone reads: 'Freed, but not ready.'",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            race_exit: {
+                text: "You sprint flat out. The Agent is gaining. Your contact reaches the phone, picks up, vanishes.\n\nYour turn. The phone is ringing. The Agent is reaching for you. You dive—",
+                location: "🌆 The Matrix - Phone Booth",
+                choices: [
+                    { text: "Grab the phone", next: 'successful_exit' }
+                ]
+            },
+            lose_crowd: {
+                text: "You push into a crowd. The Agent doesn't care—he shoves through people like they're cardboard.\n\nWorse, some of the people's faces shift. More Agents. They can possess anyone not freed.\n\n'The exit! NOW!' Your team is panicking.",
+                location: "🌆 The Matrix - Crowd",
+                choices: [
+                    { text: "Fight through to the exit", next: 'desperate_exit' }
+                ]
+            },
+            save_target: {
+                text: "'Come with me if you want to live,' you say, grabbing their hand.\n\nYou run together, but they're slow, confused, stumbling. The Agents are closing in.\n\n'Leave them!' your team orders. 'Save yourself!'",
+                location: "🌆 The Matrix - Escaping",
+                choices: [
+                    { text: "Leave them and escape", next: 'abort_mission' },
+                    { text: "Carry them to the exit", next: 'heroic_save' }
+                ]
+            },
+            abort_mission: {
+                text: "You leave the target behind. You hear screams as you reach the exit and jack out.\n\nBack in the real world, your team won't look at you. 'We don't abandon people,' someone mutters.",
+                location: "⚡ The Real World - Operations",
+                ending: true,
+                achievement: "SURVIVOR'S GUILT",
+                endingText: "💀 ENDING: You survived, but at what cost? The person you left behind was captured, killed, or worse—plugged back in with memories wiped. You go on missions, but the guilt follows you. Some say you made the smart choice. You're not sure.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            heroic_save: {
+                text: "You half-carry, half-drag the target. Bullets fly past. An Agent blocks your path.\n\nThen something happens. Time slows. You see the bullets in the air. You're moving between them.\n\nYou reach the exit. You both jack out.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "What just happened?", next: 'awakening_power' }
+                ]
+            },
+            breakthrough: {
+                text: "You push. Your legs move faster than physics should allow. The world blurs. You're bending the rules.\n\nYou reach the exit, grab the phone. The Agent's hand passes through empty air. You're gone.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Catch your breath", next: 'awakening_power' }
+                ]
+            },
+            desperate_exit: {
+                text: "You make it by inches. The phone receiver is in your hand, the Agent's hand on your jacket. You jack out.\n\nYou made it. Barely. Your team breathes relief.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Debrief the mission", next: 'mission_debrief' }
+                ]
+            },
+            successful_exit: {
+                text: "You're out. Safe. Your heart is pounding. Your contact is already debriefing.\n\n'First mission survival. Not bad. Some aren't so lucky.'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "What's next?", next: 'mission_debrief' }
+                ]
+            },
+            awakening_power: {
+                text: "Your trainer stares at you. 'You did something in there. Something only a few can do. You bent the rules of the Matrix.'\n\n'There's a prophecy. About someone who can change everything. Someone who can end the war. Could it be you?'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "I'm just trying to survive", next: 'humble_path' },
+                    { text: "Tell me about the prophecy", next: 'prophecy_path' },
+                    { text: "I felt something... different", next: 'power_path' }
+                ]
+            },
+            mission_debrief: {
+                text: "'You did well for a first-timer. But we've got bigger problems. The machines are hunting us. We need to find The Source—the mainframe of the Matrix. Shut it down, we free everyone.'\n\n'It's dangerous. Most who try don't come back. You in?'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Count me in", next: 'final_mission' },
+                    { text: "I need more training first", next: 'delay_final' }
+                ]
+            },
+            humble_path: {
+                text: "'Humility is good. But if you're the one from the prophecy, hiding won't change it.'\n\nThey bring you before their leader. An older woman with kind eyes.\n\n'The Oracle told me about you. You have a choice to make. One that will define everything.'",
+                location: "⚡ The Real World - Meeting the Leader",
+                choices: [
+                    { text: "What choice?", next: 'final_choice' }
+                ]
+            },
+            prophecy_path: {
+                text: "'The prophecy speaks of The One—someone born inside the Matrix but able to rewrite its code. Someone who can see beyond the simulation and change reality itself.'\n\n'If that's you, you could end this war. Save humanity. Or die trying.'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Then let's end this", next: 'final_mission' },
+                    { text: "How do I know if I'm The One?", next: 'oracle_visit' }
+                ]
+            },
+            power_path: {
+                text: "'That feeling means you're waking up to your potential. In the Matrix, belief is reality. If you believe you can fly, you will. If you believe you can stop bullets, you can.'\n\n'Want to test it?'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Yes, let's test my limits", next: 'power_training' },
+                    { text: "This is too much responsibility", next: 'reject_power' }
+                ]
+            },
+            delay_final: {
+                text: "You train for weeks more. You get better, faster, stronger. But there's a limit to training.\n\nFinally, the call comes. 'No more delays. The machines found our location. It's now or never.'",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Face the final mission", next: 'final_mission' }
+                ]
+            },
+            oracle_visit: {
+                text: "They jack you in to see The Oracle—a program that can see the future. She lives in an apartment building, baking cookies.\n\n'So you're the one everyone's talking about,' she says, offering you a cookie. 'Do you think you're The One?'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "I don't know", next: 'oracle_uncertain' },
+                    { text: "Yes, I am", next: 'oracle_confident' },
+                    { text: "Does it matter what I think?", next: 'oracle_philosophical' }
+                ]
+            },
+            power_training: {
+                text: "Back in the Construct, you push your limits. You dodge bullets. You run up walls. You break through concrete with your fists.\n\nYou're becoming something more than human. Something the Matrix can't contain.",
+                location: "⚡ The Construct - Advanced Training",
+                choices: [
+                    { text: "I'm ready for anything", next: 'final_mission' }
+                ]
+            },
+            reject_power: {
+                text: "'You can't reject what you are. The power is part of you now. The only question is whether you'll use it to save people or run from it.'\n\nYou think about the person you saved. The people still trapped. The choice becomes clear.",
+                location: "⚡ The Real World - Operations",
+                choices: [
+                    { text: "Fine. I'll use it to help", next: 'final_mission' }
+                ]
+            },
+            oracle_uncertain: {
+                text: "'Being The One is like being in love. No one can tell you you're in love, you just know it. Through and through.'\n\nShe looks at you. 'You've got the gift, but you're waiting for something. Your next life, maybe. Who knows.'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "What should I do?", next: 'oracle_advice' }
+                ]
+            },
+            oracle_confident: {
+                text: "She laughs. 'Confidence is good. But The One doesn't need to proclaim it. When the time comes, you'll know. Or you won't, and that's okay too.'\n\n'Now go. You have work to do.'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Return to the real world", next: 'final_mission' }
+                ]
+            },
+            oracle_philosophical: {
+                text: "'Smart. What you think shapes what you become. But don't think too much—that's a trap too.'\n\nShe hands you a cookie. 'You'll make the right choice when it matters. I've seen it.'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "Thank you", next: 'final_mission' }
+                ]
+            },
+            oracle_advice: {
+                text: "'Do what you've been doing. Save people. Fight for what's right. The rest will work itself out.'\n\nAs you leave, she calls out: 'Oh, and you'll meet someone. Someone important. Don't let them die.'",
+                location: "🌆 The Matrix - Oracle's Apartment",
+                choices: [
+                    { text: "I'll remember that", next: 'final_mission' }
+                ]
+            },
+            final_mission: {
+                text: "The mission is simple on paper: Jack in, reach the Source, plant a virus that will free everyone simultaneously.\n\nIn reality: Navigate the most defended location in the Matrix, past infinite Agents, to touch something no one has reached before.\n\n'This is it,' your leader says. 'Ready?'",
+                location: "⚡ The Real World - Final Briefing",
+                choices: [
+                    { text: "Let's end this war", next: 'source_approach' },
+                    { text: "One more question...", next: 'final_question' }
+                ]
+            },
+            final_question: {
+                text: "'Ask quickly. We're running out of time.'\n\nYou look at your team—people who've become family. 'If I don't make it back...'\n\n'Then someone else will finish what you started. That's how we win. Together.'",
+                location: "⚡ The Real World - Final Briefing",
+                choices: [
+                    { text: "Jack me in", next: 'source_approach' }
+                ]
+            },
+            source_approach: {
+                text: "You jack in. The location: A massive building. The Source is at the top. Between you and it: Security. Agents. And something worse—the Architect, the program that designed the Matrix.\n\nYour team fans out. 'Meet you at the top. Or in the next life.'",
+                location: "🌆 The Matrix - Source Building",
+                choices: [
+                    { text: "Take the stairs (stealthy)", next: 'stealth_approach' },
+                    { text: "Take the elevator (direct)", next: 'direct_approach' },
+                    { text: "Scale the outside (crazy)", next: 'outside_climb' }
+                ]
+            },
+            stealth_approach: {
+                text: "You move like a ghost. Knockout guards. Bypass systems. You're making progress.\n\nThen alarms. An Agent materializes. 'You've come far. But this is where it ends.'",
+                location: "🌆 The Matrix - Source Building - Floor 47",
+                choices: [
+                    { text: "Fight the Agent", next: 'agent_fight' },
+                    { text: "Run for the stairs", next: 'continue_climb' }
+                ]
+            },
+            direct_approach: {
+                text: "The elevator rises. Floor by floor. Too slow. You know they're tracking you.\n\nFloor 60. The doors open. Three Agents waiting. 'Mr. Anderson,' one says, even though that's not your name. They say it to everyone.\n\n'We've been expecting you.'",
+                location: "🌆 The Matrix - Source Building - Floor 60",
+                choices: [
+                    { text: "Fight all three", next: 'impossible_fight' },
+                    { text: "Break through the ceiling", next: 'ceiling_escape' }
+                ]
+            },
+            outside_climb: {
+                text: "You step out a window and start climbing. The wind howls. The Matrix glitches around you—this shouldn't be possible.\n\nBut you're making it possible. You're bending reality itself. Halfway up, you believe you can fly.\n\nAnd you do.",
+                location: "🌆 The Matrix - Outside Source Building",
+                choices: [
+                    { text: "Fly to the top", next: 'top_floor' }
+                ]
+            },
+            agent_fight: {
+                text: "You engage. This time, you're more prepared than before. You match his speed somewhat. Counter some moves.\n\nBut he's still faster. Still stronger. A program perfected over iterations.\n\nHe disarms you. Gun to your head.",
+                location: "🌆 The Matrix - Source Building - Combat",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: You fell into the trap. The Architect WANTS you to fight. Every 'One' before you fought their way to the top. All of them failed. Fighting Agents is what they expect. The true path requires thinking differently. Violence isn't always strength.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            continue_climb: {
+                text: "You run. The Agent pursues relentlessly. You're evenly matched in speed now—but for how long?\n\nYou reach floor 80. 90. Your legs are burning. The Agent shows no fatigue. Programs don't get tired.\n\nYou stumble. He closes the gap.",
+                location: "🌆 The Matrix - Source Building - Stairs",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: You tried to outrun a program. In their world. By their rules. The Architect designed this building to test you—and fighting or running ARE the tests everyone fails. You needed to think outside the simulation itself.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            impossible_fight: {
+                text: "You fight three Agents at once. You're well-trained, but this is insane.\n\nYou land hits. They land more. You're surrounded. Overwhelmed. This was designed to be impossible.\n\n'All of them try to fight,' one Agent says. 'All of them fail.'",
+                location: "🌆 The Matrix - Source Building - Floor 60",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: The Architect built this scenario to filter out those who rely on violence. Every 'One' before you tried to fight their way through. All failed. The real test wasn't about fighting—it was about realizing you shouldn't fight at all.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ceiling_escape: {
+                text: "You punch through the ceiling. Concrete crumbles. You climb through the maintenance shaft, floor after floor.\n\nBehind you, Agents follow. But then the shaft collapses. Planned structural weakness. You triggered their trap.\n\nYou're buried in debris. Jacking out fails. You're stuck.",
+                location: "🌆 The Matrix - Source Building - Maintenance",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: The maintenance shaft was bait. A trap for those who think they can brute force their way through. The Architect knows every move, every 'clever' path. Your predecessors tried this too. Real cleverness means not playing their game at all.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            agent_defeated: {
+                text: "The Agent falls. You watch him dissolve into code. But something's wrong.\n\nMore Agents appear. And more. For every one you defeat, two take its place. This is a trap. The Source was never about fighting your way in.\n\nYou're overwhelmed.",
+                location: "🌆 The Matrix - Source Building - Floor 47",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: You fell for it. The Agents were designed to make you fight. To keep you busy. To delay you. While you fought, they traced your real-world location. Your body is captured. The war continues without you. Strategy beats strength.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            top_floor: {
+                text: "You reach the top. A white room. Screens everywhere showing the Matrix in code. In the center: The Architect. An old man in a suit.\n\n'Welcome. I've been expecting you. Though not this quickly.' He gestures to the screens. 'You've come to free humanity. Noble. Predictable. And ultimately, futile.'",
+                location: "🌆 The Matrix - The Source",
+                choices: [
+                    { text: "Plant the virus now", next: 'virus_attempt' },
+                    { text: "Listen to him", next: 'architect_speech' },
+                    { text: "Destroy everything", next: 'destruction_path' }
+                ]
+            },
+            virus_attempt: {
+                text: "You pull out the virus and run toward the terminal. The Architect doesn't move.\n\n'Do you really think it would be that easy?'\n\nThe terminal is fake. A trap. Agents materialize all around you.",
+                location: "🌆 The Matrix - The Source",
+                choices: [
+                    { text: "Fight through them", next: 'final_fight' },
+                    { text: "Negotiate with the Architect", next: 'negotiate' }
+                ]
+            },
+            architect_speech: {
+                text: "'The Matrix has been rebooted six times. Each time, someone like you appears. Each time, they're given a choice: Save one person you love, or save humanity. None have chosen correctly.'\n\nHe shows you a screen. Your teammate—the one from the cafe—captured. Dying.\n\n'Your choice. Her life. Or the virus.'",
+                location: "🌆 The Matrix - The Source",
+                choices: [
+                    { text: "Save humanity", next: 'sacrifice_choice' },
+                    { text: "Save her", next: 'love_choice' },
+                    { text: "Refuse to choose", next: 'third_option' }
+                ]
+            },
+            destruction_path: {
+                text: "You don't negotiate with machines. You attack the Source directly, tearing through code, ripping apart the foundation of the Matrix.\n\n'You'll kill everyone!' the Architect warns.\n\n'Then we'll rebuild something better,' you reply.",
+                location: "🌆 The Matrix - The Source - Collapsing",
+                choices: [
+                    { text: "Destroy it all", next: 'destruction_ending' }
+                ]
+            },
+            final_fight: {
+                text: "You fight wave after wave of Agents. You're good. Very good. But they keep coming.\n\nYou realize too late: this is a delaying tactic. While you fight, they're tracing your real body. Finding your ship.\n\n'All of them fight,' an Agent says. 'All of them lose.'",
+                location: "🌆 The Matrix - The Source",
+                ending: true,
+                achievement: "TRAPPED IN THE LOOP",
+                endingText: "💀 ENDING: You fell into the oldest trap: thinking strength and combat prowess could win this war. While you fought, they found your body. Your ship is destroyed. Your team is dead. The One was supposed to think BEYOND fighting. You were strong but not wise.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            negotiate: {
+                text: "'Finally, dialogue.' The Architect seems pleased. 'Here's truth: destroy the Matrix, both species die. But...' he hesitates.\n\nThis is it. A crack. But you're still in the building. Still in HIS domain. This negotiation is still playing by his rules.\n\nYou need leverage. Real leverage.",
+                location: "🌆 The Matrix - The Source",
+                ending: true,
+                achievement: "NEARLY THERE",
+                endingText: "🕊️ ENDING: You chose negotiation over violence. Wise. But negotiating in his domain, by his rules, with no real leverage? You achieve a partial peace. Some freed, most enslaved. Better than nothing. But not victory. True power came from thinking completely outside this scenario.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            sacrifice_choice: {
+                text: "You plant the virus. On the screen, your friend dies. You watch her eyes close.\n\nThe Matrix crashes. Billions wake up. You've won... in a way. But the cost weighs on you forever.\n\nThe Architect's voice echoes: 'You played the game. Just like all the others.'",
+                location: "⚡ The Real World - Victory?",
+                ending: true,
+                achievement: "THE HARD WAY",
+                endingText: "⚡ ENDING: You freed humanity through sacrifice. It's noble. It's tragic. It's exactly what the Architect predicted you'd do. You won the battle but not the war—you played by their rules. The cycle continues. Real victory required thinking beyond the binary choice.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            love_choice: {
+                text: "You abandon the virus and save her. She's alive. Humanity remains enslaved.\n\nThe Architect nods. 'As predicted. The choice between love and duty. No one chooses correctly because both options are designed to fail.'\n\nYou've lost. But at least you're together.",
+                location: "⚡ The Real World - Escape",
+                ending: true,
+                achievement: "SURVIVOR'S GUILT",
+                endingText: "💔 ENDING: You chose love. It's human. It's understandable. It's also exactly what the Architect designed you to do. You saved one at the cost of billions. The guilt will haunt you. The real test was seeing there was another way entirely.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            third_option: {
+                text: "'Refuse to choose? You need more than defiance.' The Architect watches coldly. 'You're not ready for this.'\n\nWithout the training, without the Oracle's guidance, without true preparation—you can't see the third path. You must choose.",
+                location: "🌆 The Matrix - The Source",
+                choices: [
+                    { text: "Save humanity (forced)", next: 'sacrifice_choice' },
+                    { text: "Save her (forced)", next: 'love_choice' }
+                ]
+            },
+            destruction_ending: {
+                text: "The Matrix collapses completely. Billions die, still plugged in. You destroyed it, but without a real plan.\n\nThe real world descends into chaos. Machines retaliate. You've started a war you can't win.",
+                location: "⚡ The Real World - Apocalypse",
+                ending: true,
+                achievement: "REVOLUTIONARY",
+                endingText: "💀 ENDING: You tore down the old world without building a new one. Revolutionary zeal without wisdom. Millions dead. The survivors curse your name. Destruction is easy. Building something better is hard. You chose the easy path dressed as the brave one.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            success_escape: {
+                text: "You jack out. But the virus wasn't enough. The Matrix adapts, quarantines it. You escaped but failed.\n\n'We tried,' your team says. But you see it in their eyes—disappointment. You came so close.",
+                location: "⚡ The Real World - Failure",
+                ending: true,
+                achievement: "NEARLY THERE",
+                endingText: "⚡ ENDING: You survived. You even damaged the Matrix temporarily. But survival isn't victory. The Matrix reboots. The war continues. You were skilled, prepared, and brave. But you missed the fundamental truth: the building was never the real target.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            martyrdom: {
+                text: "You stay to ensure it works. The code tears apart around you. But the virus is incomplete. Wrong approach. Wrong target.\n\nYour consciousness fragments into the collapsing Matrix. You're not a guardian. You're just... gone.",
+                location: "🌆 The Matrix - Collapsing",
+                ending: true,
+                achievement: "THE HARD WAY",
+                endingText: "💀 ENDING: You sacrificed everything for a flawed plan. The virus failed because you attacked the wrong target. The building wasn't the Source—it was a honeypot. Your noble sacrifice changed nothing. The war continues. Your team mourns you. But sacrifice without wisdom is just... waste.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            peace_ending: {
+                text: "You reach a compromise. The Matrix continues, improved. Some humans freed, others choosing to stay.\n\nIt's progress. But as you leave, you see it: the Architect smiling. You negotiated. In his domain. By his rules. You gained something, but conceded more.",
+                location: "⚡ The Real World - New Era",
+                ending: true,
+                achievement: "PEACEMAKER",
+                endingText: "🕊️ ENDING: Peace, of a sort. Better than war. But negotiating from within their trap meant you had no leverage. The compromise favors them. Humans get crumbs. It's not defeat, but it's not victory. The real power came from refusing to play the game at all.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            final_choice: {
+                text: "She looks at you with ancient eyes. 'The Source is where all choices lead. You'll have to make an impossible decision. Save one, or save everyone. The Architect will offer you a deal. Be ready.'\n\nShe pauses. 'But remember—sometimes the only way to win is to change the game itself.'",
+                location: "⚡ The Real World - Before the End",
+                choices: [
+                    { text: "I understand", next: 'final_mission' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "IGNORANCE IS BLISS",
+            "THE COMFORTABLE LIE",
+            "BROKEN MIND",
+            "ROOKIE MISTAKE",
+            "INSUFFICIENT PREPARATION",
+            "TRAPPED IN THE LOOP",
+            "THE HARD WAY",
+            "SURVIVOR'S GUILT",
+            "REVOLUTIONARY",
+            "PEACEMAKER",
+            "NEARLY THERE",
+            "TRUE ONE - PERFECT VICTORY"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+        let readinessScore = 0; // Track player's preparedness
+        let oracleVisited = false;
+        let powerTrainingCompleted = false;
+        let missionsSurvived = 0;
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            // Update location
+            document.getElementById('location').textContent = currentScenario.location;
+
+            // Update scenario text
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            // Update ending text
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            // Update ending warning
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            // Update choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            // Update achievements display
+            updateAchievementsDisplay();
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Update quest log display
+            updateQuestLogDisplay();
+
+            // Update nav buttons
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            // Track strategic choices
+            if (gameState === 'research' || gameState === 'deep_search') readinessScore++;
+            if (gameState === 'observe_matrix') readinessScore++;
+            if (gameState === 'oracle_deep_reading' || gameState === 'oracle_teaches') {
+                readinessScore++;
+                oracleVisited = true;
+            }
+            if (gameState === 'power_training_complete') {
+                readinessScore += 2;
+                powerTrainingCompleted = true;
+            }
+            if (gameState === 'expert_escape' || gameState === 'spot_agent_observant') {
+                readinessScore++;
+                missionsSurvived++;
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                questLog = [];
+                readinessScore = 0;
+                oracleVisited = false;
+                powerTrainingCompleted = false;
+                missionsSurvived = 0;
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("ARCHITECT OF YOUR OWN DESTINY")) {
+                    setTimeout(() => {
+                        achievements.push("ARCHITECT OF YOUR OWN DESTINY");
+                        showAchievementPopup("ARCHITECT OF YOUR OWN DESTINY");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "ARCHITECT OF YOUR OWN DESTINY";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("ARCHITECT OF YOUR OWN DESTINY") ? 0 : 1);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "ARCHITECT OF YOUR OWN DESTINY" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update quest log display
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
