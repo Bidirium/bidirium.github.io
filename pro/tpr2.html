@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Perfect Run</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            color: #e94560;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #e94560;
+            box-shadow: 0 20px 25px -5px rgba(233, 69, 96, 0.3);
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px #e94560;
+        }
+
+        .stats-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(233, 69, 96, 0.1);
+            border-radius: 0.25rem;
+            border: 1px solid #e94560;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            color: #e94560;
+            font-size: 0.875rem;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(233, 69, 96, 0.1);
+            border-radius: 0.25rem;
+            border: 1px solid #e94560;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e94560;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #e94560;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #e94560;
+            font-weight: bold;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid #e94560;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .choice-button:hover {
+            background-color: #e94560;
+            color: #000;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px #e94560;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #e94560;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #e94560;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #e94560;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-box">
+            <h1 class="title">💾 THE PERFECT RUN 💾</h1>
+            
+            <div class="stats-box">
+                <div class="stat-item">💀 Deaths: <strong id="deaths">0</strong></div>
+                <div class="stat-item">🔄 Loop: <strong id="loops">1</strong></div>
+                <div class="stat-item">💰 Money: €<strong id="money">150,000</strong></div>
+            </div>
+
+            <div class="location-box">
+                <span id="location">Starting...</span>
+            </div>
+
+            <div class="scenario-box">
+                <div class="scenario-text" id="text"></div>
+            </div>
+
+            <div class="choices-container" id="choices"></div>
+
+            <div class="nav-buttons">
+                <button class="nav-button" id="back" onclick="goBack()">← Back</button>
+                <button class="nav-button" id="forward" onclick="goForward()">Forward →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const story = {
+            start: {
+                location: "🚗 Highway - Entering New Rome",
+                text: "It's May 8th 2020, and you're driving your customized red Plymouth Fury into New Rome.\n\nThe city sprawls before you - casinos glittering, the Dynamis Tower piercing the sky. You're Ryan 'Quicksave' Romano, courier with a strange power: you can save and reload when you die.\n\nToday's job: deliver a briefcase to Renesco's Jolie Wrangler pub.",
+                choices: [
+                    { text: "Drive carefully", next: "careful" },
+                    { text: "Drive fast and reckless", next: "reckless" },
+                    { text: "Scout the area first", next: "scout" }
+                ]
+            },
+            careful: {
+                location: "🍺 Jolie Wrangler Pub",
+                text: "You arrive safely at the pub. It's a cozy place between an Italian restaurant and a closed nightclub.\n\nTime to make the delivery.",
+                choices: [
+                    { text: "Enter and deliver immediately", next: "deliver" },
+                    { text: "Observe from outside first", next: "observe" }
+                ]
+            },
+            reckless: {
+                location: "🍺 Jolie Wrangler Pub",
+                text: "You weave through traffic like a maniac, nearly hitting several cars. Horns blare. But you make it to the pub in record time, adrenaline pumping.",
+                choices: [
+                    { text: "Rush in with the briefcase", next: "deliver" }
+                ]
+            },
+            scout: {
+                location: "🌆 New Rome Streets",
+                text: "You walk around, getting a feel for the city. Private Security patrols everywhere. People with obvious Genome mutations. Some stable, others... dangerous.\n\nEventually you head to the pub.",
+                choices: [
+                    { text: "Enter the pub", next: "observe" }
+                ]
+            },
+            observe: {
+                location: "🍺 Outside Jolie Wrangler",
+                text: "You watch the pub for a few minutes. Seems quiet. A few patrons inside, including someone levitating a coin - probably bought a cheap elixir.\n\nNothing suspicious. You enter with the briefcase.",
+                choices: [
+                    { text: "Approach the bartender", next: "meet_renesco" }
+                ]
+            },
+            deliver: {
+                location: "🍺 Inside Jolie Wrangler",
+                text: "'Hello, local humans, I come in peace!' you announce.\n\nThe bartender, Renesco, frowns. 'It's written on the door. What do you want?'\n\nYou hand him the briefcase. 'Delivery. Mushrooms. Possibly a bomb. Didn't check this time.'\n\nSuddenly, the temperature drops. Someone enters behind you.",
+                choices: [
+                    { text: "Turn around immediately", next: "spot_threat" },
+                    { text: "Keep talking to Renesco", next: "death1" }
+                ]
+            },
+            meet_renesco: {
+                location: "🍺 Inside Jolie Wrangler",
+                text: "You hand Renesco the briefcase. He takes it suspiciously.\n\n'I'll tell my boss. Payment soon.'\n\nAs you're about to leave, the temperature suddenly drops. Someone enters the pub behind you.",
+                choices: [
+                    { text: "Turn around fast", next: "spot_threat" },
+                    { text: "Ignore it", next: "death1" }
+                ]
+            },
+            death1: {
+                location: "🍺 Jolie Wrangler - DEATH",
+                text: "An ice spear tears through Renesco's throat, nailing him to the wall.\n\nBefore you can react, an icicle pierces your chest. Clean through.\n\nYou glimpse your killer: a walking skeleton with frozen eyes.\n\n'Adam sends his regards,' he rasps.\n\n'I will get you... on my next save...' you gasp.\n\nHe freezes you solid.\n\nEverything goes dark.\n\n[LOOP 2 BEGINS]",
+                choices: [
+                    { text: "Reload save", next: "start" }
+                ]
+            },
+            spot_threat: {
+                location: "🍺 Jolie Wrangler - DANGER",
+                text: "You spin around. The newcomer has his hoodie up, but you see beneath - a skull. Just bones and vestigial muscle.\n\nA Psycho Genome. Ice mist flows from his mouth.\n\nHe raises his hand. Ice forms. You have seconds.",
+                choices: [
+                    { text: "Stop time and dodge", next: "timestop" },
+                    { text: "Dive behind counter", next: "dive" },
+                    { text: "Run for your car", next: "run" }
+                ]
+            },
+            timestop: {
+                location: "🍺 Jolie Wrangler - TIME STOPPED",
+                text: "You activate your power. The world turns purple. Time freezes.\n\nThe skeleton is frozen mid-attack. Icicles hang in the air.\n\nYou walk around them and position yourself. Time resumes.\n\nThe icicles hit where you were. Chaos erupts.",
+                choices: [
+                    { text: "Fight with what's here", next: "improvise" },
+                    { text: "Run to your car for weapons", next: "car_weapons" }
+                ]
+            },
+            dive: {
+                location: "🍺 Jolie Wrangler - BEHIND COUNTER",
+                text: "You dive behind the counter. Ice shards tear through the air above you.\n\nScreams. Then silence.\n\n'You can hide, but I know you're there,' the skeleton says.\n\nFootsteps approach.",
+                choices: [
+                    { text: "Stay hidden", next: "death2" },
+                    { text: "Surprise attack", next: "death3" },
+                    { text: "Run for exit", next: "escape" }
+                ]
+            },
+            run: {
+                location: "🚗 Running to Plymouth",
+                text: "You bolt for the exit. Time-stop to dodge ice shards.\n\nYou make it outside and sprint for your Plymouth. The skeleton follows calmly.\n\nYou reach your car—\n\nIce spear hits your back. You collapse.",
+                choices: [
+                    { text: "Die and reload", next: "death4" }
+                ]
+            },
+            death2: {
+                location: "🍺 Jolie Wrangler - DEATH",
+                text: "Ice spears rain down through the wooden counter. You die without fighting back.\n\n[LOOP 3 BEGINS]",
+                choices: [
+                    { text: "Reload save", next: "start" }
+                ]
+            },
+            death3: {
+                location: "🍺 Jolie Wrangler - DEATH",
+                text: "You jump up with a beer bottle and smash it at his head.\n\nIt bounces off. He doesn't flinch.\n\nIce armor forms. He backhands you across the room.\n\n[LOOP 3 BEGINS]",
+                choices: [
+                    { text: "Reload save", next: "start" }
+                ]
+            },
+            death4: {
+                location: "🚗 Outside Pub - DEATH",
+                text: "You almost made it. Almost.\n\n[LOOP 3 BEGINS]\n\nTime to try something smarter...",
+                choices: [
+                    { text: "Reload save", next: "start" }
+                ]
+            },
+            escape: {
+                location: "🚗 Escaping",
+                text: "You sprint for the exit, time-stopping through ice attacks.\n\nYou make it to your Plymouth and peel out. In the mirror, the skeleton watches you go.\n\nYou survived. But Renesco is dead. The delivery failed.",
+                choices: [
+                    { text: "Leave New Rome", next: "coward" },
+                    { text: "Regroup and try again", next: "regroup" }
+                ]
+            },
+            improvise: {
+                location: "🍺 Jolie Wrangler - FIGHTING",
+                text: "You grab a chair and charge. The skeleton creates an ice shield.\n\nYour weapon shatters. He's too strong for improvised attacks.",
+                choices: [
+                    { text: "Keep fighting anyway", next: "death5" },
+                    { text: "Retreat to car", next: "tactical_retreat" }
+                ]
+            },
+            car_weapons: {
+                location: "🚗 At Your Plymouth",
+                text: "You sprint to your car and pop the trunk. Weapons everywhere - gauss rifle, baseball bat, pisto-gauntlets.\n\nThe skeleton exits the pub, looking for you.\n\nTime to end this properly.",
+                choices: [
+                    { text: "Ambush with the rifle", next: "snipe" },
+                    { text: "Drive car through pub wall", next: "car_attack" }
+                ]
+            },
+            death5: {
+                location: "🍺 Jolie Wrangler - DEATH",
+                text: "You fight bravely but stupidly. The skeleton is enhanced beyond normal humans.\n\nIce pierces your heart.\n\n[LOOP 4 BEGINS]",
+                choices: [
+                    { text: "Reload save", next: "start" }
+                ]
+            },
+            tactical_retreat: {
+                location: "🚗 Plymouth Fury",
+                text: "You make it to your car and drive away.\n\nEveryone in the bar died. But you have knowledge now.\n\nThe skeleton is named Ghoul. Works for someone called Adam. Meta-Gang territory.",
+                choices: [
+                    { text: "Research Adam", next: "research" },
+                    { text: "Reload and use weapons", next: "start" }
+                ]
+            },
+            coward: {
+                location: "🛣️ Highway - Leaving",
+                text: "You drive out of New Rome. The delivery failed. Your reputation takes a hit.\n\nBut this isn't the perfect run. You can do better.\n\n[TRY AGAIN]",
+                choices: [
+                    { text: "Reload save", next: "start" }
+                ]
+            },
+            regroup: {
+                location: "🅿️ Parking Garage",
+                text: "You find a quiet spot and think. You know Ghoul is coming. You can prepare.\n\nYour trunk has weapons. Time to use them properly.",
+                choices: [
+                    { text: "Set up the perfect ambush", next: "ambush_plan" }
+                ]
+            },
+            snipe: {
+                location: "🎯 Sniping Position",
+                text: "You line up the shot with your gauss rifle. Ghoul exits the pub.\n\nYou fire. Electromagnetic round hits his shoulder. He spins around.\n\nBefore he can form ice armor, you fire again. He drops.",
+                choices: [
+                    { text: "Finish him", next: "execute" },
+                    { text: "Interrogate him", next: "interrogate" }
+                ]
+            },
+            car_attack: {
+                location: "🍺 Jolie Wrangler - CAR CRASH",
+                text: "You position your car, set ACDC to full volume, and floor it.\n\nThe Plymouth smashes through the entrance. Ghoul is inside, and you hit him from behind like a freight train.\n\n'Hey guys, I'm Quicksave! I'm immortal, but don't tell anyone!'\n\nGhoul rises, dazed. Time for the baseball bat.",
+                choices: [
+                    { text: "Beat him with the bat", next: "bat_beatdown" }
+                ]
+            },
+            research: {
+                location: "💻 Internet Cafe",
+                text: "You research Adam and the Meta-Gang. They're Elixir junkies turned Psychos, taking over the drug trade.\n\nGhoul is Adam's enforcer. Extremely dangerous.\n\nAdam's goal: control all Genome elixirs in New Rome through Project Transcendence.",
+                choices: [
+                    { text: "Hunt Adam", next: "hunt_adam" },
+                    { text: "Reload and handle Ghoul first", next: "start" }
+                ]
+            },
+            ambush_plan: {
+                location: "🚗 Outside Jolie Wrangler - READY",
+                text: "You reload your save. It's May 8th again.\n\nThis time you drive straight to the pub, grab your baseball bat, and wait.\n\nFour minutes. Ghoul arrives. Time to rewrite this loop.",
+                choices: [
+                    { text: "Hit him with the car", next: "car_attack" },
+                    { text: "Ambush with bat", next: "surprise_attack" }
+                ]
+            },
+            execute: {
+                location: "🎯 Execution",
+                text: "You walk up and fire point-blank. Ghoul's skull shatters.\n\nCold. Efficient. Necessary.\n\nRenesco emerges, shaken. 'Thank you...'\n\nYou complete the delivery. Mission accomplished.",
+                choices: [
+                    { text: "Collect payment and continue", next: "victory_simple" }
+                ]
+            },
+            interrogate: {
+                location: "🎯 Interrogation",
+                text: "'Who's Adam?' you demand.\n\nGhoul coughs. 'Adam is... the future. Meta-Gang is taking over. You just painted a target on yourself.'\n\n'Where is he?'\n\n'Rust Town. Old Dynamis facility. You'll never reach him.'",
+                choices: [
+                    { text: "Let Security take him", next: "security" },
+                    { text: "Kill him anyway", next: "execute" }
+                ]
+            },
+            bat_beatdown: {
+                location: "🍺 Jolie Wrangler - BEATDOWN",
+                text: "You beat Ghoul with the bat to Highway to Hell. Each hit connects.\n\nHe tries to form ice armor but he's too stunned. Car hit plus surprise plus bat = victory.\n\nHe collapses. Private Security arrives.\n\nTime to bribe them.",
+                choices: [
+                    { text: "Throw money at them", next: "bribe_security" }
+                ]
+            },
+            surprise_attack: {
+                location: "🍺 Outside Pub - AMBUSH",
+                text: "You wait until Ghoul enters, then crash through the window with a timestop leap.\n\nGlass freezes mid-air. You land behind him, bat ready.\n\nTime resumes. CRACK. Right to the skull.\n\nHe never saw you coming.",
+                choices: [
+                    { text: "Finish the job", next: "bat_beatdown" }
+                ]
+            },
+            hunt_adam: {
+                location: "🏭 Rust Town - Adam's HQ",
+                text: "You spend weeks tracking Adam to an abandoned Dynamis facility.\n\nHeavily guarded. Dangerous. But you have saves.\n\nTime to end this.",
+                choices: [
+                    { text: "Frontal assault", next: "assault" },
+                    { text: "Stealth infiltration", next: "stealth" }
+                ]
+            },
+            victory_simple: {
+                location: "🌆 New Rome - Mission Complete",
+                text: "Delivery complete. Ghoul defeated. Renesco alive and grateful.\n\n'You saved my life,' he says.\n\nPayment arrives. Another successful run.\n\nBut Adam is still out there. The Meta-Gang remains. Your work isn't done.",
+                choices: [
+                    { text: "Hunt down Adam", next: "hunt_adam" },
+                    { text: "Accept this ending", next: "ending_survivor" }
+                ]
+            },
+            security: {
+                location: "🍺 Jolie Wrangler - Security Arrives",
+                text: "Private Security hauls Ghoul away. The captain hands you a card.\n\n'Ever want work, call this number.'\n\nYou complete the delivery. Another day in New Rome.",
+                choices: [
+                    { text: "Continue working", next: "ending_courier" },
+                    { text: "Go after Adam", next: "hunt_adam" }
+                ]
+            },
+            bribe_security: {
+                location: "🍺 Jolie Wrangler - Bribery",
+                text: "You throw wads of cash at the Security captain. He counts it, then lowers his weapon.\n\n'Glad we could help make the neighborhood safer today.'\n\nThey take Ghoul. You complete the delivery.\n\nRenesco is alive. Mission accomplished.",
+                choices: [
+                    { text: "Take on more jobs", next: "ending_courier" },
+                    { text: "Hunt Adam", next: "hunt_adam" }
+                ]
+            },
+            assault: {
+                location: "🏭 Adam's HQ - Assault",
+                text: "You drive straight at the facility, weapons blazing.\n\nPsychos pour out. You die. Reload. Die again.\n\nAfter eight deaths, you realize: frontal assault won't work alone.",
+                choices: [
+                    { text: "Try stealth instead", next: "stealth" },
+                    { text: "Keep trying", next: "stubborn" }
+                ]
+            },
+            stealth: {
+                location: "🏭 Inside Adam's HQ",
+                text: "You infiltrate at night using timestops. The facility is massive.\n\nYou overhear: Adam is working on Project Transcendence in the central lab.\n\nAlarms blare. Someone spotted you.",
+                choices: [
+                    { text: "Fight to Adam", next: "fight_through" },
+                    { text: "Abort and escape", next: "escape_adam" }
+                ]
+            },
+            stubborn: {
+                location: "🏭 Adam's HQ - Loop 50",
+                text: "Death after death, you keep trying. Each loop teaches you more.\n\nLoop 50: You finally see it. You can't win by force alone.\n\nYou need strategy, not stubbornness.",
+                choices: [
+                    { text: "Try different approach", next: "stealth" }
+                ]
+            },
+            fight_through: {
+                location: "🏭 Central Lab - CONFRONTATION",
+                text: "You fight through Psychos and reach the central lab.\n\nAdam stands there, calm, surrounded by glowing equipment.\n\n'Quicksave,' he says pleasantly. 'I've been expecting you. Ghoul told me everything about your saves.'\n\nHe knows your power.",
+                choices: [
+                    { text: "Attack immediately", next: "boss_fight" },
+                    { text: "Hear him out", next: "adam_talk" }
+                ]
+            },
+            escape_adam: {
+                location: "🌆 Escaped",
+                text: "You timestop and flee. You learned valuable intel about the facility.\n\nNext time will be different.",
+                choices: [
+                    { text: "Plan better attack", next: "stealth" }
+                ]
+            },
+            boss_fight: {
+                location: "🏭 Central Lab - BATTLE",
+                text: "You attack. Adam is fast - enhanced by his own serums.\n\nHe matches your timestops with precognition. The fight is brutal.\n\nYou die. Reload. Die. Reload.\n\nLoop 15: You finally see an opening.",
+                choices: [
+                    { text: "Take the opening", next: "victory_adam" },
+                    { text: "It's a trap - reload", next: "start" }
+                ]
+            },
+            adam_talk: {
+                location: "🏭 Central Lab - Dialogue",
+                text: "'Why?' you ask. 'Why all this?'\n\n'To save humanity through evolution,' Adam says. 'The Genome Wars proved we need to be MORE.'\n\n'By forcing it on people?'\n\n'By giving them the choice.' He gestures. 'Join me, Quicksave. Your power plus my vision.'",
+                choices: [
+                    { text: "Refuse and fight", next: "boss_fight" },
+                    { text: "Consider it", next: "temptation" }
+                ]
+            },
+            victory_adam: {
+                location: "🏭 Central Lab - VICTORY",
+                text: "You take the opening. Perfect timestop. Perfect strike.\n\nAdam's enhancements become his weakness. He falls.\n\n'Impressive,' he gasps. 'You found... the one way...'\n\nThe Meta-Gang's leader is defeated.",
+                choices: [
+                    { text: "Finish him", next: "ending_hero" }
+                ]
+            },
+            temptation: {
+                location: "🏭 Central Lab - Temptation",
+                text: "'What if you're right?' you ask. 'What if humanity needs evolution?'\n\n'Then join me!'\n\n'But not through force,' you interrupt. 'People deserve choice.'\n\nYou see another way. Not his way. Not rejecting evolution. A middle path.",
+                choices: [
+                    { text: "Fight for that vision", next: "ending_perfect" }
+                ]
+            },
+            ending_survivor: {
+                location: "🌆 New Rome - Sunset",
+                text: "You completed the delivery. Defeated Ghoul. Saved Renesco.\n\nAdam is still out there, but that's a problem for another day.\n\nYou drive your Plymouth into the sunset, ACDC playing.\n\n★ ENDING: THE SURVIVOR ★\n\nMission complete. But was it the perfect run?",
+                choices: [
+                    { text: "Try for perfect run", next: "start" }
+                ]
+            },
+            ending_courier: {
+                location: "🌆 New Rome - Working",
+                text: "You continue as a courier in New Rome. More deliveries. More chaos. More loops.\n\nQuicksave becomes a legend - the courier who always delivers.\n\n★ ENDING: THE COURIER ★\n\nYou survived. You prospered. But Adam's shadow looms.",
+                choices: [
+                    { text: "Start over", next: "start" }
+                ]
+            },
+            ending_hero: {
+                location: "🌆 New Rome - Dawn",
+                text: "Adam is dead. Project Transcendence destroyed. The Meta-Gang dissolves.\n\nNew Rome begins to heal.\n\nYou park your Plymouth and watch the sunrise. Mission accomplished.\n\n★ ENDING: THE HERO ★\n\nYou saved the city through determination and infinite saves.",
+                choices: [
+                    { text: "New run", next: "start" }
+                ]
+            },
+            ending_perfect: {
+                location: "🌆 New Rome - Perfect Dawn",
+                text: "You defeat Adam but preserve his research - to be used ethically.\n\nEvolution through choice, not force. Progress through cooperation, not control.\n\nNew Rome has a future. And so do you.\n\n★ THE PERFECT RUN ★\n\nYou found the best path through infinite possibilities.\n\nWell done, Quicksave.",
+                choices: [
+                    { text: "One more run?", next: "start" }
+                ]
+            }
+        };
+
+        let state = 'start';
+        let history = ['start'];
+        let index = 0;
+        let deaths = 0;
+        let loops = 1;
+
+        function update() {
+            const current = story[state];
+            document.getElementById('location').textContent = current.location;
+            document.getElementById('text').textContent = current.text;
+            document.getElementById('deaths').textContent = deaths;
+            document.getElementById('loops').textContent = loops;
+
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            current.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-button';
+                btn.textContent = '→ ' + choice.text;
+                btn.onclick = () => choose(choice.next);
+                choicesDiv.appendChild(btn);
+            });
+
+            document.getElementById('back').disabled = index === 0;
+            document.getElementById('forward').disabled = index === history.length - 1;
+        }
+
+        function choose(next) {
+            if (index < history.length - 1) {
+                history = history.slice(0, index + 1);
+            }
+
+            if (state.includes('death') || state.includes('coward')) {
+                deaths++;
+                if (next === 'start') loops++;
+            }
+
+            history.push(next);
+            index++;
+            state = next;
+            update();
+        }
+
+        function goBack() {
+            if (index > 0) {
+                index--;
+                state = history[index];
+                update();
+            }
+        }
+
+        function goForward() {
+            if (index < history.length - 1) {
+                index++;
+                state = history[index];
+                update();
+            }
+        }
+
+        update();
+    </script>
+</body>
+</html>
