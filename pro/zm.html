@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Quest Game Maker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+            color: #fbbf24;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #fbbf24;
+            background: #1e3a8a;
+            color: #fbbf24;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-primary {
+            background: #15803d;
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #166534;
+        }
+        .btn-red {
+            background: #7f1d1d;
+            border-color: #f87171;
+            color: #f87171;
+        }
+        .btn-red:hover {
+            background: #991b1b;
+        }
+        .btn-purple {
+            background: #581c87;
+            border-color: #c084fc;
+            color: #c084fc;
+        }
+        .btn-purple:hover {
+            background: #6b21a8;
+        }
+        .btn-orange {
+            background: #9a3412;
+            border-color: #fb923c;
+            color: #fb923c;
+        }
+        .btn-orange:hover {
+            background: #c2410c;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.5rem;
+            background: #1e293b;
+            border: 2px solid #fbbf24;
+            color: #fbbf24;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        input::placeholder, textarea::placeholder {
+            color: #94a3b8;
+        }
+        .panel {
+            border: 3px solid #fbbf24;
+            padding: 1.5rem;
+            background: rgba(30, 41, 59, 0.9);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .panel-green {
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .panel-purple {
+            border-color: #c084fc;
+            color: #c084fc;
+        }
+        .panel-orange {
+            border-color: #fb923c;
+            color: #fb923c;
+        }
+        .header {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #fbbf24;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .item-badge {
+            display: inline-block;
+            background: #581c87;
+            border: 2px solid #c084fc;
+            color: #c084fc;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        .achievement-badge {
+            display: inline-block;
+            background: #9a3412;
+            border: 2px solid #fb923c;
+            color: #fb923c;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border-radius: 0.25rem;
+            text-align: center;
+        }
+        .achievement-badge.unlocked {
+            background: #15803d;
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .location-card {
+            background: #1e293b;
+            border: 2px solid #fbbf24;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .location-card:hover {
+            border-color: #4ade80;
+            transform: translateX(4px);
+        }
+        .location-card.active {
+            background: #15803d;
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .scroll-area {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #0f172a;
+            border: 2px solid #fbbf24;
+        }
+        .inventory-display {
+            background: #581c87;
+            border: 2px solid #c084fc;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .inventory-display h3 {
+            color: #c084fc;
+            margin-bottom: 0.5rem;
+        }
+        .choice-item {
+            background: #1e293b;
+            border: 2px solid #fbbf24;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .conditional-badge {
+            background: #7c3aed;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        .achievement-popup {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: #9a3412;
+            border: 3px solid #fb923c;
+            color: #fb923c;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 1000;
+            animation: slideIn 0.5s ease-out;
+            min-width: 300px;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .export-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .export-content {
+            background: #1e293b;
+            border: 3px solid #fbbf24;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        @media (max-width: 968px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        const app = {
+            view: 'stories',
+            stories: [],
+            importedStories: [],
+            storyTitle: '',
+            locations: {
+                start: {
+                    name: 'Starting Location',
+                    description: '',
+                    items: [],
+                    choices: [],
+                    achievement: null
+                }
+            },
+            editingLocation: 'start',
+            items: [],
+            achievements: [],
+            originalData: null, // Store original state for resets
+            
+            // Editor fields
+            locationName: '',
+            locationDescription: '',
+            itemName: '',
+            itemDesc: '',
+            choiceText: '',
+            choiceDestination: '',
+            choiceRequiredItem: '',
+            choiceItemToGive: '',
+            choiceItemToRemove: '',
+            achievementName: '',
+            achievementDesc: '',
+            selectedAchievement: '',
+            
+            // Game state
+            currentLocation: 'start',
+            inventory: [],
+            visitedLocations: [],
+            gameLog: [],
+            unlockedAchievements: [],
+            showAchievementPopup: null,
+            
+            // Export modal
+            showExportModal: false,
+            exportText: ''
+        };
+
+        function init() {
+            loadStoriesFromLocalStorage();
+            render();
+        }
+
+        function loadStoriesFromLocalStorage() {
+            try {
+                app.stories = [];
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('miniquest:')) {
+                        app.stories.push(key.replace('miniquest:', ''));
+                    }
+                });
+            } catch (error) {
+                app.stories = [];
+            }
+        }
+
+        function saveStory() {
+            if (!app.storyTitle.trim()) {
+                alert('Enter a title');
+                return;
+            }
+            try {
+                localStorage.setItem(`miniquest:${app.storyTitle}`, JSON.stringify({
+                    title: app.storyTitle,
+                    locations: app.locations,
+                    items: app.items,
+                    achievements: app.achievements
+                }));
+                // Also save to originalData for resets
+                app.originalData = JSON.parse(JSON.stringify({
+                    locations: app.locations,
+                    items: app.items,
+                    achievements: app.achievements
+                }));
+                alert('Saved!');
+                loadStoriesFromLocalStorage();
+                render();
+            } catch (error) {
+                alert('Save failed: ' + error.message);
+            }
+        }
+
+        function loadStory(title) {
+            try {
+                const data = JSON.parse(localStorage.getItem(`miniquest:${title}`));
+                if (data) {
+                    app.storyTitle = data.title;
+                    app.locations = data.locations;
+                    app.items = data.items;
+                    app.achievements = data.achievements || [];
+                    // Save original data for resets
+                    app.originalData = JSON.parse(JSON.stringify({
+                        locations: data.locations,
+                        items: data.items,
+                        achievements: data.achievements || []
+                    }));
+                    app.editingLocation = 'start';
+                    app.view = 'editor';
+                    render();
+                }
+            } catch (error) {
+                alert('Load failed: ' + error.message);
+            }
+        }
+
+        function deleteStory(title) {
+            if (!confirm(`Delete "${title}"?`)) return;
+            try {
+                localStorage.removeItem(`miniquest:${title}`);
+                loadStoriesFromLocalStorage();
+                render();
+            } catch (error) {
+                alert('Delete failed');
+            }
+        }
+
+        function createNewStory() {
+            app.locations = {
+                start: {
+                    name: 'Starting Location',
+                    description: 'Your adventure begins here...',
+                    items: [],
+                    choices: [],
+                    achievement: null
+                }
+            };
+            app.items = [];
+            app.achievements = [];
+            app.storyTitle = '';
+            // Save original data for resets
+            app.originalData = JSON.parse(JSON.stringify({
+                locations: app.locations,
+                items: app.items,
+                achievements: app.achievements
+            }));
+            app.editingLocation = 'start';
+            app.view = 'editor';
+            render();
+        }
+
+        function loadDemoStory() {
+            app.storyTitle = "The Enchanted Forest";
+            app.items = [
+                { id: 'key', name: '🔑 Old Key', description: 'A rusty iron key' },
+                { id: 'sword', name: '⚔️ Sword', description: 'A sturdy blade' },
+                { id: 'gem', name: '💎 Magic Gem', description: 'Glows with power' },
+                { id: 'map', name: '🗺️ Map', description: 'Shows hidden paths' }
+            ];
+            app.achievements = [
+                { id: 'explorer', name: 'Explorer', description: 'Found the hidden path' },
+                { id: 'brave', name: 'Brave Warrior', description: 'Faced danger with courage' },
+                { id: 'treasure_hunter', name: 'Treasure Hunter', description: 'Unlocked the treasure chamber' },
+                { id: 'completionist', name: 'Quest Master', description: 'Completed the adventure' }
+            ];
+            app.locations = {
+                start: {
+                    name: 'Forest Entrance',
+                    description: 'You stand at the edge of an ancient forest. Sunlight filters through the canopy above.',
+                    items: ['map'],
+                    choices: [
+                        { text: 'Enter the forest', destination: 'clearing' },
+                        { text: 'Search the area', destination: 'hidden_path', requiredItem: 'map' }
+                    ],
+                    achievement: null
+                },
+                clearing: {
+                    name: 'Forest Clearing',
+                    description: 'A peaceful clearing with a locked chest in the center.',
+                    items: ['key'],
+                    choices: [
+                        { text: 'Return to entrance', destination: 'start' },
+                        { text: 'Go deeper into forest', destination: 'cave' }
+                    ],
+                    achievement: null
+                },
+                hidden_path: {
+                    name: 'Hidden Path',
+                    description: 'The map revealed this secret trail! A sword lies embedded in a stone.',
+                    items: ['sword'],
+                    choices: [
+                        { text: 'Return to entrance', destination: 'start' },
+                        { text: 'Continue down path', destination: 'treasure' }
+                    ],
+                    achievement: 'explorer'
+                },
+                cave: {
+                    name: 'Dark Cave',
+                    description: 'A mysterious cave. You hear strange sounds echoing within.',
+                    items: [],
+                    choices: [
+                        { text: 'Enter cautiously', destination: 'danger', requiredItem: 'sword' },
+                        { text: 'Return to clearing', destination: 'clearing' }
+                    ],
+                    achievement: null
+                },
+                danger: {
+                    name: 'Cave Depths',
+                    description: 'You bravely face the challenge with your sword! A magic gem awaits as your reward.',
+                    items: ['gem'],
+                    choices: [
+                        { text: 'Take gem and exit', destination: 'victory' }
+                    ],
+                    achievement: 'brave'
+                },
+                treasure: {
+                    name: 'Treasure Chamber',
+                    description: 'A locked treasure chamber. The old key fits perfectly!',
+                    items: [],
+                    choices: [
+                        { text: 'Unlock with key', destination: 'victory', requiredItem: 'key', itemToRemove: 'key' },
+                        { text: 'Return to hidden path', destination: 'hidden_path' }
+                    ],
+                    achievement: 'treasure_hunter'
+                },
+                victory: {
+                    name: 'Victory!',
+                    description: 'You have successfully completed your quest! The forest\'s treasures are yours!',
+                    items: [],
+                    choices: [],
+                    achievement: 'completionist'
+                }
+            };
+            // Save original data for resets
+            app.originalData = JSON.parse(JSON.stringify({
+                locations: app.locations,
+                items: app.items,
+                achievements: app.achievements
+            }));
+            app.editingLocation = 'start';
+            app.view = 'editor';
+            alert('Demo story loaded!');
+            render();
+        }
+
+        function addItem() {
+            if (!app.itemName.trim() || !app.itemDesc.trim()) {
+                alert('Enter item name and description');
+                return;
+            }
+            const id = app.itemName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            app.items.push({ id, name: app.itemName, description: app.itemDesc });
+            app.itemName = '';
+            app.itemDesc = '';
+            render();
+        }
+
+        function deleteItem(id) {
+            app.items = app.items.filter(item => item.id !== id);
+            render();
+        }
+
+        function addAchievement() {
+            if (!app.achievementName.trim() || !app.achievementDesc.trim()) {
+                alert('Enter achievement name and description');
+                return;
+            }
+            const id = app.achievementName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            app.achievements.push({ id, name: app.achievementName, description: app.achievementDesc });
+            app.achievementName = '';
+            app.achievementDesc = '';
+            render();
+        }
+
+        function deleteAchievement(id) {
+            app.achievements = app.achievements.filter(a => a.id !== id);
+            render();
+        }
+
+        function addLocation() {
+            const id = prompt('Enter location ID (e.g., "forest_cave"):');
+            if (id && !app.locations[id]) {
+                app.locations[id] = {
+                    name: 'New Location',
+                    description: '',
+                    items: [],
+                    choices: [],
+                    achievement: null
+                };
+                app.editingLocation = id;
+                render();
+            }
+        }
+
+        function setEditingLocation(id) {
+            app.editingLocation = id;
+            render();
+        }
+
+        function updateLocationInfo() {
+            const loc = app.locations[app.editingLocation];
+            loc.name = app.locationName;
+            loc.description = app.locationDescription;
+            loc.achievement = app.selectedAchievement || null;
+            render();
+        }
+
+        function toggleLocationItem(itemId) {
+            const loc = app.locations[app.editingLocation];
+            const index = loc.items.indexOf(itemId);
+            if (index > -1) {
+                loc.items.splice(index, 1);
+            } else {
+                loc.items.push(itemId);
+            }
+            render();
+        }
+
+        function addChoice() {
+            if (!app.choiceText.trim() || !app.choiceDestination.trim()) {
+                alert('Enter choice text and destination');
+                return;
+            }
+            
+            const choice = {
+                text: app.choiceText,
+                destination: app.choiceDestination
+            };
+            
+            if (app.choiceRequiredItem) choice.requiredItem = app.choiceRequiredItem;
+            if (app.choiceItemToGive) choice.itemToGive = app.choiceItemToGive;
+            if (app.choiceItemToRemove) choice.itemToRemove = app.choiceItemToRemove;
+            
+            app.locations[app.editingLocation].choices.push(choice);
+            
+            app.choiceText = '';
+            app.choiceDestination = '';
+            app.choiceRequiredItem = '';
+            app.choiceItemToGive = '';
+            app.choiceItemToRemove = '';
+            render();
+        }
+
+        function deleteChoice(index) {
+            app.locations[app.editingLocation].choices.splice(index, 1);
+            render();
+        }
+
+        function showExportModal() {
+            if (!app.storyTitle.trim()) {
+                alert('Please set a story title first');
+                return;
+            }
+            
+            const storyData = {
+                title: app.storyTitle,
+                locations: app.locations,
+                items: app.items,
+                achievements: app.achievements
+            };
+            
+            app.exportText = JSON.stringify(storyData, null, 2);
+            app.showExportModal = true;
+            render();
+        }
+
+        function closeExportModal() {
+            app.showExportModal = false;
+            render();
+        }
+
+        function copyExportText() {
+            const textarea = document.getElementById('exportTextarea');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard! You can now paste this into a text file and save it as .json');
+        }
+
+        function importStory() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,.txt';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        app.storyTitle = data.title;
+                        app.locations = data.locations;
+                        app.items = data.items;
+                        app.achievements = data.achievements || [];
+                        // Save original data for resets
+                        app.originalData = JSON.parse(JSON.stringify({
+                            locations: data.locations,
+                            items: data.items,
+                            achievements: data.achievements || []
+                        }));
+                        app.editingLocation = 'start';
+                        app.view = 'editor';
+                        alert('Story imported successfully!');
+                        render();
+                    } catch (error) {
+                        alert('Failed to import story: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function startGame() {
+            // Reset locations from original saved data
+            if (app.originalData) {
+                app.locations = JSON.parse(JSON.stringify(app.originalData.locations));
+            }
+            
+            app.currentLocation = 'start';
+            app.inventory = [];
+            app.visitedLocations = ['start'];
+            app.gameLog = [];
+            app.unlockedAchievements = [];
+            
+            // Check for starting achievement
+            checkAchievement('start');
+            
+            app.view = 'play';
+            render();
+        }
+
+        function checkAchievement(locationId) {
+            const loc = app.locations[locationId];
+            if (loc && loc.achievement && !app.unlockedAchievements.includes(loc.achievement)) {
+                const ach = app.achievements.find(a => a.id === loc.achievement);
+                if (ach) {
+                    app.unlockedAchievements.push(loc.achievement);
+                    app.showAchievementPopup = ach;
+                    app.gameLog.push(`🏆 Achievement Unlocked: ${ach.name}`);
+                    setTimeout(() => {
+                        app.showAchievementPopup = null;
+                        render();
+                    }, 3000);
+                }
+            }
+        }
+
+        function pickupItem(itemId) {
+            const loc = app.locations[app.currentLocation];
+            const index = loc.items.indexOf(itemId);
+            if (index > -1) {
+                loc.items.splice(index, 1);
+                app.inventory.push(itemId);
+                const item = app.items.find(i => i.id === itemId);
+                app.gameLog.push(`📦 Picked up: ${item.name}`);
+                render();
+            }
+        }
+
+        function makeChoice(choice) {
+            if (choice.requiredItem && !app.inventory.includes(choice.requiredItem)) {
+                alert('You need a specific item to choose this option!');
+                return;
+            }
+            
+            if (choice.itemToRemove && app.inventory.includes(choice.itemToRemove)) {
+                const index = app.inventory.indexOf(choice.itemToRemove);
+                app.inventory.splice(index, 1);
+                const item = app.items.find(i => i.id === choice.itemToRemove);
+                app.gameLog.push(`🗑️ Used: ${item.name}`);
+            }
+            
+            if (choice.itemToGive && !app.inventory.includes(choice.itemToGive)) {
+                app.inventory.push(choice.itemToGive);
+                const item = app.items.find(i => i.id === choice.itemToGive);
+                app.gameLog.push(`✨ Received: ${item.name}`);
+            }
+            
+            app.currentLocation = choice.destination;
+            if (!app.visitedLocations.includes(choice.destination)) {
+                app.visitedLocations.push(choice.destination);
+            }
+            app.gameLog.push(`🚶 Moved to: ${app.locations[choice.destination].name}`);
+            
+            checkAchievement(choice.destination);
+            
+            render();
+        }
+
+        function setView(view) {
+            app.view = view;
+            render();
+        }
+
+        function render() {
+            const container = document.getElementById('app');
+            
+            if (app.view === 'stories') {
+                container.innerHTML = `
+                    <div class="container">
+                        <h1 class="header">🗺️ MINI QUEST GAME MAKER 🗺️</h1>
+                        
+                        <button class="btn btn-primary w-full" style="width: 100%; margin-bottom: 1rem; justify-content: center; font-size: 1.1rem;" onclick="createNewStory()">
+                            ⊕ CREATE NEW QUEST
+                        </button>
+
+                        <button class="btn btn-purple w-full" style="width: 100%; margin-bottom: 1rem; justify-content: center;" onclick="loadDemoStory()">
+                            ★ LOAD DEMO QUEST
+                        </button>
+
+                        <button class="btn w-full" style="width: 100%; margin-bottom: 2rem; justify-content: center;" onclick="importStory()">
+                            ↓ IMPORT QUEST (JSON)
+                        </button>
+
+                        <div class="panel">
+                            <h2 style="font-size: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #fbbf24;">📚 SAVED QUESTS</h2>
+                            ${app.stories.length === 0 ? 
+                                '<p style="text-align: center; color: #94a3b8; padding: 2rem 0;">No quests yet! Create your first adventure!</p>' :
+                                app.stories.map(story => `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 0.75rem; border: 2px solid #fbbf24; margin-bottom: 0.75rem;">
+                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                            <span>📖</span>
+                                            <span style="font-weight: bold;">${story}</span>
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn" onclick="loadStory('${story}')">EDIT</button>
+                                            <button class="btn btn-red" onclick="deleteStory('${story}')">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+                    </div>
+                `;
+            } else if (app.view === 'play') {
+                const currentLoc = app.locations[app.currentLocation];
+                const isEnd = !currentLoc || currentLoc.choices.length === 0;
+
+                container.innerHTML = `
+                    ${app.showAchievementPopup ? `
+                        <div class="achievement-popup">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; font-weight: bold;">
+                                <span>🏆</span>
+                                <span>ACHIEVEMENT UNLOCKED!</span>
+                            </div>
+                            <div style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem;">${app.showAchievementPopup.name}</div>
+                            <div style="font-size: 0.875rem;">${app.showAchievementPopup.description}</div>
+                        </div>
+                    ` : ''}
+
+                    <div class="container" style="max-width: 900px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; align-items: center;">
+                            <button class="btn" onclick="setView('editor')">
+                                🏠 EDITOR
+                            </button>
+                            <h2 style="font-size: 1.5rem;">${app.storyTitle || 'UNTITLED QUEST'}</h2>
+                            <button class="btn btn-primary" onclick="startGame()">↻ RESTART</button>
+                        </div>
+
+                        ${app.inventory.length > 0 ? `
+                            <div class="inventory-display">
+                                <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem;">🎒 INVENTORY</h3>
+                                <div>
+                                    ${app.inventory.map(itemId => {
+                                        const item = app.items.find(i => i.id === itemId);
+                                        return `<span class="item-badge">${item.name}</span>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${app.achievements.length > 0 ? `
+                            <div class="panel panel-orange" style="margin-bottom: 1.5rem;">
+                                <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: #fb923c;">
+                                    🏆 ACHIEVEMENTS (${app.unlockedAchievements.length}/${app.achievements.length})
+                                </h3>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    ${app.achievements.map(ach => {
+                                        const unlocked = app.unlockedAchievements.includes(ach.id);
+                                        return `
+                                            <div class="achievement-badge ${unlocked ? 'unlocked' : ''}" style="flex: 1; min-width: 200px;">
+                                                <div style="font-weight: bold; margin-bottom: 0.25rem;">${unlocked ? '✓' : '🔒'} ${ach.name}</div>
+                                                <div style="font-size: 0.75rem; opacity: ${unlocked ? '1' : '0.6'};">${ach.description}</div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="panel">
+                            <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #4ade80; text-align: center;">${currentLoc.name}</h2>
+                            <p style="line-height: 1.8; font-size: 1.1rem; margin-bottom: 1.5rem; padding: 1rem; background: #0f172a; border-left: 4px solid #fbbf24;">
+                                ${currentLoc.description}
+                            </p>
+
+                            ${currentLoc.items.length > 0 ? `
+                                <div style="background: #581c87; border: 2px solid #c084fc; padding: 1rem; margin-bottom: 1.5rem;">
+                                    <h3 style="color: #c084fc; margin-bottom: 0.75rem;">📦 ITEMS HERE:</h3>
+                                    ${currentLoc.items.map(itemId => {
+                                        const item = app.items.find(i => i.id === itemId);
+                                        return `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 0.5rem; border: 2px solid #c084fc; margin-bottom: 0.5rem;">
+                                                <div>
+                                                    <span style="font-weight: bold; color: #c084fc;">${item.name}</span>
+                                                    <span style="color: #94a3b8; font-size: 0.875rem; margin-left: 0.5rem;">- ${item.description}</span>
+                                                </div>
+                                                <button class="btn btn-purple" onclick="pickupItem('${itemId}')">TAKE</button>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            ` : ''}
+
+                            ${isEnd ? `
+                                <div style="text-align: center; padding: 2rem; background: #15803d; border: 3px solid #4ade80; color: #4ade80;">
+                                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">🎉 QUEST COMPLETE! 🎉</h3>
+                                    <p style="margin-bottom: 1.5rem;">You've reached the end of your adventure!</p>
+                                    <button class="btn btn-primary" style="font-size: 1.1rem;" onclick="startGame()">↻ PLAY AGAIN</button>
+                                </div>
+                            ` : `
+                                <div>
+                                    <h3 style="margin-bottom: 1rem; color: #4ade80;">🚪 AVAILABLE CHOICES:</h3>
+                                    ${currentLoc.choices.map((choice, i) => {
+                                        const hasRequired = !choice.requiredItem || app.inventory.includes(choice.requiredItem);
+                                        const requiredItem = choice.requiredItem ? app.items.find(it => it.id === choice.requiredItem) : null;
+                                        return `
+                                            <button 
+                                                class="btn w-full" 
+                                                style="width: 100%; margin-bottom: 0.75rem; justify-content: flex-start; text-align: left; ${!hasRequired ? 'opacity: 0.5; cursor: not-allowed;' : ''}" 
+                                                onclick="makeChoice(${JSON.stringify(choice).replace(/"/g, '&quot;')})"
+                                                ${!hasRequired ? 'disabled' : ''}
+                                            >
+                                                <span style="margin-right: auto;">▶ ${choice.text}</span>
+                                                ${choice.requiredItem ? `<span class="conditional-badge">🔒 Needs: ${requiredItem?.name || choice.requiredItem}</span>` : ''}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            `}
+                        </div>
+
+                        ${app.gameLog.length > 0 ? `
+                            <div class="panel" style="border-color: #94a3b8; color: #94a3b8;">
+                                <h3 style="margin-bottom: 0.75rem;">📜 ADVENTURE LOG</h3>
+                                <div style="max-height: 200px; overflow-y: auto; background: #0f172a; padding: 1rem; border: 1px solid #94a3b8;">
+                                    ${app.gameLog.map(log => `<div style="margin-bottom: 0.5rem;">• ${log}</div>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                const currentLoc = app.locations[app.editingLocation];
+                app.locationName = currentLoc.name;
+                app.locationDescription = currentLoc.description;
+                app.selectedAchievement = currentLoc.achievement || '';
+
+                container.innerHTML = `
+                    ${app.showExportModal ? `
+                        <div class="export-modal">
+                            <div class="export-content">
+                                <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: #fbbf24;">📤 EXPORT QUEST</h2>
+                                <p style="margin-bottom: 1rem; color: #94a3b8;">Copy this text and save it as a .json or .txt file:</p>
+                                <textarea id="exportTextarea" readonly style="width: 100%; height: 400px; font-size: 0.875rem; margin-bottom: 1rem; font-family: monospace;">${app.exportText}</textarea>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-primary" onclick="copyExportText()">📋 COPY TO CLIPBOARD</button>
+                                    <button class="btn" onclick="closeExportModal()">CLOSE</button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="container">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; align-items: center;">
+                            <button class="btn" onclick="setView('stories')">
+                                🏠 HOME
+                            </button>
+                            <h1 style="font-size: 1.75rem;">⚙️ QUEST EDITOR</h1>
+                            <button class="btn btn-primary" onclick="startGame()">
+                                ▶ TEST PLAY
+                            </button>
+                        </div>
+
+                        <div class="grid-2">
+                            <div>
+                                <div class="panel">
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">📝 QUEST TITLE:</label>
+                                    <input type="text" value="${app.storyTitle}" oninput="app.storyTitle = this.value; render();">
+                                </div>
+
+                                <div class="panel panel-purple">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">💎 CREATE ITEM</h3>
+                                    <input type="text" placeholder="Item name (e.g., '🗝️ Golden Key')" value="${app.itemName}" oninput="app.itemName = this.value; render();" style="margin-bottom: 0.5rem; border-color: #c084fc; color: #c084fc;">
+                                    <input type="text" placeholder="Description" value="${app.itemDesc}" oninput="app.itemDesc = this.value; render();" style="margin-bottom: 0.75rem; border-color: #c084fc; color: #c084fc;">
+                                    <button class="btn btn-purple w-full" style="width: 100%; justify-content: center;" onclick="addItem()">⊕ ADD ITEM</button>
+                                </div>
+
+                                <div class="panel panel-purple">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem; color: #c084fc;">🎒 ALL ITEMS</h3>
+                                    ${app.items.length === 0 ? 
+                                        '<p style="color: #94a3b8;">No items yet</p>' :
+                                        app.items.map(item => `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 0.5rem; border: 2px solid #c084fc; margin-bottom: 0.5rem;">
+                                                <div>
+                                                    <span style="font-weight: bold; color: #c084fc;">${item.name}</span>
+                                                    <div style="font-size: 0.75rem; color: #94a3b8;">${item.description}</div>
+                                                </div>
+                                                <button class="btn btn-red" style="padding: 0.25rem 0.5rem;" onclick="deleteItem('${item.id}')">🗑️</button>
+                                            </div>
+                                        `).join('')
+                                    }
+                                </div>
+
+                                <div class="panel panel-orange">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">🏆 CREATE ACHIEVEMENT</h3>
+                                    <input type="text" placeholder="Achievement name" value="${app.achievementName}" oninput="app.achievementName = this.value; render();" style="margin-bottom: 0.5rem; border-color: #fb923c; color: #fb923c;">
+                                    <input type="text" placeholder="Description" value="${app.achievementDesc}" oninput="app.achievementDesc = this.value; render();" style="margin-bottom: 0.75rem; border-color: #fb923c; color: #fb923c;">
+                                    <button class="btn btn-orange w-full" style="width: 100%; justify-content: center;" onclick="addAchievement()">⊕ ADD ACHIEVEMENT</button>
+                                </div>
+
+                                <div class="panel panel-orange">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem; color: #fb923c;">🏅 ALL ACHIEVEMENTS</h3>
+                                    ${app.achievements.length === 0 ? 
+                                        '<p style="color: #94a3b8;">No achievements yet</p>' :
+                                        app.achievements.map(ach => `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; padding: 0.5rem; border: 2px solid #fb923c; margin-bottom: 0.5rem;">
+                                                <div>
+                                                    <span style="font-weight: bold; color: #fb923c;">${ach.name}</span>
+                                                    <div style="font-size: 0.75rem; color: #94a3b8;">${ach.description}</div>
+                                                </div>
+                                                <button class="btn btn-red" style="padding: 0.25rem 0.5rem;" onclick="deleteAchievement('${ach.id}')">🗑️</button>
+                                            </div>
+                                        `).join('')
+                                    }
+                                </div>
+
+                                <div class="panel">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">🗺️ LOCATION</h3>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Select Location:</label>
+                                    <select style="margin-bottom: 1rem;" onchange="setEditingLocation(this.value)">
+                                        ${Object.keys(app.locations).map(id => `
+                                            <option value="${id}" ${id === app.editingLocation ? 'selected' : ''}>${app.locations[id].name} (${id})</option>
+                                        `).join('')}
+                                    </select>
+                                    <button class="btn btn-primary w-full" style="width: 100%; justify-content: center;" onclick="addLocation()">⊕ NEW LOCATION</button>
+                                </div>
+
+                                <div class="panel">
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Location Name:</label>
+                                    <input type="text" value="${app.locationName}" oninput="app.locationName = this.value;" onblur="updateLocationInfo()" style="margin-bottom: 1rem;">
+                                    
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Description:</label>
+                                    <textarea style="height: 8rem; resize: none; margin-bottom: 1rem;" oninput="app.locationDescription = this.value;" onblur="updateLocationInfo()">${app.locationDescription}</textarea>
+
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #fb923c;">🏆 Achievement (when visiting):</label>
+                                    <select style="border-color: #fb923c; color: #fb923c;" onchange="app.selectedAchievement = this.value; updateLocationInfo();">
+                                        <option value="">-- None --</option>
+                                        ${app.achievements.map(ach => `
+                                            <option value="${ach.id}" ${ach.id === app.selectedAchievement ? 'selected' : ''}>${ach.name}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+
+                                <div class="panel panel-purple">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem; color: #c084fc;">💎 ITEMS AT THIS LOCATION</h3>
+                                    ${app.items.length === 0 ? 
+                                        '<p style="color: #94a3b8;">Create items first</p>' :
+                                        app.items.map(item => {
+                                            const isHere = currentLoc.items.includes(item.id);
+                                            return `
+                                                <div style="display: flex; justify-content: space-between; align-items: center; background: ${isHere ? '#581c87' : '#1e293b'}; padding: 0.5rem; border: 2px solid ${isHere ? '#c084fc' : '#4b5563'}; margin-bottom: 0.5rem; cursor: pointer;" onclick="toggleLocationItem('${item.id}')">
+                                                    <span style="color: ${isHere ? '#c084fc' : '#94a3b8'};">${item.name}</span>
+                                                    <span style="color: ${isHere ? '#c084fc' : '#94a3b8'};">${isHere ? '✓' : '○'}</span>
+                                                </div>
+                                            `;
+                                        }).join('')
+                                    }
+                                </div>
+
+                                <div class="panel panel-green">
+                                    <h3 style="margin-bottom: 1rem; font-size: 1.25rem;">➕ ADD CHOICE</h3>
+                                    <input type="text" placeholder="Choice text (e.g., 'Go north')" value="${app.choiceText}" oninput="app.choiceText = this.value; render();" style="margin-bottom: 0.5rem; border-color: #4ade80; color: #4ade80;">
+                                    
+                                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #4ade80;">Destination Location:</label>
+                                    <select value="${app.choiceDestination}" onchange="app.choiceDestination = this.value; render();" style="margin-bottom: 0.5rem; border-color: #4ade80; color: #4ade80;">
+                                        <option value="">-- Select Destination --</option>
+                                        ${Object.keys(app.locations).map(id => `
+                                            <option value="${id}" ${id === app.choiceDestination ? 'selected' : ''}>${app.locations[id].name} (${id})</option>
+                                        `).join('')}
+                                    </select>
+
+                                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #4ade80;">🔒 Required Item (optional):</label>
+                                    <select value="${app.choiceRequiredItem}" onchange="app.choiceRequiredItem = this.value; render();" style="margin-bottom: 0.5rem; border-color: #4ade80; color: #4ade80;">
+                                        <option value="">-- None --</option>
+                                        ${app.items.map(item => `
+                                            <option value="${item.id}" ${item.id === app.choiceRequiredItem ? 'selected' : ''}>${item.name}</option>
+                                        `).join('')}
+                                    </select>
+
+                                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #4ade80;">✨ Give Item (optional):</label>
+                                    <select value="${app.choiceItemToGive}" onchange="app.choiceItemToGive = this.value; render();" style="margin-bottom: 0.5rem; border-color: #4ade80; color: #4ade80;">
+                                        <option value="">-- None --</option>
+                                        ${app.items.map(item => `
+                                            <option value="${item.id}" ${item.id === app.choiceItemToGive ? 'selected' : ''}>${item.name}</option>
+                                        `).join('')}
+                                    </select>
+
+                                    <label style="display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #4ade80;">🗑️ Remove Item (optional):</label>
+                                    <select value="${app.choiceItemToRemove}" onchange="app.choiceItemToRemove = this.value; render();" style="margin-bottom: 1rem; border-color: #4ade80; color: #4ade80;">
+                                        <option value="">-- None --</option>
+                                        ${app.items.map(item => `
+                                            <option value="${item.id}" ${item.id === app.choiceItemToRemove ? 'selected' : ''}>${item.name}</option>
+                                        `).join('')}
+                                    </select>
+
+                                    <button class="btn btn-primary w-full" style="width: 100%; justify-content: center;" onclick="addChoice()">ADD CHOICE</button>
+                                </div>
+
+                                <button class="btn w-full" style="width: 100%; justify-content: center; margin-bottom: 0.5rem; background: #1e40af; border-color: #60a5fa; color: #60a5fa;" onclick="saveStory()">
+                                    💾 SAVE QUEST
+                                </button>
+                                
+                                <button class="btn w-full" style="width: 100%; justify-content: center;" onclick="showExportModal()">
+                                    📤 EXPORT (COPY TEXT)
+                                </button>
+                            </div>
+
+                            <div>
+                                <div class="panel">
+                                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #fbbf24;">👁️ PREVIEW</h3>
+                                    <h2 style="font-size: 1.75rem; margin-bottom: 1rem; color: #4ade80;">${currentLoc.name}</h2>
+                                    <div style="background: #0f172a; padding: 1rem; border: 2px solid #fbbf24; margin-bottom: 1rem; min-height: 6rem; line-height: 1.6;">
+                                        <p>${currentLoc.description || 'No description yet'}</p>
+                                    </div>
+
+                                    ${currentLoc.achievement ? `
+                                        <div style="background: #9a3412; border: 2px solid #fb923c; padding: 0.75rem; margin-bottom: 1rem;">
+                                            <div style="color: #fb923c; font-weight: bold;">🏆 Achievement when visiting:</div>
+                                            <div style="color: #fb923c; font-size: 0.875rem;">${app.achievements.find(a => a.id === currentLoc.achievement)?.name || currentLoc.achievement}</div>
+                                        </div>
+                                    ` : ''}
+
+                                    ${currentLoc.items.length > 0 ? `
+                                        <div style="background: #581c87; border: 2px solid #c084fc; padding: 0.75rem; margin-bottom: 1rem;">
+                                            <div style="color: #c084fc; font-weight: bold; margin-bottom: 0.5rem;">💎 Items here:</div>
+                                            ${currentLoc.items.map(itemId => {
+                                                const item = app.items.find(i => i.id === itemId);
+                                                return `<span class="item-badge">${item?.name || itemId}</span>`;
+                                            }).join('')}
+                                        </div>
+                                    ` : ''}
+
+                                    ${currentLoc.choices.length > 0 ? `
+                                        <div>
+                                            <p style="color: #4ade80; margin-bottom: 0.75rem; font-weight: bold;">🚪 Choices:</p>
+                                            ${currentLoc.choices.map((choice, i) => {
+                                                const reqItem = choice.requiredItem ? app.items.find(it => it.id === choice.requiredItem) : null;
+                                                const giveItem = choice.itemToGive ? app.items.find(it => it.id === choice.itemToGive) : null;
+                                                const removeItem = choice.itemToRemove ? app.items.find(it => it.id === choice.itemToRemove) : null;
+                                                return `
+                                                    <div class="choice-item">
+                                                        <div style="flex: 1;">
+                                                            <div style="margin-bottom: 0.25rem;">▶ ${choice.text} → <span style="color: #4ade80;">${app.locations[choice.destination]?.name || choice.destination}</span></div>
+                                                            ${reqItem ? `<div style="font-size: 0.75rem; color: #c084fc;">🔒 Requires: ${reqItem.name}</div>` : ''}
+                                                            ${giveItem ? `<div style="font-size: 0.75rem; color: #4ade80;">✨ Gives: ${giveItem.name}</div>` : ''}
+                                                            ${removeItem ? `<div style="font-size: 0.75rem; color: #f87171;">🗑️ Removes: ${removeItem.name}</div>` : ''}
+                                                        </div>
+                                                        <button class="btn btn-red" style="padding: 0.25rem 0.5rem;" onclick="deleteChoice(${i})">🗑️</button>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    ` : '<p style="color: #94a3b8;">No choices yet (this will be an ending)</p>'}
+                                </div>
+
+                                <div class="panel">
+                                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #fbbf24;">🗺️ LOCATION MAP</h3>
+                                    <div class="scroll-area">
+                                        ${Object.entries(app.locations).map(([id, loc]) => `
+                                            <div class="location-card ${id === app.editingLocation ? 'active' : ''}" onclick="setEditingLocation('${id}')">
+                                                <div style="font-weight: bold; margin-bottom: 0.25rem; font-size: 1.1rem;">${loc.name}</div>
+                                                <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem;">ID: ${id}</div>
+                                                <div style="font-size: 0.875rem; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    ${loc.description || 'No description'}
+                                                </div>
+                                                <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+                                                    <span style="color: #c084fc;">💎 ${loc.items.length} items</span>
+                                                    <span style="color: #4ade80; margin-left: 1rem;">🚪 ${loc.choices.length} choices</span>
+                                                    ${loc.achievement ? '<span style="color: #fb923c; margin-left: 1rem;">🏆</span>' : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
