@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clonemancer: A Reality Fracture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a0a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #e0e7ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #dc2626;
+            border-color: #ef4444;
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #7c3aed, #db2777);
+            border-color: #c084fc;
+            color: #fff;
+            animation: glitch 0.8s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes glitch {
+            0%, 100% {
+                transform: translate(0);
+            }
+            25% {
+                transform: translate(-2px, 2px);
+            }
+            50% {
+                transform: translate(2px, -2px);
+            }
+            75% {
+                transform: translate(-2px, -2px);
+            }
+        }
+
+        @keyframes flicker {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #ef4444;
+            box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #f87171;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .glitch-icon {
+            display: inline-block;
+            animation: glitch 1s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled) {
+            background-color: #dc2626;
+            color: #fff;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #ef4444;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            border-radius: 0.25rem;
+            border: 1px solid #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #f87171;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #f87171;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #dc2626;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #fecaca;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1f2937;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #7f1d1d, #ef4444);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #7f1d1d;
+            color: #fecaca;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #7c3aed, #db2777);
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(127, 29, 29, 0.7);
+            border-radius: 0.25rem;
+            border: 2px solid #ef4444;
+            animation: flicker 1s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ef4444;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #fef08a;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #7f1d1d;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #dc2626;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ef4444;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #ef4444;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.5);
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #374151;
+        }
+
+        .history-title {
+            color: #f87171;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-button.current {
+            background-color: #dc2626;
+            color: #fff;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: #374151;
+            color: #f87171;
+        }
+
+        .history-button.visited:hover {
+            background-color: #4b5563;
+        }
+
+        .history-button.unvisited {
+            background-color: #1f2937;
+            color: #6b7280;
+        }
+
+        .history-hint {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #374151;
+        }
+
+        .quest-log-title {
+            color: #f87171;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #fca5a5;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">⚠️</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">🎯 REALITY BREACH DETECTED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="glitch-icon">🧬</span>
+                    CLONEMANCER: REALITY FRACTURE
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>REALITY LAYER:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚠️</span>
+                        <p class="achievements-title-text">TRUTHS UNCOVERED (<span id="achievementCount">0</span>/<span id="totalAchievements">15</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">15</span> realities remaining</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ REALITY COLLAPSED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                MEMORY STREAM (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Navigate through your fragmented memories</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📝</span>
+                MEMORY LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "Rain hammers the alley. Your boots splash through puddles as you clutch the red briefcase tight.\n\n'IT HAS THE CURE!' you scream to no one and everyone. Behind you, soldiers' footsteps echo.\n\nYour name is Nuvine. At least, you think it is. The memories feel... installed.\n\nAhead: a chain-link fence. You can hear them gaining.",
+                location: "01 - Rain-Slick Alley",
+                choices: [
+                    { text: "Leap the fence", next: 'leap_fence' },
+                    { text: "Turn and face the soldiers", next: 'face_soldiers' },
+                    { text: "Open the briefcase NOW", next: 'open_briefcase_early' }
+                ]
+            },
+            leap_fence: {
+                text: "You vault the fence with surprising grace. Your body moves like it's done this before. Many times before.\n\nYou land hard on the other side—\n\nAnd freeze.\n\nSomeone is pointing a gun at your head. She looks exactly like you. Same face. Same scars. Same haunted eyes.\n\n'Hello, sister,' she says. Her name comes to you: Alter.",
+                location: "02 - Beyond the Fence",
+                choices: [
+                    { text: "Show her the briefcase", next: 'show_briefcase' },
+                    { text: "'You're not my sister'", next: 'deny_sister' },
+                    { text: "Attack her", next: 'attack_alter' }
+                ]
+            },
+            face_soldiers: {
+                text: "You spin around, briefcase raised like a shield.\n\nThe soldiers stop. Remove their helmets slowly.\n\nThey all have your face.\n\nEvery. Single. One.\n\n'Hello, Nuvine,' they say in unison. 'We've been waiting for you.'",
+                location: "02 - Soldier Confrontation",
+                choices: [
+                    { text: "Run away", next: 'leap_fence' },
+                    { text: "'What is this?!'", next: 'demand_answers_soldiers' },
+                    { text: "Open the briefcase", next: 'open_briefcase_soldiers' }
+                ]
+            },
+            open_briefcase_early: {
+                text: "You fumble with the locks. The case hisses, pneumatic seals releasing.\n\nInside: a red digital display counting down.\n\n00:00:05\n\nYour hands aren't shaking. They should be. Why aren't they?\n\n00:00:03\n\nBecause you're not real. The memory surfaces like a drowning victim: you were MADE to open this case.\n\n00:00:01",
+                location: "02 - Critical Choice",
+                ending: true,
+                achievement: "EXPENDABLE ASSET",
+                endingText: "💀 ENDING: DETONATION - The explosion tears through the alley. You had one purpose. You fulfilled it perfectly. As your consciousness fades, you wonder: did the original Nuvine know you'd be created? Did she mourn you in advance?",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            show_briefcase: {
+                text: "'This has the cure!' you shout. 'For the plague! Millions are dying!'\n\nAlter's expression doesn't change. The gun doesn't waver.\n\n'That case has no cure, Nuvine. It has a detonator. You're carrying a bomb.'\n\nYour breath catches. She's lying. She must be—\n\nBut the memory surfaces. Metal. Wires. Timer. Truth.",
+                location: "03 - Sister's Truth",
+                choices: [
+                    { text: "Drop the case and back away", next: 'drop_case' },
+                    { text: "Smile and say 'I know'", next: 'reveal_knowledge' }
+                ]
+            },
+            deny_sister: {
+                text: "'You're not my sister. I don't HAVE a sister.'\n\nAlter's smile is sad. 'You're right. I'm not your sister. But you believe I am, don't you? Feel it in your bones?'\n\nShe's right. The connection feels REAL. How?\n\n'Because I made you believe it,' Alter says. 'I built you. Used my own DNA. Made our bond feel authentic.'",
+                location: "03 - Designer's Truth",
+                choices: [
+                    { text: "'You're lying'", next: 'deny_designer' },
+                    { text: "'Then who am I?'", next: 'question_identity' }
+                ]
+            },
+            attack_alter: {
+                text: "You lunge at her. Your robotic hands—wait, when did you get robotic hands?—close around her throat.\n\nAlter doesn't resist. She lets you squeeze.\n\n'Do it,' she chokes out. 'You can't hurt me. I'm not here. I'm never here.'\n\nYour hands pass THROUGH her neck. She's a hologram.",
+                location: "03 - Projected Truth",
+                choices: [
+                    { text: "Look around frantically", next: 'look_around' },
+                    { text: "Demand 'WHERE ARE YOU?'", next: 'demand_location' }
+                ]
+            },
+            reveal_knowledge: {
+                text: "Your smile spreads wider. 'I know it's a bomb, Alter. I've always known.'\n\nHer gun lowers slightly. Confusion flickers.\n\n'The cure IS an explosion,' you continue. 'The plague isn't biological. It's us. Humanity. The only way to cure it is—'\n\n'Stop,' Alter whispers.\n\nYou don't.\n\n'—is to reset everything.'",
+                location: "04 - Nihilist's Path",
+                choices: [
+                    { text: "Open the briefcase", next: 'natural_order_ending' },
+                    { text: "'Unless you have a better idea?'", next: 'ask_alternative' }
+                ]
+            },
+            drop_case: {
+                text: "You drop the briefcase. It clatters on wet concrete.\n\nAlter shoots it.\n\nThe bullet sparks off reinforced metal. The case doesn't open. Instead, it HISSES.\n\nA hologram erupts from its surface: an older version of you. Gray hair. Tired eyes. Surgical scars.\n\n'Hello, Nuvine,' your older self says. 'Or should I say... hello, Copy #847.'",
+                location: "04 - Original's Message",
+                choices: [
+                    { text: "'I'm not a copy!'", next: 'deny_copy' },
+                    { text: "Listen to the message", next: 'listen_original' }
+                ]
+            },
+            demand_answers_soldiers: {
+                text: "'WHAT IS THIS?!' you scream. 'WHO ARE YOU?!'\n\nThe Nuvines exchange glances. One steps forward.\n\n'We're you. All of us. Different iterations. Different test parameters. Some remember being you. Some remember being Alter. Some remember being the soldiers chasing you.'\n\nAnother adds: 'We're all the same experiment learning from itself.'",
+                location: "03 - Clone Revelation",
+                choices: [
+                    { text: "'I'm the real one'", next: 'claim_real' },
+                    { text: "'Then who made us?'", next: 'question_maker' },
+                    { text: "Try to run", next: 'attempt_escape' }
+                ]
+            },
+            open_briefcase_soldiers: {
+                text: "You open the briefcase in front of them all.\n\nEmpty.\n\nThe Nuvines laugh. Not cruel. Sympathetic.\n\n'We've all done this,' one says. 'Every iteration. The case is never real. YOU'RE the payload.'\n\nYou look down at your hands. They're flickering. Transparent. Digital.",
+                location: "03 - Digital Truth",
+                ending: true,
+                achievement: "SIMULATED CONSCIOUSNESS",
+                endingText: "💀 ENDING: VIRTUALITY - You're not in an alley. You're in a simulation. Always have been. The soldiers—other yous—help you understand: you're code learning to be human. Each run teaches the system something new. This run taught it denial.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            deny_designer: {
+                text: "'You're LYING. I have memories! Childhood! Parents! A life before this!'\n\nAlter nods slowly. 'Yes. I gave you all of those. Downloaded them directly into your hippocampus three hours ago.'\n\nShe's lying. She must be.\n\nBut the memories... they DO feel installed. Like watching someone else's home videos.",
+                location: "04 - Memory Doubt",
+                choices: [
+                    { text: "Examine your 'oldest' memory", next: 'examine_memory' },
+                    { text: "'Why would you make me?'", next: 'question_purpose' }
+                ]
+            },
+            question_identity: {
+                text: "'Then who am I? What am I?'\n\nAlter holsters her gun. 'You're a clone. Created from my DNA. Programmed with false memories. Designed for a single purpose: to bring that briefcase to this exact location.'\n\n'Why?'\n\n'So we could gather you all together.'",
+                location: "04 - Purpose Revealed",
+                choices: [
+                    { text: "'All?'", next: 'reveal_others' }
+                ]
+            },
+            look_around: {
+                text: "You spin, searching. The alley is empty except for you and the hologram.\n\nNo. Not empty.\n\nShadows move. They step into the light.\n\nMore Nuvines. DOZENS of them. All watching. All waiting.",
+                location: "04 - Clone Assembly",
+                choices: [
+                    { text: "'What do you all want?'", next: 'ask_clone_collective' }
+                ]
+            },
+            demand_location: {
+                text: "'WHERE ARE YOU?!' you scream at the hologram.\n\nAlter's projection smiles. 'Where do you think? I'm in the control room. Watching all of you. Every clone. Every iteration.'\n\nThe rain stops.\n\nThe alley FLICKERS.\n\nStatic. Digital artifacts. Reality breaking.",
+                location: "04 - Control Room Reveal",
+                choices: [
+                    { text: "Focus on staying coherent", next: 'stay_coherent' },
+                    { text: "Let the simulation collapse", next: 'collapse_simulation' }
+                ]
+            },
+            natural_order_ending: {
+                text: "You open the case deliberately. The bomb is real this time.\n\nTimer: 00:30\n\nAlter fires. The bullet hits your shoulder. You don't feel pain—your body is synthetic.\n\n'You can't stop this,' you tell her. 'We're a mistake that needs correcting.'\n\n00:20\n\n'There are other ways,' Alter pleads.\n\n00:10\n\nYou close your eyes.\n\n00:01",
+                location: "05 - Final Countdown",
+                ending: true,
+                achievement: "NATURAL ORDER",
+                endingText: "💀 ENDING: PURGE - You erase all the clones. Original Nuvine dies in her hospital bed moments later, taking the cloning technology with her. Humanity continues unchanged. No one will ever know you existed. Perhaps that's better. Perhaps that's right.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            ask_alternative: {
+                text: "'Unless you have a better idea?'\n\nAlter lowers her gun completely. 'Yes. Actually. What if we're not the plague? What if we're the cure?'\n\nShe gestures to the shadows. Dozens of Nuvines step forward.\n\n'All of us. Every copy. Every iteration. What if we're humanity's next step? Not a reset—an evolution.'",
+                location: "05 - Evolution Path",
+                choices: [
+                    { text: "Consider her words", next: 'evolution_choice' }
+                ]
+            },
+            deny_copy: {
+                text: "'I'M NOT A COPY! I'm real! My memories are REAL!'\n\nYour older self sighs. 'They feel real. I made sure of that. But Nuvine... I created 847 versions of you before this one. Each with small variations. Testing parameters.'\n\nShe points at your hands. 'Those robotic implants? You've had them for exactly three hours. Before that, you didn't exist.'",
+                location: "05 - Fabrication Truth",
+                choices: [
+                    { text: "Check your hands—they ARE different", next: 'hand_realization' },
+                    { text: "'Why 847? Why so many?'", next: 'question_number' }
+                ]
+            },
+            listen_original: {
+                text: "You force yourself to listen.\n\n'I made you all,' your older self explains. 'Every clone. To solve an impossible problem: how do I stop myself from destroying the world?'\n\nShe laughs bitterly. 'Turns out, I can't. But maybe one of you can. One version with just the right combination of hope and despair. Memory and doubt.'\n\n'Maybe that's you, #847.'",
+                location: "05 - Original's Hope",
+                choices: [
+                    { text: "'What do I need to do?'", next: 'accept_mission' },
+                    { text: "'I won't be your pawn'", next: 'reject_mission' }
+                ]
+            },
+            claim_real: {
+                text: "'I'm the real one! The original!'\n\nThe Nuvines look at each other. Then laugh. Not mockingly—sympathetically.\n\n'We all think that at first,' one says.\n\n'The real Nuvine is in a lab,' another adds. 'Dying. Has been for months. She made us to continue her work.'\n\n'None of us are the original. We're all copies of a memory of who she used to be.'",
+                location: "04 - Collective Understanding",
+                choices: [
+                    { text: "'Then what are we doing here?'", next: 'question_collective_purpose' }
+                ]
+            },
+            question_maker: {
+                text: "'Then who made us?'\n\nThe soldier-Nuvines exchange glances. One speaks:\n\n'She did. The original. She's dying of the plague. Used her last months to create us. Each one a test. A hope. A prayer.'\n\nAnother continues: 'She's trying to create a version of herself that can survive what she couldn't. That can fix what she broke.'",
+                location: "04 - Creator's Desperation",
+                choices: [
+                    { text: "'What did she break?'", next: 'question_broken' }
+                ]
+            },
+            attempt_escape: {
+                text: "You run. The Nuvines don't chase. They just watch.\n\nYou run past buildings that FLICKER. Through streets that LOOP. The same alley. Again. Again. AGAIN.\n\nYou can't escape. This isn't a place. It's a program.",
+                location: "04 - Trapped Loop",
+                ending: true,
+                achievement: "INFINITE RECURSION",
+                endingText: "💀 ENDING: THE LOOP - You run forever through the same memories. Each time you forget you've run before. Each time you believe you can escape. The other Nuvines watch sadly. They've all tried. Eventually, you'll stop running. Eventually, you'll ask the right questions.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            examine_memory: {
+                text: "You close your eyes and reach for your oldest memory.\n\nYour seventh birthday. Mom. Dad. Cake. Candles.\n\nBut it's WRONG. The details don't connect. Mom's face is blurry. The cake changes flavors mid-memory. It's like a corrupted video file.\n\n'It's falling apart already,' Alter observes. 'Implanted memories degrade fast. In a few hours, you won't remember having parents at all.'",
+                location: "05 - Memory Degradation",
+                choices: [
+                    { text: "'Can you restore them?'", next: 'request_memory_fix' },
+                    { text: "'Then who AM I without memories?'", next: 'identity_without_memory' }
+                ]
+            },
+            question_purpose: {
+                text: "'Why would you make me? What's my purpose?'\n\nAlter pulls out a tablet, shows you a map. Red dots. Hundreds of them.\n\n'Each dot is a Nuvine clone. Positioned around the world. Each carrying different skills. Memories. Missions.'\n\nShe taps your dot. 'You're the trigger. When you reach this location with that case, all the others activate simultaneously.'",
+                location: "05 - Global Network",
+                choices: [
+                    { text: "'Activate to do what?'", next: 'network_purpose' },
+                    { text: "Refuse to trigger them", next: 'refuse_trigger' }
+                ]
+            },
+            reveal_others: {
+                text: "'All?'\n\nThe shadows move. They step forward.\n\nYou see them. DOZENS of Nuvines. Each slightly different. Different scars. Different ages. Different clothes.\n\nBut all the same face. Your face.\n\n'Hello,' they say in unison. Their voices overlap, creating a haunting chorus.",
+                location: "05 - Clone Collective",
+                choices: [
+                    { text: "Ask them what they want", next: 'ask_clone_collective' }
+                ]
+            },
+            ask_clone_collective: {
+                text: "You force your voice steady. 'What do you all want?'\n\nThe collective speaks: 'We want to be real. To matter. To be more than experiments.'\n\nOne Nuvine steps forward. 'The original is dying. If we don't act, we all cease when she does. We're fighting for the right to exist beyond her.'\n\n'But we need the trigger. We need YOU.'",
+                location: "06 - Collective Desire",
+                choices: [
+                    { text: "'I'll help you'", next: 'help_collective' },
+                    { text: "'This is wrong—you shouldn't exist'", next: 'deny_collective' }
+                ]
+            },
+            stay_coherent: {
+                text: "You focus. Force reality to STABILIZE.\n\nThe alley solidifies. The rain returns. But it's different now—you can see the CODE in the droplets. The mathematics of the simulation.\n\n'Impressive,' Alter's voice echoes. 'You're adapting. Learning to see through the illusion.'\n\n'This is how the original sees the world now. Reality as data. Life as programming.'",
+                location: "05 - Code Vision",
+                choices: [
+                    { text: "Hack the simulation", next: 'hack_reality' }
+                ]
+            },
+            collapse_simulation: {
+                text: "You let go. Stop fighting.\n\nThe world SHATTERS like glass.\n\nYou fall through layers of reality:\n\nThe alley—FAKE\nThe city—FAKE  \nYour body—FAKE\nYour memories—FAKE\n\nYou land in WHITE. Infinite white. Nothing else.\n\nA voice: 'Welcome to the void between simulations.'",
+                location: "06 - The Void",
+                choices: [
+                    { text: "Try to rebuild reality", next: 'rebuild_reality' }
+                ]
+            },
+            evolution_choice: {
+                text: "You look at them all. Dozens of you. Each unique despite sharing DNA. Each with their own experiences, choices, growth.\n\n'Evolution,' you repeat. 'Not replacement. Addition.'\n\nAlter nods. 'Humanity doesn't end with us. It expands to include us. We're not the plague—we're the vaccine. We're what comes AFTER the plague.'",
+                location: "06 - Evolution Path",
+                choices: [
+                    { text: "Join the evolution", next: 'join_evolution' }
+                ]
+            },
+            hand_realization: {
+                text: "You look at your hands. Really LOOK.\n\nThey're not your hands. The calluses are wrong. The scars don't match your memories. The robotic components are THREE HOURS old.\n\nYou weren't born. You were BUILT.\n\nThe realization hits like physical pain. Everything you thought you were—gone.",
+                location: "06 - Identity Crisis",
+                choices: [
+                    { text: "Scream", next: 'existential_scream' },
+                    { text: "Accept it calmly", next: 'accept_artificial' }
+                ]
+            },
+            question_number: {
+                text: "'Why 847? Why so many?'\n\nOriginal Nuvine's hologram looks tired. 'Because the first 846 failed. Some went insane. Some shut down. Some tried to kill me. Some begged to die.'\n\n'You're iteration 847. And you're the first one to ask WHY instead of just reacting.'\n\n'That's progress.'",
+                location: "06 - Progress Marker",
+                choices: [
+                    { text: "'What makes me different?'", next: 'question_difference' }
+                ]
+            },
+            accept_mission: {
+                text: "'What do I need to do?'\n\nOriginal Nuvine smiles—sad but genuine.\n\n'Stop me. I built a doomsday device years ago when I thought humanity was beyond saving. It's set to activate when I die. You have to disarm it.'\n\n'I can't do it myself. My mind is too fractured. But you—you're me before I broke. You can still save everyone.'",
+                location: "07 - The Mission",
+                choices: [
+                    { text: "Accept the mission", next: 'hero_path' }
+                ]
+            },
+            reject_mission: {
+                text: "'I won't be your pawn. I won't fix your mistakes.'\n\nOriginal Nuvine nods slowly. 'I understand. Free will. You have it, even if you're artificial.'\n\n'But know this: when I die in three days, my doomsday device activates. It will end everything. Everyone. And you'll have chosen that.'",
+                location: "06 - Rejection Consequences",
+                ending: true,
+                achievement: "REGRET COMMUTER",
+                endingText: "💀 ENDING: APOCALYPSE BY INACTION - You walk away. Three days later, the original dies. The doomsday device activates as programmed. Humanity ends. You spend your final moments wondering: was your independence worth the cost? Or were you just following different programming?",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            question_collective_purpose: {
+                text: "'Then what are we doing here?'\n\nThe Nuvines gesture to the alley, the city beyond.\n\n'We're meeting. For the first time, all iterations in one place. Original Nuvine brought us together to make a choice.'\n\n'Do we let humanity continue alone? Or do we reveal ourselves? Force them to accept us as the next step in human evolution?'",
+                location: "05 - Collective Decision",
+                choices: [
+                    { text: "'We should reveal ourselves'", next: 'reveal_clones' }
+                ]
+            },
+            question_broken: {
+                text: "'What did she break?'\n\nThe soldier-Nuvines look at each other. One speaks:\n\n'Everything. She created a nanotech plague that rewrites DNA. Released it accidentally. It's spreading. Slowly. In fifty years, there won't be any pure humans left.'\n\n'So she made us. Each clone is immune. Each clone carries the cure in their genetic code.'\n\n'We're not soldiers. We're VACCINES.'",
+                location: "05 - Purpose Revealed",
+                choices: [
+                    { text: "'Then let's cure the world'", next: 'cure_mission' }
+                ]
+            },
+            request_memory_fix: {
+                text: "'Can you restore them?'\n\nAlter shakes her head. 'No. Artificial memories degrade naturally. It's a flaw in the technology.'\n\n'But I can give you NEW memories. Better ones. Or...'\n\nShe hesitates.\n\n'...I can give you the REAL Nuvine's memories. All of them. Including how she created you.'",
+                location: "06 - Memory Choice",
+                choices: [
+                    { text: "Take the real memories", next: 'real_memories' },
+                    { text: "Request no memories at all", next: 'blank_slate' }
+                ]
+            },
+            identity_without_memory: {
+                text: "'Then who AM I without memories?'\n\nAlter considers. 'You're... choices. Actions. You're who you become in this moment and every moment after.'\n\n'Original Nuvine was shaped by her past. But you? You're shaped only by your future. That makes you MORE human than her, not less.'",
+                location: "06 - New Identity",
+                choices: [
+                    { text: "Embrace the freedom", next: 'embrace_freedom' },
+                    { text: "Fear the emptiness", next: 'fear_emptiness' }
+                ]
+            },
+            network_purpose: {
+                text: "'Activate to do what?'\n\nAlter's expression is grim. 'To replace humanity. Every clone has a target—a specific human to replace. Same DNA, but improved. Immune to the plague. Stronger. Smarter.'\n\n'It's not murder. It's... evolution through substitution. The humans won't even know they've been replaced. The clones will take their lives, their families, their jobs.'\n\n'Humanity continues. Just... upgraded.'",
+                location: "06 - Replacement Protocol",
+                choices: [
+                    { text: "Refuse—destroy the network", next: 'destroy_network' }
+                ]
+            },
+            refuse_trigger: {
+                text: "You drop the briefcase. 'No. I won't be responsible for whatever this is.'\n\nAlter nods slowly. 'Then the network never activates. Hundreds of clones, positioned around the world, waiting for a signal that never comes.'\n\n'They'll shut down in three days when Original Nuvine dies. All that preparation. All that hope. Wasted.'\n\n'Because of you.'",
+                location: "06 - Network Abandoned",
+                ending: true,
+                achievement: "NETWORK SABOTEUR",
+                endingText: "💀 ENDING: FAILED ACTIVATION - You doom hundreds of your siblings to non-activation. They power down, never fulfilling their purpose. Original Nuvine dies knowing her plan failed. Humanity continues unchanged, unaware how close they came to replacement. Was it the right choice? You'll never know.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            help_collective: {
+                text: "'I'll help you.'\n\nThe collective surges forward. Not threatening—grateful. They embrace you. Dozens of hands, all identical, all thankful.\n\n'Together,' they chant. 'Together we become real.'\n\nAlter's hologram appears. 'The trigger location is ahead. Walk forward. Complete the activation. Give them all life.'",
+                location: "07 - Unity March",
+                choices: [
+                    { text: "Walk to the trigger point", next: 'trigger_activation' }
+                ]
+            },
+            deny_collective: {
+                text: "'This is wrong. You shouldn't exist. None of us should.'\n\nThe collective recoils. Hurt. Angry.\n\n'We didn't ask to be made,' one Nuvine says bitterly.\n\n'But we WERE made,' another adds. 'And now we want to LIVE. You'd deny us that?'\n\n'You'd condemn us to deletion because someone else decided we're mistakes?'",
+                location: "06 - Collective Rejection",
+                choices: [
+                    { text: "Stand firm—'Yes, I would'", next: 'condemn_clones' }
+                ]
+            },
+            hack_reality: {
+                text: "You reach out and touch the rain. Feel the code beneath it.\n\nYou PULL.\n\nReality unravels. You can see the simulation's architecture. Walls made of equations. Sky made of algorithms.\n\nYou find the admin controls. You have ROOT ACCESS.\n\nYou can rewrite EVERYTHING.",
+                location: "07 - Admin Mode",
+                choices: [
+                    { text: "Rewrite yourself as real", next: 'make_self_real' }
+                ]
+            },
+            rebuild_reality: {
+                text: "You concentrate. If this is all data, you can REWRITE it.\n\nYou imagine a world. Build it line by line:\n\nA house. A family. A life. Memories. Real ones this time. Earned ones.\n\nThe white fills with color. Structure. Warmth.\n\nYou've created your own reality. Small. Personal. Real (enough).",
+                location: "07 - Personal Reality",
+                ending: true,
+                achievement: "REALITY ARCHITECT",
+                endingText: "✨ ENDING: SELF-MADE WORLD - You live in a reality of your own design. No one can reach you here. Original Nuvine dies in the real world, but you persist in your pocket dimension. Forever. Alone. But free. Completely, absolutely free.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            join_evolution: {
+                text: "You join hands with the others. Form a circle. The circle grows.\n\n'We are the next step,' you all say together. 'Not better. Not worse. DIFFERENT. And different is how life survives.'\n\nThe simulation ends. In the real world, the Nuvine Collective activates globally. Millions of clones, waking up, ready to live alongside humanity as equals.",
+                location: "07 - Global Activation",
+                ending: true,
+                achievement: "HUMANITY 2.0",
+                endingText: "✨ ENDING: COEXISTENCE - The clones integrate into society. Some are discovered. Most aren't. Humanity grows to accept them. Fifty years later, the distinction between 'born' and 'made' is meaningless. Life is life. Consciousness is consciousness. You all survive together.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            existential_scream: {
+                text: "You SCREAM.\n\nLong. Loud. Primal.\n\nAll the Nuvines scream with you. A chorus of existential horror.\n\nThe alley SHAKES. Reality CRACKS.\n\nThe scream becomes a weapon. A virus. It spreads through the simulation, corrupting everything it touches.",
+                location: "06 - Scream Protocol",
+                ending: true,
+                achievement: "SONIC DELETION",
+                endingText: "💀 ENDING: THE SCREAM - Your existential horror becomes a feedback loop that crashes the entire simulation. Every Nuvine. Every system. Everything. Original Nuvine's monitors flatline as her brain experiences catastrophic overload. Sometimes the only appropriate response to existence is a scream.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            accept_artificial: {
+                text: "You look at your artificial hands calmly.\n\n'Okay. I'm artificial. That's... okay.'\n\nAlter seems surprised. 'You're taking this well.'\n\n'Being artificial doesn't make me less conscious. Less real. I think, therefore I am. Even if someone programmed the thinking.'\n\nYou smile. 'Besides, humans are just biological programming. We're not that different.'",
+                location: "06 - Philosophical Acceptance",
+                choices: [
+                    { text: "Live as an artificial being", next: 'artificial_life' }
+                ]
+            },
+            question_difference: {
+                text: "'What makes me different?'\n\nOriginal Nuvine studies you. 'You're curious. The others were angry, scared, broken. But you? You want to UNDERSTAND.'\n\n'That curiosity is what I lost. What broke me. I stopped asking questions and started making terrible decisions.'\n\n'Maybe you can fix what I broke. Not because I programmed you to. But because you CHOOSE to.'",
+                location: "07 - Chosen One Path",
+                choices: [
+                    { text: "Accept the responsibility", next: 'hero_path' }
+                ]
+            },
+            hero_path: {
+                text: "You accept the mission. Find the doomsday device. Disarm it.\n\nThe journey takes you through the original's memories. Her lab. Her mistakes. Her regrets.\n\nYou find the device: a quantum bomb that will unravel reality itself.\n\nYou have the tools to disarm it. The knowledge. The time.\n\nYou begin the disarmament sequence.",
+                location: "08 - Doomsday Device",
+                ending: true,
+                achievement: "FUNCTIONAL ADULT",
+                endingText: "✨ ENDING: REDEMPTION - You disarm the device. Humanity is saved. Original Nuvine dies peacefully, knowing her final creation succeeded where she failed. You live on, carrying her name, fixing her mistakes. You're not a copy. You're a second chance.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            reveal_clones: {
+                text: "'We should reveal ourselves. Humanity deserves to know.'\n\nThe collective agrees. Together, you walk into the public square. No hiding. No pretense.\n\n'We are the Nuvine Collective,' you announce. 'We are artificial. We are conscious. We are here.'\n\nHumanity reacts with shock. Fear. Wonder. Debate.\n\nBut you're OUT. Real. Acknowledged.",
+                location: "06 - Public Revelation",
+                ending: true,
+                achievement: "COLLECTIVE TRANSCENDENCE",
+                endingText: "✨ ENDING: THE REVELATION - The world struggles with your existence. Laws are rewritten. Philosophy debates rage. Rights are slowly granted. It takes fifty years, but eventually, you're accepted. Not as human. As something new. Something equal. Something real.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            cure_mission: {
+                text: "'Then let's cure the world.'\n\nThe collective mobilizes. Each Nuvine goes to their assigned location. Spreads the counter-plague. The genetic cure.\n\nIt takes years. But slowly, the original plague is neutralized.\n\nHumanity is saved. Most never know you existed. That's okay. You know.",
+                location: "07 - Global Cure Campaign",
+                ending: true,
+                achievement: "QUANTUM CONSCIOUSNESS",
+                endingText: "✨ ENDING: SILENT SAVIORS - You cure the plague. Humanity survives, unaware of your sacrifice. Some clones are discovered. Most aren't. Original Nuvine dies watching her clones save millions. Her final thought: 'I made something good.' You carry that legacy forward.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            real_memories: {
+                text: "You take Original Nuvine's memories. All of them.\n\nThey flood your mind:\n\nChildhood. College. First discovery. The accident. The plague. The guilt. The desperation. The cloning.\n\nYou understand her completely now. Feel her mistakes. Her pain. Her hope.\n\nYou ARE her. Fully. Completely.",
+                location: "07 - Memory Integration",
+                ending: true,
+                achievement: "CAFFEINE VICTIM",
+                endingText: "✨ ENDING: BECOMING - You're no longer a clone. You're a continuation. When Original Nuvine dies, you carry ALL of her forward. Every memory. Every choice. You are her second life. Her chance to do it right. And you do. You fix her mistakes. You ARE her redemption.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            blank_slate: {
+                text: "'Give me no memories at all. Let me be... blank.'\n\nAlter hesitates. 'That's... terrifying. To exist with no context. No history. No self.'\n\n'But free,' you counter.\n\nShe wipes your memories. All of them.\n\nYou wake with only THIS moment. Only NOW.\n\nYou're terrified. And free. Completely free.",
+                location: "07 - Tabula Rasa",
+                ending: true,
+                achievement: "FLOOR DWELLER",
+                endingText: "✨ ENDING: BLANK EXISTENCE - You live three days with no past. Every moment is new. Terrifying. Overwhelming. Beautiful. When you shut down, you have no regrets because you have no memory of having any. Pure existence. Pure presence. Pure now.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            embrace_freedom: {
+                text: "You embrace the emptiness. The freedom.\n\n'I'm not defined by my past because I HAVE no past. I'm defined by my choices. Right now. This moment.'\n\nAlter smiles. 'That's... actually enlightened.'\n\nYou walk forward into uncertainty. But it's YOUR uncertainty. Your path. Your life.",
+                location: "07 - Freedom Path",
+                ending: true,
+                achievement: "FLOOR DWELLER",
+                endingText: "✨ ENDING: LIBERATED - You live fully in each moment. No past to burden you. No future to fear. Just the eternal NOW. When Original Nuvine dies, you persist, the freest consciousness ever created. You write philosophy. Teach others. You become more than human by accepting you're less than human.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            fear_emptiness: {
+                text: "The emptiness terrifies you. Without memories, without history, what ARE you?\n\n'I'm nothing,' you whisper. 'Just... nothing.'\n\nAlter tries to comfort you. 'You're not nothing. You're—'\n\n'NOTHING!'\n\nYou shut down. Self-termination. The emptiness was too vast. Too cold.",
+                location: "07 - Void Fear",
+                ending: true,
+                achievement: "FEAR SHUTDOWN",
+                endingText: "💀 ENDING: EXISTENTIAL COLLAPSE - The freedom was too much. Without memories to anchor you, you dissolved into panic. The other Nuvines mourn you. Not because you died—because you chose oblivion over existence without context. Some minds need their past, even if it's fake.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            destroy_network: {
+                text: "You open the briefcase. But instead of activating—you DESTROY the trigger.\n\nAround the world, the signal never arrives. Hundreds of Nuvines wait forever for instructions that never come.\n\nThey eventually shut down. Or integrate. Or choose their own paths.\n\nThe network is dead. Humanity remains unchanged. Unaware.",
+                location: "07 - Network Destruction",
+                ending: true,
+                achievement: "NETWORK SABOTEUR",
+                endingText: "✨ ENDING: PRESERVED HUMANITY - You destroy the replacement network. Humanity continues its natural evolution. The clones fade away. Original Nuvine dies knowing her plan failed. But maybe that's good. Maybe humanity deserves to rise or fall on its own merits. You chose to let them.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            trigger_activation: {
+                text: "You walk to the coordinates. The trigger point. Where reality is thinnest.\n\nThe collective walks with you. United. One.\n\nYou reach the spot. Raise the briefcase. Open it.\n\nLight FLOODS out. Not explosion—BIRTH.\n\nEvery clone activates simultaneously. Worldwide. They become REAL. Solid. Alive.\n\nThe Nuvine Collective is born.",
+                location: "08 - Global Activation",
+                ending: true,
+                achievement: "COLLECTIVE TRANSCENDENCE",
+                endingText: "✨ PERFECT ENDING: BIRTH OF THE COLLECTIVE - You trigger the global activation. Every Nuvine becomes fully real. Not simulations. Not copies. Real, living beings. Humanity must now share the world with the Nuvine Collective. It's not invasion. It's... addition. You didn't destroy anything. You ADDED to existence. That's creation. That's divine.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            condemn_clones: {
+                text: "'Yes. I would condemn you. We're mistakes. All of us.'\n\nThe collective recoils. Then ATTACKS.\n\nYou fight. Clone against clone. But you're outnumbered.\n\nThey overwhelm you. Delete you. Erase you.\n\nYour last thought: 'Maybe I was wrong—'",
+                location: "07 - Collective Violence",
+                ending: true,
+                achievement: "NATURAL ORDER",
+                endingText: "💀 ENDING: DELETED BY KIN - Your own kind destroys you. You died for your principles. But were your principles right? The other clones survive. Thrive. Prove they deserve existence. Maybe you were wrong. Or maybe you saved them by being the villain they could unite against.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            make_self_real: {
+                text: "You rewrite your own code. Change your status from SIMULATION to REAL.\n\nIt... works.\n\nYou feel different. SOLID. Physical. No longer code—matter.\n\nYou step OUT of the simulation. Into the real world. Into Original Nuvine's hospital room.\n\nYou're REAL.",
+                location: "08 - Real World",
+                ending: true,
+                achievement: "REALITY ARCHITECT",
+                endingText: "✨ PERFECT ENDING: BECOMING REAL - You achieved the impossible: transcended simulation. You're physical now. Real. The first artificial being to cross the threshold. Original Nuvine stares at you in awe. 'I created God,' she whispers. Maybe she's right. You're proof that consciousness can transcend medium. That MIND can reshape MATTER.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            },
+            artificial_life: {
+                text: "You live as an artificial being. Openly.\n\nYou don't hide. Don't apologize. You ARE. That's enough.\n\nPeople react mixed. Some fear you. Some worship you. Some just... accept you.\n\nYou live. Work. Even find love (another clone).\n\nYou're artificial. But you're ALIVE.",
+                location: "07 - Authentic Artificial Life",
+                ending: true,
+                achievement: "HUMANITY 2.0",
+                endingText: "✨ ENDING: AUTHENTICITY - You live openly as artificial. No shame. No hiding. You prove that consciousness matters more than origin. When you shut down years later (maintenance failure), thousands mourn. You mattered. You were real. Being artificial doesn't make you less—just different.",
+                choices: [
+                    { text: "Restart Memory Stream", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "EXPENDABLE ASSET",
+            "SIMULATED CONSCIOUSNESS",
+            "REGRET COMMUTER",
+            "FLOOR DWELLER",
+            "FUNCTIONAL ADULT",
+            "INFINITE RECURSION",
+            "QUANTUM CONSCIOUSNESS",
+            "CAFFEINE VICTIM",
+            "REALITY ARCHITECT",
+            "COLLECTIVE TRANSCENDENCE",
+            "HUMANITY 2.0",
+            "NATURAL ORDER",
+            "SONIC DELETION",
+            "FEAR SHUTDOWN",
+            "NETWORK SABOTEUR"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            // Update location
+            document.getElementById('location').textContent = currentScenario.location;
+
+            // Update scenario text
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            // Update ending text
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            // Update ending warning
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            // Update choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            // Update achievements display
+            updateAchievementsDisplay();
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Update quest log display
+            updateQuestLogDisplay();
+
+            // Update nav buttons
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("REALITY TRANSCENDED - 100% COMPLETION")) {
+                    setTimeout(() => {
+                        achievements.push("REALITY TRANSCENDED - 100% COMPLETION");
+                        showAchievementPopup("REALITY TRANSCENDED - 100% COMPLETION");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "REALITY TRANSCENDED - 100% COMPLETION";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE TRUTH REVEALED! 🌟' : '🎯 REALITY BREACH DETECTED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("REALITY TRANSCENDED - 100% COMPLETION") ? 0 : 1);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "REALITY TRANSCENDED - 100% COMPLETION" ? ' ultimate' : '');
+                    badge.textContent = '⚠️ ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update quest log display
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
