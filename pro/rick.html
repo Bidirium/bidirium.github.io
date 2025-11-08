@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Interdimensional Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a3a0a 0%, #1a1a3a 50%, #3a0a3a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff00;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 255, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ffff;
+            color: #00ffff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff, #ff00ff);
+            border-color: #00ffff;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ffff;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 255, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .portal-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005555;
+            border-color: #005555;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ffff;
+            color: #000;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ffff;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ffff;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005555;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005555, #00ffff);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 100, 0.5);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff, #ff00ff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #00ffff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff00ff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff66ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ffff;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ffff;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ffff;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005555;
+        }
+
+        .history-title {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .history-button.current {
+            background-color: #00ffff;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 50, 0.5);
+            color: #00ffff;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 100, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005555;
+        }
+
+        .history-hint {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="portal-icon">🌀</span>
+                    INTERDIMENSIONAL ADVENTURE
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>DIMENSION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ TIMELINE CONCLUDED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "You're in the garage, watching your grandpa tinker with some weird device that's crackling with green energy. School starts in an hour.\n\n'Hey kid, forget about school. I got something way more important. We're going on an adventure.'\n\nHe holds up a strange gun that opens a swirling portal.",
+                location: "C-137 Garage",
+                choices: [
+                    { text: "Go on the adventure", next: 'first_adventure' },
+                    { text: "Insist on going to school", next: 'go_school' },
+                    { text: "Ask what kind of adventure", next: 'ask_details' }
+                ]
+            },
+            go_school: {
+                text: "You tell him you need to go to school. He rolls his eyes.\n\n'School? SCHOOL?! They're teaching you to be a cog in the machine, kid. But fine, be boring.'\n\nYou go to school. It's another normal day. You wonder what you missed.\n\n💤 ENDING: You chose normalcy. You graduate, get a job, live a regular life. Sometimes you dream about portals and adventures, but you never quite remember why. Curiosity dies a little each day.",
+                location: "School - Earth C-137",
+                ending: true,
+                achievement: "PLAYED IT SAFE",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ask_details: {
+                text: "'Details? You want DETAILS? Fine. I need to get some mega seeds from another dimension. Simple in-and-out, twenty minute adventure.'\n\nHe burps. 'But these seeds are dangerous, and there might be security. Could use backup.'",
+                location: "C-137 Garage",
+                choices: [
+                    { text: "Sounds dangerous, I'm in", next: 'first_adventure' },
+                    { text: "Too risky, go to school instead", next: 'go_school' }
+                ]
+            },
+            first_adventure: {
+                text: "You step through the portal. Colors explode around you. When your vision clears, you're standing on a purple alien world with two suns.\n\n'Welcome to Dimension J-22. Now help me find those mega trees before the guards show up.'",
+                location: "Dimension J-22",
+                choices: [
+                    { text: "Follow closely and stay quiet", next: 'cautious_approach' },
+                    { text: "Run ahead excitedly", next: 'reckless_approach' }
+                ]
+            },
+            cautious_approach: {
+                text: "You stick close and stay quiet. Your grandpa nods approvingly.\n\n'Smart. See those cameras? Avoiding them. See those pressure plates? Not stepping on them. You're learning, kid.'\n\nYou reach the mega trees. He starts harvesting seeds while you keep watch.",
+                location: "Dimension J-22 - Mega Trees",
+                choices: [
+                    { text: "Spot guards approaching and warn him", next: 'good_partner' },
+                    { text: "Get distracted by the alien landscape", next: 'distracted' }
+                ]
+            },
+            reckless_approach: {
+                text: "You run ahead eagerly. IMMEDIATELY an alarm blares.\n\n'Nice going! Now we got about thirty seconds before alien security turns us into space jerky!'\n\nPortal energy crackles in his hands but guards are closing in fast.",
+                location: "Dimension J-22 - ALERT",
+                choices: [
+                    { text: "Run for the portal", next: 'narrow_escape' },
+                    { text: "Try to fight the guards", next: 'bad_fight' }
+                ]
+            },
+            good_partner: {
+                text: "You spot guards approaching and warn him in time. He opens a portal, you both escape with the seeds.\n\nBack in the garage: 'Not bad, kid. You actually helped. That's... rare. Want to go on more adventures?'",
+                location: "C-137 Garage",
+                choices: [
+                    { text: "Yes! Teach me everything", next: 'training_path' },
+                    { text: "That was scary, maybe slow down", next: 'cautious_path' }
+                ]
+            },
+            distracted: {
+                text: "You're staring at the alien landscape when guards appear. Your grandpa has to fight them off while you scramble.\n\n'Pay attention! Daydreaming gets you killed!'\n\nYou escape, but he's annoyed.",
+                location: "C-137 Garage",
+                choices: [
+                    { text: "Apologize and ask to learn properly", next: 'training_path' }
+                ]
+            },
+            narrow_escape: {
+                text: "You dive through the portal as blasts fly past. Back in the garage, your grandpa seals it.\n\n'Okay, so you screwed up the stealth part, but at least you can run. That's something. Want to learn how to NOT trigger alarms next time?'",
+                location: "C-137 Garage",
+                choices: [
+                    { text: "Yes, train me properly", next: 'training_path' }
+                ]
+            },
+            bad_fight: {
+                text: "You try to fight. You're immediately stunned by alien technology. Your grandpa has to portal you both out, but he's hit.\n\nBack in the garage, he's bleeding green. 'See what happens when you play hero?'\n\n💀 ENDING: Your grandpa recovers, but he never takes you on adventures again. Too risky, he says. You're left wondering what could have been if you'd been smarter.",
+                location: "C-137 Garage - Emergency",
+                ending: true,
+                achievement: "ROOKIE MISTAKE",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            training_path: {
+                text: "Over weeks, he teaches you. Portal mechanics. Alien species. Survival tactics. You're becoming skilled.\n\n'You're actually getting good at this. Ready for something bigger? I'm planning to take down the Galactic Federation. They've been hunting me for years.'",
+                location: "C-137 Garage - Training Complete",
+                choices: [
+                    { text: "I'm with you all the way", next: 'federation_mission' },
+                    { text: "That sounds too dangerous", next: 'refuse_federation' }
+                ]
+            },
+            cautious_path: {
+                text: "You go on smaller adventures. Learning gradually. Playing it safer. Months pass.\n\nOne day he says: 'The Federation found us. We need to act now or run forever. You in?'",
+                location: "C-137 Garage - Months Later",
+                choices: [
+                    { text: "I'm ready, let's do this", next: 'federation_mission' },
+                    { text: "I can't do this", next: 'abandon_grandpa' }
+                ]
+            },
+            federation_mission: {
+                text: "'Good. We infiltrate their headquarters, upload a virus, and escape. I've got it all planned out.'\n\nYou spend days preparing. Finally, you portal into Federation HQ.",
+                location: "Federation HQ - Infiltration",
+                choices: [
+                    { text: "Follow the plan carefully", next: 'careful_infiltration' },
+                    { text: "Take initiative and lead", next: 'bold_infiltration' }
+                ]
+            },
+            refuse_federation: {
+                text: "'Too dangerous? Fair. Not everyone can handle this level.'\n\nHe does smaller jobs alone. Eventually, the Federation catches him. You never see him again.\n\n😔 ENDING: You chose safety over family. Your grandpa is in Federation prison. Forever. The guilt never leaves you. You abandoned someone when they needed you most.",
+                location: "C-137 Home - Alone",
+                ending: true,
+                achievement: "ABANDONED FAMILY",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            abandon_grandpa: {
+                text: "You walk away. He watches you go.\n\nMonths later, you hear reports. The Federation caught him. You never see him again.\n\n😔 ENDING: You chose safety over family. Your grandpa is in Federation prison. Forever. The guilt never leaves you. You abandoned someone when they needed you most.",
+                location: "C-137 Home - Normal Life",
+                ending: true,
+                achievement: "ABANDONED FAMILY",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            careful_infiltration: {
+                text: "You move through the facility like ghosts. Your training pays off. You reach the mainframe undetected.\n\nBefore uploading the virus, you notice something: the virus will destroy their consciousness. Every agent will forget who they are.\n\nYour grandpa looks at you. 'Your call, kid. You've earned the right to decide.'",
+                location: "Federation HQ - Mainframe",
+                choices: [
+                    { text: "Upload it anyway - they deserve it", next: 'ruthless_victory' },
+                    { text: "Modify it to be less destructive", next: 'merciful_victory' },
+                    { text: "Wait... there might be another way", next: 'secret_choice' }
+                ]
+            },
+            bold_infiltration: {
+                text: "You take the lead, making split-second decisions. You're good at this. Really good.\n\nYou reach the mainframe faster than planned. But guards are closing in. You have seconds.",
+                location: "Federation HQ - Mainframe - ALERT",
+                choices: [
+                    { text: "Upload virus and escape immediately", next: 'close_victory' },
+                    { text: "Fight the guards to buy time", next: 'sacrifice_play' }
+                ]
+            },
+            secret_choice: {
+                text: "You pause. Something feels different this time. You've been through so much, learned so many lessons...\n\n'What are you thinking?' your grandpa asks.\n\n'What if we don't destroy them? What if we show them there's another way? Freedom, not control?'",
+                location: "Federation HQ - Mainframe - Revelation",
+                choices: [
+                    { text: "Broadcast the truth across all dimensions", next: 'check_ultimate' }
+                ]
+            },
+            check_ultimate: {
+                text: "You access the mainframe differently. Instead of a virus, you upload something else: the truth.\n\nEvery adventure you've had. Every choice. Every consequence. You show the multiverse that freedom matters more than control.\n\nThe Federation agents watch. Then, one by one, they choose to walk away.",
+                location: "Federation HQ - Transformation",
+                choices: [
+                    { text: "Complete the broadcast", next: 'ultimate_ending_check' }
+                ]
+            },
+            ultimate_ending_check: {
+                text: "The broadcast spreads. The Federation doesn't collapse—it transforms. Agents become explorers. Control becomes cooperation.\n\nYour grandpa stares at you. 'You didn't just beat them. You changed them. That's... that's something I could never do.'\n\nYou both portal home, but you feel something has fundamentally shifted in the multiverse.",
+                location: "C-137 Garage - New Era",
+                ending: true,
+                achievement: "REALITY CHANGER",
+                specialCheck: true,
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ruthless_victory: {
+                text: "You upload the virus. Federation agents across dimensions forget who they are. The organization collapses.\n\nYou escape clean. Mission accomplished.\n\n'We did it. Cold, but effective. You're a true partner now.'\n\n⚡ ENDING: You won through ruthlessness. The Federation is gone but at the cost of millions of minds. You and your grandpa are legends, feared across dimensions. Power without mercy.",
+                location: "C-137 Garage - Victorious",
+                ending: true,
+                achievement: "RUTHLESS VICTOR",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            merciful_victory: {
+                text: "You reprogram the virus quickly. Instead of destroying consciousness, it erases loyalty programming.\n\nFederation agents wake up... free. They disband peacefully.\n\n'Huh. That's actually better. They can choose who they want to be. Nice thinking, kid.'\n\n🌟 PERFECT ENDING: You won with wisdom and mercy. The Federation collapsed without deaths. Agents got their freedom and choice. You proved that power with compassion beats ruthless force. You and your grandpa are legends for the right reasons.",
+                location: "C-137 Garage - Merciful Victory",
+                ending: true,
+                achievement: "MERCIFUL CHAMPION",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            close_victory: {
+                text: "You upload the virus and portal out with seconds to spare. The Federation collapses.\n\nYou made it. Barely.\n\n'That was way too close. But we did it. You're pretty good at this adventuring stuff.'\n\n⚡ ENDING: You succeeded through speed and skill. The Federation is gone. You and your grandpa continue having adventures, partners in interdimensional chaos. Not perfect, but victorious.",
+                location: "C-137 Garage - Victory",
+                ending: true,
+                achievement: "VICTORIOUS",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            sacrifice_play: {
+                text: "You stay to fight, giving your grandpa time to upload the virus. Guards overwhelm you.\n\nThe virus works. The Federation collapses. But you're captured, trapped between dimensions.\n\n💔 ENDING: You sacrificed yourself for victory. The Federation fell, but you're imprisoned forever. Your grandpa escapes, but loses you. Heroic, but tragic. Sometimes winning costs everything.",
+                location: "Federation Prison - Dimensional Lock",
+                ending: true,
+                achievement: "HEROIC SACRIFICE",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "PLAYED IT SAFE",
+            "ROOKIE MISTAKE",
+            "ABANDONED FAMILY",
+            "RUTHLESS VICTOR",
+            "MERCIFUL CHAMPION",
+            "VICTORIOUS",
+            "HEROIC SACRIFICE",
+            "REALITY CHANGER"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let hasAllBasicAchievements = false;
+
+        function init() {
+            document.getElementById('backBtn').addEventListener('click', goBack);
+            document.getElementById('forwardBtn').addEventListener('click', goForward);
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            
+            // Check if this is the ultimate ending and player has all achievements
+            if (currentScenario.specialCheck && hasAllBasicAchievements) {
+                document.getElementById('scenarioText').textContent = currentScenario.text + "\n\n🌟✨ ULTIMATE SECRET ENDING ✨🌟\n\nYou've experienced every path, learned every lesson, and now you've achieved what no one else could: true transformation without destruction. You didn't just win—you evolved the multiverse itself.\n\n'Kid,' your grandpa says with genuine awe, 'you've become something I never could. You're not just an adventurer. You're an architect of reality itself.'\n\nThe multiverse will never be the same. And it's better for it.";
+            } else if (currentScenario.specialCheck) {
+                // Player hasn't unlocked all achievements yet, give them the regular ending
+                document.getElementById('scenarioText').textContent = "The broadcast spreads. The Federation doesn't collapse—it transforms. Agents become explorers. Control becomes cooperation.\n\nYour grandpa stares at you. 'You changed them. That's impressive, kid.'\n\n⚡ GOOD ENDING: You transformed the Federation through truth instead of violence. A creative solution, though you sense there might be even more you could achieve with greater experience...";
+            } else {
+                document.getElementById('scenarioText').textContent = currentScenario.text;
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                hasAllBasicAchievements = false;
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                // Check if player has all basic achievements (excluding the ultimate one)
+                const basicAchievements = allAchievements.filter(a => a !== "REALITY CHANGER");
+                const hasAllBasic = basicAchievements.every(ach => achievements.includes(ach));
+                
+                if (hasAllBasic && !hasAllBasicAchievements) {
+                    hasAllBasicAchievements = true;
+                    setTimeout(() => {
+                        achievements.push("INTERDIMENSIONAL MASTER");
+                        showAchievementPopup("INTERDIMENSIONAL MASTER");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "INTERDIMENSIONAL MASTER";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + 1; // +1 for INTERDIMENSIONAL MASTER
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "INTERDIMENSIONAL MASTER" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
