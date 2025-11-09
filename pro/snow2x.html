@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Crash Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000000 0%, #1a001a 50%, #330033 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #ff00ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(255, 0, 255, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #ff00ff;
+            color: #ff00ff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #ff00ff, #00ffff);
+            border-color: #ff00ff;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #ff00ff;
+            box-shadow: 0 20px 25px -5px rgba(255, 0, 255, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            border: 2px solid #ff00ff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #ff00ff;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #550055;
+            border-color: #550055;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #ff00ff;
+            color: #000;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #ff00ff;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #ff00ff;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #550055;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #550055, #ff00ff);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(100, 0, 100, 0.5);
+            color: #ff00ff;
+            border: 1px solid #ff00ff;
+            display: inline-block;
+            margin: 0.25rem;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #ff00ff, #00ffff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+            text-align: center;
+            color: #ff6666;
+            font-weight: bold;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ff00ff;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #ff00ff;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .ending-text {
+            color: #00ffff;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #550055;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #ff00ff;
+            font-weight: bold;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ff00ff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .choice-button:hover {
+            background-color: #ff00ff;
+            color: #000;
+            transform: scale(1.02);
+            box-shadow: 0 0 20px #ff00ff;
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #550055;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            border: 1px solid #ff00ff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #ff00ff;
+            margin: 0.25rem;
+        }
+
+        .history-button.current {
+            background-color: #ff00ff;
+            color: #000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div>🏆</div>
+            <div>
+                <div id="achievementTitle">⚡ ACHIEVEMENT!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">◬ SNOW CRASH QUEST</h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <p><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <p><strong>ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</strong></p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                ⚠️ SIMULATION TERMINATED ⚠️
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3>DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)</h3>
+            <div id="historyButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "You're a freelance hacker in fragmented America. Corporate franchises own everything. The Metaverse is where real action happens.\n\nTonight's delivery: Mr. Ng's franchise territory. You're late. Very late.\n\nBut there's chatter about a new drug in the Metaverse called 'Snow Crash.'",
+                location: "🏙️ The Street",
+                choices: [
+                    { text: "Focus on the delivery", next: 'delivery_focus' },
+                    { text: "Investigate the chatter", next: 'investigate_chatter' },
+                    { text: "Jack into the Metaverse", next: 'metaverse_jack' }
+                ]
+            },
+            delivery_focus: {
+                text: "You make the delivery on time. As you leave, a crowd gathers around a Metaverse terminal.\n\nSomeone's collapsed. Their avatar shows strange static. People call it 'Snow Crash.'\n\nYour phone rings. It's Y.T., a young courier.",
+                location: "🏙️ Mr. Ng's Territory",
+                choices: [
+                    { text: "Answer Y.T.'s call", next: 'yt_call' },
+                    { text: "Examine the victim", next: 'examine_victim' },
+                    { text: "Leave before getting involved", next: 'avoid_trouble' }
+                ]
+            },
+            investigate_chatter: {
+                text: "You pull over and listen. Snow Crash is spreading through the Metaverse. Victims freeze, displaying corrupted data.\n\nSomeone mentions L. Bob Rife, a media mogul. And Lagos, a dead hacker who researched ancient languages.\n\nYour delivery is now critically late.",
+                location: "🏙️ Street Investigation",
+                choices: [
+                    { text: "Abandon delivery, dig deeper", next: 'deep_investigation' },
+                    { text: "Rush to complete delivery", next: 'late_delivery' }
+                ]
+            },
+            metaverse_jack: {
+                text: "You jack into the Metaverse. Your avatar materializes on the Street. Something's wrong.\n\nSeveral avatars are frozen, displaying Snow Crash. You approach one. Text appears: 'Want to see something?'\n\nA hypercard appears.",
+                location: "🌐 The Metaverse",
+                choices: [
+                    { text: "Take the hypercard", next: 'take_hypercard' },
+                    { text: "Jack out immediately", next: 'jack_out_safe' },
+                    { text: "Scan it first", next: 'scan_hypercard' }
+                ]
+            },
+            avoid_trouble: {
+                text: "You leave. Keep your head down. Don't get involved.\n\nWeeks pass. Snow Crash spreads. Your income drops as people fear the Metaverse.\n\nEventually, you take a corporate security job. Safe but you've lost your freedom.",
+                location: "🏢 Corporate Security",
+                ending: true,
+                achievement: "WAGE SLAVE",
+                endingText: "💼 ENDING: You chose safety over curiosity. You survived but at what cost? The mystery remains unsolved.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            yt_call: {
+                text: "Y.T. is panicked. 'Someone just crashed! Their avatar showed this weird pattern. This is bad!'\n\nShe mentions Lagos researching linguistic viruses. And Rife's connection.\n\n'We need to figure this out.'",
+                location: "🏙️ Mr. Ng's Territory",
+                choices: [
+                    { text: "Team up with Y.T.", next: 'team_yt' },
+                    { text: "Investigate alone", next: 'solo_investigate' }
+                ]
+            },
+            examine_victim: {
+                text: "The victim is catatonic. Their goggles display Snow Crash—ancient cuneiform mixed with binary.\n\nCorporate security arrives. 'Step back. This is private property.'\n\nYou snap a photo before they push you away.",
+                location: "🏙️ Mr. Ng's Territory",
+                choices: [
+                    { text: "Analyze the pattern", next: 'analyze_pattern' },
+                    { text: "Find Lagos' research", next: 'find_lagos' }
+                ]
+            },
+            deep_investigation: {
+                text: "You're fired from delivery. But you're onto something. Lagos theorized: language as a virus. Sumerian as proto-language that could hack consciousness.\n\nSnow Crash is the digital implementation. Rife is distributing it.\n\nYou find Lagos' old office address.",
+                location: "💻 Deep Net Research",
+                choices: [
+                    { text: "Infiltrate Lagos' office", next: 'lagos_office' },
+                    { text: "Track down Rife", next: 'track_rife' }
+                ]
+            },
+            late_delivery: {
+                text: "You arrive too late. The pizza is cold. You're blacklisted.\n\nBut a guard pulls you aside. 'You asking about Snow Crash? Meet me in the Metaverse. Club Narcolepsia. Tonight.'\n\nHe gives coordinates and leaves.",
+                location: "🏙️ Fired",
+                choices: [
+                    { text: "Go to Club Narcolepsia", next: 'club_narcolepsia' },
+                    { text: "Ignore it, probably a trap", next: 'ignore_meeting' }
+                ]
+            },
+            take_hypercard: {
+                text: "You grab it. Your vision fills with static. Ancient symbols. Your avatar freezes.\n\nYour antivirus kicks in. You built it yourself. It quarantines the virus. Barely.\n\nYou jack out gasping. You almost crashed. But you have a Snow Crash sample.",
+                location: "🏙️ Emergency Jack Out",
+                choices: [
+                    { text: "Analyze the virus", next: 'analyze_virus' },
+                    { text: "Find expert help", next: 'find_expert' }
+                ]
+            },
+            jack_out_safe: {
+                text: "You jack out before touching anything. Smart.\n\nY.T. calls. 'Rife is distributing Snow Crash deliberately. Meet me at the docks tonight. I need someone who knows code.'\n\nShe sounds scared.",
+                location: "🏙️ Safe",
+                choices: [
+                    { text: "Meet Y.T. at docks", next: 'docks_meeting' }
+                ]
+            },
+            scan_hypercard: {
+                text: "You scan it. Sophisticated—a linguistic virus affecting the brain's language center. Part Sumerian, part assembly language.\n\nLagos' work. Weaponized. Your tools detect an antidote buried in the code. Lagos left a backdoor.\n\nBut it requires understanding the original language.",
+                location: "🌐 The Metaverse",
+                choices: [
+                    { text: "Study the linguistics", next: 'study_linguistics' },
+                    { text: "Extract the antidote", next: 'extract_antidote' }
+                ]
+            },
+            team_yt: {
+                text: "You and Y.T. team up. She's street-smart. You're tech expert. Together, you connect dots.\n\nLagos believed language shapes thought. Snow Crash exploits this. Rife uses it for control.\n\nHe's distributing through the Metaverse.",
+                location: "🏙️ Safe House",
+                choices: [
+                    { text: "Infiltrate Rife's organization", next: 'infiltrate_rife' },
+                    { text: "Find the antidote first", next: 'antidote_search' }
+                ]
+            },
+            solo_investigate: {
+                text: "You work alone. Always have. You dive into Lagos' research—ancient languages, modern code.\n\nSumerian was a 'deep language' that could program thought. Snow Crash is its digital descendant.\n\nBut Rife has massive distribution. You can't stop him alone.",
+                location: "💻 Solo Research",
+                choices: [
+                    { text: "Reach out for help", next: 'ask_help_late' },
+                    { text: "Create counter-virus alone", next: 'counter_virus_solo' }
+                ]
+            },
+            analyze_pattern: {
+                text: "The pattern is Sumerian cuneiform mixed with binary. A linguistic virus—information that reprograms the brain.\n\nLagos theorized this. The original Babel virus. Snow Crash is the digital version.\n\nRife is the distributor.",
+                location: "💻 Analysis",
+                choices: [
+                    { text: "Find Lagos' full research", next: 'find_lagos' },
+                    { text: "Track Rife directly", next: 'track_rife' }
+                ]
+            },
+            find_lagos: {
+                text: "Lagos is dead, but his research remains. You break into archived files. He was working on linguistic inoculation.\n\nHis notes mention 'nam-shub of Enki'—an ancient Sumerian counter-spell that gave humans diverse languages.\n\nYou need the digital version.",
+                location: "💻 Lagos' Archives",
+                choices: [
+                    { text: "Search for nam-shub", next: 'search_namshub' },
+                    { text: "Consult the Librarian", next: 'consult_librarian' }
+                ]
+            },
+            lagos_office: {
+                text: "You infiltrate the arcology. Security is outdated. Inside, you find complete research. The linguistic virus theory. The nam-shub of Enki.\n\nBut you trigger an alarm. Minutes to escape.",
+                location: "🏢 Lagos' Office",
+                choices: [
+                    { text: "Download and run", next: 'download_run' },
+                    { text: "Upload nam-shub first", next: 'upload_namshub_rushed' }
+                ]
+            },
+            track_rife: {
+                text: "Rife operates from his yacht, the 'Raft,' in international waters. He's using refugees as test subjects.\n\nThe scale is horrifying. You need to get on that ship.",
+                location: "💻 Intel Gathering",
+                choices: [
+                    { text: "Plan Raft infiltration", next: 'plan_raft_infiltration' },
+                    { text: "Hack his network remotely", next: 'hack_rife_network' }
+                ]
+            },
+            club_narcolepsia: {
+                text: "You enter Club Narcolepsia in the Metaverse. The guard's avatar approaches.\n\n'Rife's planning mass distribution through a Metaverse concert. Millions infected simultaneously. Stop it.'\n\nHe uploads coordinates. 'Don't waste this.'",
+                location: "🌐 Club Narcolepsia",
+                choices: [
+                    { text: "Sabotage the concert", next: 'sabotage_concert' },
+                    { text: "Find antidote first", next: 'antidote_priority' }
+                ]
+            },
+            ignore_meeting: {
+                text: "You ignore it. Probably a trap. You survive.\n\nWeeks later, the concert happens. Millions infected. The Metaverse becomes controlled.\n\nYou're uninfected but isolated in a world of mental slaves.",
+                location: "🏙️ Months Later",
+                ending: true,
+                achievement: "PARANOID SURVIVOR",
+                endingText: "💀 ENDING: Your paranoia kept you safe but stopped you from acting. The world fell while you hid.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            analyze_virus: {
+                text: "Days of analysis. It's brilliant and horrifying. A linguistic virus hijacking brain's language processing.\n\nBuried in the virus: Lagos left a backdoor. An intentional weakness.\n\nYou can create an antidote.",
+                location: "💻 Deep Analysis",
+                choices: [
+                    { text: "Create antidote fast", next: 'create_antidote_fast' },
+                    { text: "Test thoroughly first", next: 'test_antidote' }
+                ]
+            },
+            find_expert: {
+                text: "You reach out to Juanita. She's researching Snow Crash independently. Together, you combine knowledge.\n\n'We need the nam-shub—the counter-virus from ancient Sumer. The Librarian has it.'",
+                location: "💻 Collaboration",
+                choices: [
+                    { text: "Go to Library together", next: 'library_infiltrate' }
+                ]
+            },
+            docks_meeting: {
+                text: "You meet Y.T. at the docks. She's found Rife's shipping containers full of refugees being transported to the Raft.\n\n'They're test subjects. We need to stop the shipment.'\n\nSecurity patrols nearby.",
+                location: "🚢 The Docks",
+                choices: [
+                    { text: "Free the refugees", next: 'free_refugees' },
+                    { text: "Sabotage the ship", next: 'sabotage_ship' }
+                ]
+            },
+            study_linguistics: {
+                text: "You dive into linguistic theory. Lagos' work. Ancient tablets. Language as virus.\n\nSnow Crash speaks to the brain's language center, bypassing conscious thought. The antidote must be equally fundamental.",
+                location: "💻 Research",
+                choices: [
+                    { text: "Synthesize meta-language", next: 'synthesize_metalanguage' },
+                    { text: "Find original nam-shub", next: 'search_namshub' }
+                ]
+            },
+            extract_antidote: {
+                text: "You extract the antidote code. Elegant—a pattern that reinforces individual thought.\n\nBut distribution needs reach. Your phone rings. It's Rife.\n\n'I know what you have. Bring it, or everyone pays.'",
+                location: "💻 Breakthrough",
+                choices: [
+                    { text: "Distribute immediately", next: 'rapid_distribution' },
+                    { text: "Go into hiding", next: 'hide_with_antidote' }
+                ]
+            },
+            infiltrate_rife: {
+                text: "Y.T. goes undercover as courier. You'll hack from inside. Risky but necessary.\n\nShe gets hired. She's in. Now you wait for her signal.",
+                location: "🏙️ Planning",
+                choices: [
+                    { text: "Wait for signal", next: 'yt_signal' },
+                    { text: "Hack immediately for support", next: 'hack_support' }
+                ]
+            },
+            antidote_search: {
+                text: "You prioritize the antidote. You and Y.T. search through Lagos' work, ancient texts, modern code.\n\nYou find it: nam-shub of Enki in the Library's archives. But accessing needs clearance.\n\nJuanita has that clearance.",
+                location: "💻 Research Lab",
+                choices: [
+                    { text: "Find Juanita", next: 'find_juanita' }
+                ]
+            },
+            ask_help_late: {
+                text: "You reach out to old contacts. Y.T., Juanita, others. They come together.\n\n'Should have done this from the start,' Juanita says. 'Better late than never.'\n\nTogether, you pool knowledge.",
+                location: "🏙️ Team Assembly",
+                choices: [
+                    { text: "Launch coordinated attack", next: 'coordinated_attack' },
+                    { text: "Distribute antidote first", next: 'distribute_antidote' }
+                ]
+            },
+            counter_virus_solo: {
+                text: "You work alone for weeks. No sleep. Pure focus. You create a counter-virus.\n\nIt works in testing. But distributing globally requires infrastructure you don't have.\n\nRife launches his concert. Millions infected before you deploy. Too late.",
+                location: "💻 Exhausted",
+                ending: true,
+                achievement: "LONE WOLF FAILURE",
+                endingText: "💀 ENDING: Your cure works but couldn't distribute in time. Pride cost countless lives.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            search_namshub: {
+                text: "The nam-shub of Enki is the key. You find it in the Library's restricted section.\n\nIt's a linguistic pattern that diversified human language to protect against viral language. The digital version can protect against Snow Crash.\n\nBut accessing needs the Librarian's cooperation.",
+                location: "🌐 Library Archives",
+                choices: [
+                    { text: "Ask Librarian for access", next: 'librarian_request' },
+                    { text: "Hack restricted section", next: 'hack_restricted' }
+                ]
+            },
+            consult_librarian: {
+                text: "You enter the Library. The Librarian appears—omniscient and patient.\n\n'You seek the nam-shub of Enki. Few understand its significance. I will grant access.'\n\nThe Librarian downloads the pattern. You have the cure.",
+                location: "🌐 The Library",
+                choices: [
+                    { text: "Begin distribution", next: 'immediate_distribution' },
+                    { text: "Test it first", next: 'test_namshub' },
+                    { text: "Optimize for modern systems", next: 'optimize_cure' }
+                ]
+            },
+            download_run: {
+                text: "You download everything and run. Security closes in. You barely escape with data intact.\n\nYou have Lagos' complete research. The nam-shub. The antidote. Everything.\n\nBut Rife knows you have it. You're his primary target.",
+                location: "🏙️ Running",
+                choices: [
+                    { text: "Go underground", next: 'underground_data' },
+                    { text: "Distribute immediately", next: 'public_distribution' }
+                ]
+            },
+            upload_namshub_rushed: {
+                text: "You upload the nam-shub to the Metaverse before escaping. It's live. Available to all.\n\nSecurity catches you. You're detained. But the cure is out there.\n\nDays later, you're released. The cure spread faster than the virus. You succeeded.",
+                location: "🏢 Detention",
+                ending: true,
+                achievement: "SACRIFICIAL HERO",
+                endingText: "⚔️ GOOD ENDING: You prioritized the mission. The nam-shub spread, inoculating millions. You saved the world.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            plan_raft_infiltration: {
+                text: "The Raft is suicide to infiltrate. But you need to stop him at the source.\n\nY.T. volunteers to join you. 'We destroy his production facility. It's on the Raft.'",
+                location: "🏙️ Planning",
+                choices: [
+                    { text: "Accept Y.T.'s help", next: 'raft_infiltration_team' },
+                    { text: "Go alone, too dangerous", next: 'raft_infiltration_solo' }
+                ]
+            },
+            hack_rife_network: {
+                text: "You launch a remote hack on Rife's network. You penetrate his systems.\n\nYou find production logs. Millions of doses ready. And his version of the antidote—he has the cure but isn't sharing.\n\nPure power play.",
+                location: "💻 Deep Hack",
+                choices: [
+                    { text: "Steal and distribute his antidote", next: 'steal_distribute_antidote' },
+                    { text: "Destroy production remotely", next: 'remote_sabotage' }
+                ]
+            },
+            sabotage_concert: {
+                text: "The concert is in 24 hours. You plan to infiltrate the code and prevent transmission.\n\nY.T. offers distraction. 'I'll draw their attention. You hack.'",
+                location: "💻 Planning",
+                choices: [
+                    { text: "Accept her help", next: 'concert_distraction' },
+                    { text: "Solo infiltration", next: 'solo_concert_hack' }
+                ]
+            },
+            antidote_priority: {
+                text: "You focus on antidote first. With Y.T.'s help, you locate the complete nam-shub in the Library.\n\nYou have the cure. 18 hours until concert.",
+                location: "🌐 The Library",
+                choices: [
+                    { text: "Rapid distribution", next: 'hacker_distribution' },
+                    { text: "Inject into concert code", next: 'inject_concert' }
+                ]
+            },
+            create_antidote_fast: {
+                text: "You work frantically. It's functional but not optimized. You distribute immediately.\n\nIt works for most. 85% cure rate. Good, but not perfect. Speed had costs.",
+                location: "💻 Rapid Development",
+                ending: true,
+                achievement: "PARTIAL VICTORY",
+                endingText: "⚡ ENDING: You saved 85%. Fast action saved thousands but rushing left vulnerabilities.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            test_antidote: {
+                text: "You test thoroughly. Simulations. Trials. It works perfectly.\n\nBy the time you're ready, you have bulletproof solution. You release it globally.\n\nIt spreads. Snow Crash is neutralized. You took time to do it right.",
+                location: "💻 Testing Complete",
+                choices: [
+                    { text: "Distribute perfect antidote", next: 'perfect_distribution' }
+                ]
+            },
+            library_infiltrate: {
+                text: "You and Juanita infiltrate the Library. Her clearance gets past first layers. Your hacking goes deeper.\n\nThe Librarian detects but doesn't stop you. 'You seek to heal. I will assist.'\n\nThe AI grants nam-shub access.",
+                location: "🌐 Library Core",
+                choices: [
+                    { text: "Begin distribution", next: 'immediate_distribution' },
+                    { text: "Optimize it first", next: 'optimize_cure' }
+                ]
+            },
+            free_refugees: {
+                text: "You break open containers. Hundreds escape. But security arrives. Gunfire.\n\nY.T. gets them to safety while you cover. You're shot. As you fall, you see them escape.\n\nYou saved them. But Rife remains.",
+                location: "🚢 Docks Firefight",
+                ending: true,
+                achievement: "MARTYRED HERO",
+                endingText: "⚔️ ENDING: You saved hundreds at cost of your life. You were the spark that started the revolution.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            sabotage_ship: {
+                text: "You hack ship's navigation to international waters where Rife has no jurisdiction. Authorities intercept.\n\nRefugees freed. Rife's docks operation exposed. Major victory.\n\nBut his Snow Crash distribution continues elsewhere.",
+                location: "🚢 Docks Victory",
+                choices: [
+                    { text: "Pursue Snow Crash threat", next: 'pursue_snowcrash' }
+                ]
+            },
+            synthesize_metalanguage: {
+                text: "You create a meta-language—a framework protecting the brain from linguistic viruses.\n\nIt works on yourself. You're immune. But scaling for millions requires resources.",
+                location: "💻 Breakthrough",
+                choices: [
+                    { text: "Use underground networks", next: 'underground_distribution' },
+                    { text: "Open-source it", next: 'opensource_solution' }
+                ]
+            },
+            rapid_distribution: {
+                text: "You distribute immediately through every channel. Speed is critical.\n\nIt spreads. The antidote floods the world. Rife's agents come but it's too late. Cure is everywhere.\n\nYou're captured but you won.",
+                location: "💻 Emergency",
+                ending: true,
+                achievement: "SACRIFICE PLAY",
+                endingText: "🌟 PERFECT ENDING: You prioritized mission over safety. Antidote spread globally. You were captured but the world is saved.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            hide_with_antidote: {
+                text: "You go underground. Rife can't find you. You have the cure but can't distribute while hiding.\n\nMonths pass. Snow Crash spreads. Others eventually develop their own antidote.\n\nYou survived but didn't matter.",
+                location: "🏚️ Hideout",
+                ending: true,
+                achievement: "SELFISH SURVIVOR",
+                endingText: "💀 ENDING: You had the cure and hid. Self-preservation over welfare. The world suffered while you stayed safe.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            yt_signal: {
+                text: "Y.T.'s signal comes. She's accessed Rife's servers, downloading distribution network.\n\nBut she's detected. Security closes in. She needs exit. NOW.\n\nYou can hack her escape or hack servers while distracted.",
+                location: "💻 Critical Decision",
+                choices: [
+                    { text: "Save Y.T.", next: 'save_yt_servers' },
+                    { text: "Prioritize servers", next: 'prioritize_servers' }
+                ]
+            },
+            hack_support: {
+                text: "You hack in to support immediately. Disable security, open doors, create alarms.\n\nShe navigates like a ghost. She reaches servers, downloads everything. You both escape. Complete victory.",
+                location: "💻 Perfect Coordination",
+                choices: [
+                    { text: "Analyze stolen data", next: 'analyze_stolen_data' }
+                ]
+            },
+            find_juanita: {
+                text: "You find Juanita at her Metaverse cafe. She's expecting you.\n\n'Lagos was right. Language is a virus. But he found the cure—nam-shub of Enki. It's in the Library.'\n\nShe looks serious. 'Rife has the Librarian under surveillance.'",
+                location: "🌐 Metaverse Cafe",
+                choices: [
+                    { text: "Infiltrate Library with Juanita", next: 'library_infiltrate' },
+                    { text: "Hack Library from outside", next: 'hack_library' }
+                ]
+            },
+            coordinated_attack: {
+                text: "Your team launches coordinated attack. Y.T. infiltrates Raft. Juanita hacks Library. Dr. Ng provides linguistic support. You orchestrate.\n\nRife's distribution sabotaged. Antidote spreads. His empire collapses in one night.\n\nYou did it together.",
+                location: "🏙️ Command Center",
+                ending: true,
+                achievement: "MASTER COORDINATOR",
+                endingText: "🌟 PERFECT ENDING: Coordinated solutions for complex problems. Flawless execution. Snow Crash defeated. Rife's empire falls.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            distribute_antidote: {
+                text: "You distribute antidote globally through every channel. Within hours, millions inoculated.\n\nSnow Crash becomes impotent. Victims recover. Rife's power crumbles. You celebrate.",
+                location: "🏙️ Team HQ",
+                ending: true,
+                achievement: "COLLECTIVE TRIUMPH",
+                endingText: "🌟 PERFECT ENDING: Collective effort. No single hero. Snow Crash neutralized. World saved through cooperation.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            librarian_request: {
+                text: "You ask the Librarian politely for nam-shub access.\n\n'Your intent is to heal. Access granted.' The Librarian provides everything.\n\nSometimes asking works better than forcing.",
+                location: "🌐 Library",
+                choices: [
+                    { text: "Use nam-shub to create cure", next: 'librarian_guided_deployment' }
+                ]
+            },
+            hack_restricted: {
+                text: "You hack the restricted section. The Librarian detects but doesn't stop you.\n\n'You could ask, but you choose force. Interesting.'\n\nYou get the nam-shub. Sometimes AI are understanding.",
+                location: "🌐 Library Hack",
+                choices: [
+                    { text: "Take data and leave", next: 'grab_and_run' }
+                ]
+            },
+            immediate_distribution: {
+                text: "You distribute immediately through every channel. Speed is critical.\n\nThe cure spreads rapidly. It works. Snow Crash victims recover. New infections stop.\n\nYour urgency saved countless lives.",
+                location: "🌐 Rapid Deployment",
+                ending: true,
+                achievement: "SPEED DEMON",
+                endingText: "⚡ GOOD ENDING: Rapid response saved most lives. Speed was critical. You recognized and acted.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            test_namshub: {
+                text: "You test thoroughly. Virtual simulations. Real trials. It works perfectly.\n\nBy ready time, you have bulletproof cure. You distribute globally. Snow Crash neutralized.",
+                location: "💻 Testing Lab",
+                ending: true,
+                achievement: "PERFECTIONIST",
+                endingText: "🌟 PERFECT ENDING: Thorough testing delivered perfect cure. Everyone saved. Quality was right choice.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            optimize_cure: {
+                text: "You optimize nam-shub for modern neural interfaces. Result is better—faster acting, more robust.\n\nYou distribute enhanced cure. It spreads, works flawlessly. Snow Crash eliminated.",
+                location: "💻 Optimization",
+                ending: true,
+                achievement: "PERFECTIONIST",
+                endingText: "🌟 PERFECT ENDING: You improved ancient wisdom with modern knowledge. Optimized cure worked perfectly.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            underground_data: {
+                text: "You go deep underground with research. Work in secret. Rife can't find you.\n\nWeeks later, emerge with perfect antidote. Distribute globally. Rife never saw it coming.",
+                location: "🏚️ Underground",
+                ending: true,
+                achievement: "UNDERGROUND SCIENTIST",
+                endingText: "🌟 GOOD ENDING: Went dark, worked in secret. Emerged with perfect cure. Sometimes best offense is invisible.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            public_distribution: {
+                text: "You distribute Lagos' research publicly. Open source. Within days, multiple cures developed independently.\n\nSnow Crash defeated by crowdsourced solutions. Rife can't suppress thousands.",
+                location: "🌐 Open Source",
+                ending: true,
+                achievement: "INFORMATION LIBERATOR",
+                endingText: "🌟 PERFECT ENDING: Released research openly. Crowdsourced innovation defeated Snow Crash. Power of open information.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            raft_infiltration_team: {
+                text: "You and Y.T. infiltrate together. She handles physical. You handle digital. Perfect team.\n\nReach production facility. Upload antidote, plant virus. Production stops. Both escape. Perfect operation.",
+                location: "🚢 Raft Success",
+                ending: true,
+                achievement: "PERFECT TEAM",
+                endingText: "🌟 PERFECT ENDING: Flawless team operation. Production destroyed. Cure distributed. Both escaped. Perfect partnership.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            raft_infiltration_solo: {
+                text: "You go alone. Too dangerous for Y.T. You infiltrate, sabotage production, distribute cure.\n\nExtraction is hard alone. Barely make it. Y.T. is angry you didn't trust her.\n\nMission accomplished but relationship strained.",
+                location: "🚢 Solo Success",
+                ending: true,
+                achievement: "LONE HERO",
+                endingText: "⚡ ENDING: Succeeded alone but damaged friendship. Snow Crash defeated but lost something intangible.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            steal_distribute_antidote: {
+                text: "You steal Rife's hoarded antidote and distribute freely. Millions inoculated using his cure.\n\nHe's furious but helpless. His control collapses. Perfect irony.",
+                location: "🌐 Stolen Cure",
+                ending: true,
+                achievement: "ROBIN HOOD HACKER",
+                endingText: "🌟 PERFECT ENDING: Used Rife's cure against him. Hoarded cure became universal protection. Digital Robin Hood saves world.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            remote_sabotage: {
+                text: "You sabotage production remotely. No infiltration needed. His systems crash. Production stops.\n\nSnow Crash distribution crippled. Never risked physical danger. Pure hacker victory.",
+                location: "💻 Remote Victory",
+                ending: true,
+                achievement: "REMOTE WARRIOR",
+                endingText: "🌟 GOOD ENDING: Won without leaving apartment. Remote sabotage destroyed production. Power of digital warfare.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            concert_distraction: {
+                text: "Y.T. creates chaos—fake attacks, alarms, diversions. Rife's security responds. You slip into concert code.\n\nYou replace Snow Crash with dummy data. Concert happens. Code executes. Nothing.\n\nPerfect sabotage.",
+                location: "🌐 Concert",
+                ending: true,
+                achievement: "GHOST IN THE MACHINE",
+                endingText: "🌟 PERFECT ENDING: Flawless sabotage. Concert happened but Snow Crash didn't transmit. Perfect ghost hacking.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            solo_concert_hack: {
+                text: "You hack alone. Harder without distraction. Security detects you partway.\n\nRace. You're changing code while they lock you out. Replace payload just as they boot you.\n\nConcert happens. Your replacement works. Succeeded by seconds.",
+                location: "🌐 Concert",
+                ending: true,
+                achievement: "CLOSE CALL HERO",
+                endingText: "⚡ GOOD ENDING: Succeeded alone, barely. Solo operations riskier. You won through skill and luck.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            hacker_distribution: {
+                text: "You distribute through underground networks. Fast, efficient, untraceable.\n\nWithin hours, antidote everywhere. Concert happens but half already inoculated.\n\nSnow Crash neutralized. Your network saved the world.",
+                location: "🌐 Underground",
+                ending: true,
+                achievement: "UNDERGROUND HERO",
+                endingText: "🌟 GOOD ENDING: Underground network came through. Snow Crash defeated by collective action from below.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            inject_concert: {
+                text: "You inject antidote into concert code. When it happens, attendees receive both Snow Crash and cure simultaneously.\n\nCure works faster. Never actually infected. Rife's plan fails spectacularly.",
+                location: "🌐 Concert Code",
+                ending: true,
+                achievement: "CODE NINJA",
+                endingText: "🌟 PERFECT ENDING: Hacked Rife's distribution system. Used concert to spread cure. Elegant, efficient, perfect.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            perfect_distribution: {
+                text: "Your tested antidote distributes globally. Every platform. Every network.\n\nIt works flawlessly. Snow Crash victims recover. Rife arrested. Perfection took longer but saved everyone.",
+                location: "🌐 Total Success",
+                ending: true,
+                achievement: "PERFECTIONIST VICTORY",
+                endingText: "🌟 PERFECT ENDING: Refused to rush. Tested thoroughly. Distributed perfectly. Zero failures. Every victim saved.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            save_yt_servers: {
+                text: "You hack her escape route. She gets out safely. But server data lost.\n\nYou don't have full intel. Mission harder now.",
+                location: "💻 Rescue Success",
+                choices: [
+                    { text: "Find another way", next: 'alternative_intel' }
+                ]
+            },
+            prioritize_servers: {
+                text: "You hack servers. Data too valuable. Y.T. escapes on her own. She's hurt and knows you chose data.\n\nRelationship strained. But you have everything to destroy Rife.",
+                location: "💻 Data Acquired",
+                choices: [
+                    { text: "Use data to end this", next: 'analyze_stolen_data' }
+                ]
+            },
+            analyze_stolen_data: {
+                text: "You and Y.T. analyze stolen data. Comprehensive—every aspect of Rife's operation.\n\nHe has antidote but isn't sharing. Pure control. You have everything to destroy him.",
+                location: "💻 Complete Intel",
+                choices: [
+                    { text: "Distribute Rife's antidote publicly", next: 'steal_distribute_antidote' },
+                    { text: "Expose his cure hoarding", next: 'expose_cure_hoarding' }
+                ]
+            },
+            hack_library: {
+                text: "You hack Library from outside. Nearly impossible security. You make progress but slow.\n\nToo slow. Rife launches concert before you breach. Thousands infected.\n\nYou eventually get nam-shub, saving most. But not all.",
+                location: "💻 Late Victory",
+                ending: true,
+                achievement: "LATE BLOOMER",
+                endingText: "⚡ ENDING: Succeeded eventually but thousands infected during slow hack. Timing mattered.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            librarian_guided_deployment: {
+                text: "Following Librarian's guidance, you deploy with perfect precision. Timing, vectors, redundancy—everything optimized.\n\nPerfect distribution. Zero gaps. Snow Crash eliminated globally.",
+                location: "🌐 AI Guided",
+                ending: true,
+                achievement: "AI PARTNERSHIP",
+                endingText: "🌟 PERFECT ENDING: Partnered with AI for optimal results. Librarian's analysis plus your implementation created flawless distribution.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            grab_and_run: {
+                text: "You don't trust AI. Take data and jack out. Your solo distribution works but not perfect.\n\nCure spreads but slower than ideal. You win but distrust cost efficiency.",
+                location: "💻 Solo Victory",
+                ending: true,
+                achievement: "PARANOID SUCCESS",
+                endingText: "⚡ ENDING: Paranoia kept you safe but reduced efficiency. You won but not optimally.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            underground_distribution: {
+                text: "You use underground networks. Slower than corporate but reliable. Rife can't suppress it.\n\nCure spreads organically. Grassroots victory.",
+                location: "🏙️ Underground",
+                ending: true,
+                achievement: "GRASSROOTS HERO",
+                endingText: "🌟 GOOD ENDING: Underground distribution. Slower but unstoppable. Snow Crash defeated through grassroots action.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            opensource_solution: {
+                text: "You open-source the cure. Release freely. Let anyone produce it.\n\nIt spreads globally within days. Everyone has access. Snow Crash defeated through radical openness.",
+                location: "🌐 Open Source",
+                ending: true,
+                achievement: "OPEN SOURCE REVOLUTIONARY",
+                endingText: "🌟 PERFECT ENDING: Released cure as open source. No patents. Free to all. Snow Crash defeated through radical sharing.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            pursue_snowcrash: {
+                text: "You use momentum from refugee rescue to pursue Snow Crash. Public support grows.\n\nSnow Crash defeated with backing. Clean victory. Heroic narrative complete.",
+                location: "🏙️ Public Hero",
+                ending: true,
+                achievement: "PUBLIC HERO",
+                endingText: "🌟 GOOD ENDING: Built public support first. Snow Crash defeated. Refugees saved. You're a public hero.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            alternative_intel: {
+                text: "You use human intelligence. Street contacts. Hackers. Insiders. Takes longer but you piece together Rife's network.\n\nY.T. helps. Together, you map his empire. Enough to act.",
+                location: "🏙️ Street Intel",
+                choices: [
+                    { text: "Launch attack", next: 'partial_intel_attack' }
+                ]
+            },
+            partial_intel_attack: {
+                text: "You attack with partial intel. Hit some operations, miss others. He adapts.\n\nMonths of back-and-forth. Eventually you wear him down. Grinding victory, not clean.",
+                location: "🏙️ Long Campaign",
+                ending: true,
+                achievement: "WAR OF ATTRITION",
+                endingText: "⚡ ENDING: Fought long war and eventually won. No dramatic victory, just persistent grinding.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            expose_cure_hoarding: {
+                text: "You expose Rife hoarding the cure. Evidence is damning. Public outrage immediate.\n\nHis empire crumbles under scandal. Authorities seize cure and distribute.\n\nTransparency was the weapon.",
+                location: "🌐 Exposure",
+                ending: true,
+                achievement: "TRUTH SEEKER",
+                endingText: "🌟 PERFECT ENDING: Exposed truth. Public opinion did the work. Rife's hoarding destroyed him. Everyone saved.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            }
+        };
+
+        const allAchievements = [
+            "WAGE SLAVE",
+            "NAIVE IDEALIST", 
+            "PARANOID SURVIVOR",
+            "BOUGHT OFF",
+            "HUBRIS",
+            "COWARD'S PEACE",
+            "OVERCAUTIOUS",
+            "SELFISH SURVIVOR",
+            "MARTYRED HACKER",
+            "SACRIFICIAL HERO"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+
+        function init() {
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            
+            if (!currentScenario) {
+                console.error('Missing scenario:', gameState);
+                return;
+            }
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            endingWarning.style.display = currentScenario.ending ? 'block' : 'none';
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (!scenarios[nextState]) {
+                console.error('Invalid next state:', nextState);
+                return;
+            }
+
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("METAVERSE MASTER")) {
+                    setTimeout(() => {
+                        achievements.push("METAVERSE MASTER");
+                        showAchievementPopup("METAVERSE MASTER");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "METAVERSE MASTER";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE!' : '⚡ ACHIEVEMENT!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalCount = allAchievements.length + (achievements.includes("METAVERSE MASTER") ? 1 : 0);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalCount;
+
+                const percentage = (achievements.length / totalCount) * 100;
+                document.getElementById('progressFill').style.width = percentage + '%';
+
+                const list = document.getElementById('achievementsList');
+                list.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "METAVERSE MASTER" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    list.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const buttons = document.getElementById('historyButtons');
+                buttons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    }
+                    button.textContent = idx + 1;
+                    button.onclick = () => jumpToState(idx);
+                    buttons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
