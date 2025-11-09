@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierce The Heavens Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #0a0a00 50%, #1a1a00 75%, #000a0a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #ff6600;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(255, 69, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #000000;
+            border-color: #ff6600;
+            color: #ff6600;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #ff6600, #ffaa00, #00ff00);
+            border-color: #ffaa00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Impact', sans-serif;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.95);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #ff6600;
+            box-shadow: 0 20px 25px -5px rgba(255, 102, 0, 0.5);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #ff6600;
+            font-family: 'Impact', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 15px #ff6600, 0 0 30px #ff3300;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .spiral-icon {
+            display: inline-block;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.875rem;
+            border: 2px solid #ff6600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #000000;
+            color: #ff6600;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #662200;
+            border-color: #662200;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #ff6600;
+            color: #000;
+            box-shadow: 0 0 20px #ff6600;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(80, 20, 0, 0.7);
+            border-radius: 0.25rem;
+            border: 2px solid #ff6600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #ffaa00;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #ffaa00;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(80, 20, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff6600;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #ffaa00;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #ffaa00;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #000000;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #662200;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #662200, #ff6600, #ffaa00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Impact', sans-serif;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(150, 40, 0, 0.7);
+            color: #ffaa00;
+            border: 1px solid #ff6600;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #ff6600, #ffaa00, #00ff00);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ffaa00;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.95);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ff6600;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #ffaa00;
+            font-family: 'Arial', sans-serif;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #00ff88;
+            font-family: 'Arial', sans-serif;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid #ff6600;
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #000000;
+            color: #ff6600;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 3px solid #ff6600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #ff6600;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #ff6600, 0 0 50px #ff3300;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.95);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #662200;
+        }
+
+        .history-title {
+            color: #ff6600;
+            font-family: 'Impact', sans-serif;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Impact', sans-serif;
+            font-size: 0.875rem;
+            border: 1px solid #ff6600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #000000;
+            color: #ff6600;
+        }
+
+        .history-button.current {
+            background-color: #ff6600;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(80, 20, 0, 0.7);
+            color: #ff6600;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(150, 40, 0, 0.7);
+        }
+
+        .history-button.unvisited {
+            background-color: #000000;
+            color: #662200;
+        }
+
+        .history-hint {
+            color: #ffaa00;
+            font-family: 'Arial', sans-serif;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.95);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #662200;
+        }
+
+        .quest-log-title {
+            color: #ff6600;
+            font-family: 'Impact', sans-serif;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #ffaa00;
+            font-family: 'Arial', sans-serif;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.85;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #662200;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🌟</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="spiral-icon">🌀</span>
+                    PIERCE THE HEAVENS QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ YOUR STORY CONCLUDES ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                SPIRAL CHRONICLES
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "You are Simon, a young digger living in the underground village of Jeeha. Day after day, you dig through rock and earth, expanding the village tunnels.\n\nYour only friend is Kamina, who constantly talks about the 'surface' - a mythical world above ground. The village chief says the surface doesn't exist, that the ceiling could collapse at any moment.\n\nToday, while digging, your drill strikes something metallic. You uncover a small, glowing face - a Core Drill.",
+                location: "🌑 Underground Village - Jeeha",
+                choices: [
+                    { text: "Show the Core Drill to Kamina immediately", next: 'show_kamina' },
+                    { text: "Keep it secret and investigate alone", next: 'investigate_alone' },
+                    { text: "Report it to the village chief", next: 'report_chief' }
+                ]
+            },
+            show_kamina: {
+                text: "Kamina's eyes light up when he sees the Core Drill. 'This is it, Simon! This is the key to reaching the surface!'\n\nHe grabs your shoulders. 'We're breaking out today! No more waiting!'\n\nBefore you can respond, the ceiling explodes. A massive mechanical face crashes through - a Gunmen, piloted by a beast-man. It's attacking the village!",
+                location: "🌑 Underground Village - Under Attack!",
+                choices: [
+                    { text: "Follow Kamina toward the chaos", next: 'follow_kamina_attack' },
+                    { text: "Run to safety with others", next: 'run_safety' },
+                    { text: "Study the Core Drill's glow pattern first", next: 'study_drill_pattern' }
+                ]
+            },
+            study_drill_pattern: {
+                text: "As chaos erupts, you notice the Core Drill pulsing with a specific rhythm. You've seen this pattern before... in the rock formations!\n\n'Simon! What are you doing?!' Kamina shouts.\n\nBut you're focused. The drill is trying to tell you something. It's pointing toward a specific tunnel section. You remember digging there - there was something metal, but you moved on...",
+                location: "🌑 Underground Village - Pattern Recognition",
+                choices: [
+                    { text: "Follow the drill's guidance to that tunnel", next: 'find_lagann_smart' },
+                    { text: "Forget it, help Kamina now!", next: 'follow_kamina_attack' }
+                ]
+            },
+            find_lagann_smart: {
+                text: "You sprint to the tunnel, Core Drill blazing brighter. You dig frantically - there! A buried Gunmen! Smaller than the attacker, but it's there!\n\nThe Core Drill fits perfectly. Lagann awakens with incredible power! You understood its language!\n\nYou burst through the rock just as the beast-man corners Kamina. Your timing is perfect. You're already ahead of where most would be.",
+                location: "🌑 Underground Village - Strategic Awakening",
+                choices: [
+                    { text: "Engage the enemy with confidence", next: 'first_battle_advantage' }
+                ]
+            },
+            first_battle_advantage: {
+                text: "You pilot Lagann with surprising natural skill! The beast-man is shocked by your coordinated assault!\n\nKamina leaps onto Lagann's hull. 'That's my Simon! Always the smart one!'\n\nTogether, you defeat the beast-man decisively! But before he retreats, he laughs: 'You found one... but do you understand what you truly have?'\n\nHe escapes through his entry hole. The sky beckons.",
+                location: "🌑 Underground Village - Strategic Victory",
+                choices: [
+                    { text: "Chase him to the surface immediately!", next: 'hasty_surface' },
+                    { text: "Examine Lagann's controls first", next: 'examine_lagann' }
+                ]
+            },
+            examine_lagann: {
+                text: "You spend hours in Lagann's cockpit. Kamina is impatient, but you're methodical. You discover hidden systems, secondary functions, emergency protocols.\n\n'Simon, this thing has modes we haven't unlocked,' you realize. 'It's responding to more than just the drill. It's reading... our spirit? Our determination?'\n\nKamina's eyes light up. 'So the stronger we believe, the stronger it gets?'\n\n'Something like that. But there's more. I need to understand the full system before we face real danger.'",
+                location: "🌑 Underground Village - Technical Mastery",
+                choices: [
+                    { text: "Spend a week training in secret", next: 'secret_training' },
+                    { text: "Good enough, let's go to the surface", next: 'reach_surface_prepared' }
+                ]
+            },
+            secret_training: {
+                text: "For a week, you train in hidden tunnels. Kamina helps you push Lagann's limits. You discover: Lagann isn't just a mech - it's alive, growing stronger with use.\n\nYou learn to read its responses, predict its needs. You're forming a bond with the machine.\n\nOne day, Lagann's eyes glow different. Brighter. It whispers to you: 'READY.'\n\nKamina grins. 'NOW we go to the surface. And we're gonna kick ass.'",
+                location: "🌑 Underground Village - Bond Formed",
+                choices: [
+                    { text: "Emerge to the surface as true pilot", next: 'surface_as_master' }
+                ]
+            },
+            surface_as_master: {
+                text: "You burst to the surface with complete control! The sky opens before you!\n\nYoko appears, rifle aimed, but she immediately notices something different. 'Wait... the way you're piloting that Gunmen... you're not like the others.'\n\nBeast-men attack! But you fight with precision Yoko has never seen! Each movement calculated! Each strike optimized!\n\n'Who ARE you?!' she shouts, impressed.\n\n'Simon. And this is Kamina. We're here to change everything.'",
+                location: "🌍 The Surface - Master's Arrival",
+                choices: [
+                    { text: "Help her strategically", next: 'strategic_alliance' }
+                ]
+            },
+            strategic_alliance: {
+                text: "You coordinate perfectly with Yoko! Your technical skill plus her marksmanship equals devastating combos!\n\nAfter the battle, Yoko explains the Spiral King. But you ask the right questions: 'What's his actual goal? Why suppress humans specifically? What's he afraid of?'\n\nYoko blinks. 'No one... no one's ever asked that. Everyone just wants revenge.'\n\nKamina nods. 'Simon's right. If we know why, we can beat him smarter.'\n\nYou're thinking three steps ahead.",
+                location: "🌍 The Surface - Strategic Mind",
+                choices: [
+                    { text: "Research the Spiral King's history", next: 'research_spiral_king' },
+                    { text: "Build alliances first", next: 'build_network' }
+                ]
+            },
+            research_spiral_king: {
+                text: "You spend weeks researching. Old ruins. Ancient texts. Survivors' stories.\n\nYou discover fragments: The Spiral King once led a revolution. He fought something from beyond the stars. He lost everything.\n\n'He's not a tyrant,' you realize. 'He's terrified. He's preventing something worse.'\n\nKamina frowns. 'So what, we just let him keep humans enslaved?'\n\n'No. But we need to know what he knows. Fighting blind is stupid.'",
+                location: "🌍 The Surface - Knowledge Gained",
+                choices: [
+                    { text: "Seek direct meeting with Lordgenome", next: 'diplomatic_approach' },
+                    { text: "Gather more power first", next: 'power_first' }
+                ]
+            },
+            diplomatic_approach: {
+                text: "You do the unthinkable - you send a message to Lordgenome requesting dialogue.\n\nEveryone thinks you're insane. But weeks later, a response: 'Come to Teppelin. Alone. Unarmed.'\n\nKamina explodes. 'It's a trap!'\n\n'Maybe. But if there's a chance to understand...'",
+                location: "🌍 The Surface - Dangerous Gambit",
+                choices: [
+                    { text: "Go to Teppelin alone as requested", next: 'meet_lordgenome_early' },
+                    { text: "Bring Kamina hidden in Lagann", next: 'sneaky_approach' },
+                    { text: "It's too risky, build strength instead", next: 'abandon_diplomacy' }
+                ]
+            },
+            meet_lordgenome_early: {
+                text: "You enter Teppelin alone. Lordgenome sits on his throne, studying you.\n\n'You're the one with questions. Most just attack. Refreshing.' He gestures. 'Sit.'\n\nYou sit. He's testing you.\n\n'Why do you suppress humanity?' you ask directly.\n\nHis eyes narrow. 'Because I love them. I suppress them to save them from what lies beyond the stars.'",
+                location: "👑 Teppelin - Unprecedented Meeting",
+                choices: [
+                    { text: "Tell me everything about this threat", next: 'learn_anti_spirals_early' },
+                    { text: "There must be another way than suppression", next: 'challenge_his_logic' }
+                ]
+            },
+            learn_anti_spirals_early: {
+                text: "Lordgenome tells you everything. The Anti-Spirals. The Spiral Nemesis. His lost war. His dead comrades.\n\n'So you suppress humanity's population and advancement to hide them from cosmic predators who hunt spiral beings,' you summarize.\n\nHe nods. 'Yes. I am humanity's jailer and protector both.'\n\n'But what if...' your mind races, 'what if we could grow strong enough to FIGHT the Anti-Spirals? With preparation?'\n\nHe laughs bitterly. 'I tried. I had galaxies. I lost.'\n\n'But you fought alone, after growing wild. What if humanity grew SMART? Prepared from the start?'",
+                location: "👑 Teppelin - Seeds of Alliance",
+                choices: [
+                    { text: "Propose a radical partnership", next: 'lordgenome_partnership' },
+                    { text: "Thank him and leave to think", next: 'leave_to_process' }
+                ]
+            },
+            lordgenome_partnership: {
+                text: "'Work with me,' you say boldly. 'Not as Spiral King and rebel. As two people who want humanity to survive AND thrive.'\n\nLordgenome stares. For long minutes, silence.\n\nThen: 'You're either brilliantly wise or suicidally naive. But... I haven't considered alternatives in millennia. Perhaps... perhaps there is another way.'\n\nHe stands. 'I will consider this. Return in one month with a detailed plan. If it has merit, we try your way. If not...' He doesn't finish.\n\nYou've done the impossible - made Lordgenome question his own certainty.",
+                location: "👑 Teppelin - Unprecedented Alliance Forming",
+                choices: [
+                    { text: "Return and create the perfect plan", next: 'create_master_plan' }
+                ]
+            },
+            create_master_plan: {
+                text: "You spend the month creating something revolutionary: A plan to prepare humanity for Anti-Spirals while staying hidden.\n\nControlled population growth. Secret militarization. Hidden technology development. Education about the true enemy.\n\nKamina helps refine tactics. Yoko adds military strategy. You synthesize it all.\n\nOne month later, you return to present: 'The Spiral Preparation Protocol.'\n\nLordgenome reads every page. His expression shifts from skepticism to intrigue to... hope?",
+                location: "👑 Teppelin - The Master Plan",
+                choices: [
+                    { text: "Await his judgment", next: 'lordgenome_accepts' }
+                ]
+            },
+            lordgenome_accepts: {
+                text: "'This... could work,' Lordgenome admits. 'You've accounted for variables I never considered. Growing in secret. Training without expanding too fast. Yes...'\n\nHe looks at you with newfound respect. 'Very well, Simon the Digger. We try your way. I will open my archives. My technology. My knowledge. And we prepare humanity together.'\n\nKamina bursts in. 'WHAT?! You're allying with him?!'\n\n'Not allying. Evolving. Together.'",
+                location: "👑 Teppelin - New Era Begins",
+                choices: [
+                    { text: "Begin the Spiral Preparation Protocol", next: 'preparation_montage' }
+                ]
+            },
+            preparation_montage: {
+                text: "Years pass. Humanity is freed from underground, but educated about the threat. The population grows, but carefully.\n\nLordgenome shares his Anti-Spiral war knowledge. You build countermeasures. Arc-Gurren is constructed. Super Galaxy Gurren Lagann is designed.\n\nKamina leads military training. Yoko becomes tactical commander. You become chief strategist.\n\nWhen humanity reaches one million, you're ready. Truly ready.\n\nThe sky cracks. They've found you. The Anti-Spirals arrive.\n\nBut this time, humanity doesn't panic. You've prepared for this exact moment.",
+                location: "🌍 Earth - Ten Years Later",
+                choices: [
+                    { text: "Execute the Anti-Spiral Defense Protocol", next: 'prepared_anti_spiral_war' }
+                ]
+            },
+            prepared_anti_spiral_war: {
+                text: "The Anti-Spiral fleet appears. But you're ready.\n\nSuper Galaxy Gurren Lagann launches with you and Kamina piloting! Lordgenome operates support systems! A coordinated defense grid activates!\n\nThe Anti-Spirals are shocked. 'Impossible. This spiral race is... prepared?'\n\nYour strategies counter their probability manipulation! Your dimensional anchors prevent their reality warping!\n\nIt's still brutal. But you're WINNING.",
+                location: "🌌 Space - Prepared Warfare",
+                choices: [
+                    { text: "Press the advantage with Phase Two", next: 'phase_two_attack' }
+                ]
+            },
+            phase_two_attack: {
+                text: "You've studied their patterns. Lordgenome's knowledge combined with your analytical mind revealed their weakness: they're bound by absolute logic!\n\n'Kamina! Remember training? Illogical patterns!'\n\n'Hell yes! Time to get CRAZY!'\n\nYou pilot in seemingly random chaos! The Anti-Spirals' probability calculations fail! They can't predict madness tempered by genius!\n\nTheir flagship cracks! You've reached their core consciousness!",
+                location: "🌌 Space - Core Assault",
+                choices: [
+                    { text: "Attempt communication first", next: 'communicate_anti_spirals' },
+                    { text: "Destroy them completely", next: 'destroy_anti_spirals' }
+                ]
+            },
+            communicate_anti_spirals: {
+                text: "'WAIT!' you broadcast. 'We don't have to destroy each other! We've proven spiral beings can grow responsibly! Join us! Evolve together!'\n\nThe Anti-Spiral consciousness pauses. Confused.\n\n'You... you prepared. You didn't grow recklessly. You... learned from history.'\n\n'Yes! We can prevent Spiral Nemesis through wisdom, not suppression!'\n\nLong silence. Then: 'Show us. Prove spiral life can mature beyond destruction.'",
+                location: "🌌 Space - Communication Success",
+                choices: [
+                    { text: "Demonstrate the Spiral Preparation Protocol", next: 'demonstrate_wisdom' }
+                ]
+            },
+            demonstrate_wisdom: {
+                text: "You show them everything. Your controlled growth. Your education system. Your balance of power and responsibility.\n\nThe Anti-Spirals process this. Their rigid logic confronting new data.\n\nFinally: 'In all cycles, no spiral race ever... prepared. All grew wild. You are the first to break the pattern.'\n\n'So stop hunting us. Work WITH us. Prevent Spiral Nemesis through cooperation, not genocide.'\n\nThe Anti-Spiral consciousness... evolves.\n\n'Agreed. We were wrong. Suppression through fear failed. You've shown the true path: growth through wisdom.'",
+                location: "🌌 Space - Historic Peace",
+                choices: [
+                    { text: "Form the Galactic Spiral Council", next: 'ultimate_peace_ending' }
+                ]
+            },
+            ultimate_peace_ending: {
+                text: "You've achieved the impossible. Peace with the Anti-Spirals. Alliance with Lordgenome. A mature, wise humanity.\n\nThe Galactic Spiral Council forms - spiral races growing responsibly, monitoring each other, preventing reckless expansion while allowing evolution.\n\nKamina becomes humanity's champion. Yoko leads education. Lordgenome shares his knowledge freely. And you - Simon the Digger - become the architect of a new cosmic order.\n\nYou didn't just pierce the heavens. You REBUILT them.",
+                location: "🌌 Galactic Spiral Council - New Universe",
+                ending: true,
+                achievement: "ARCHITECT OF PEACE - SECRET PERFECT ENDING",
+                endingText: "✨🌟💎 SECRET ULTIMATE ENDING - ARCHITECT OF PEACE! 💎🌟✨\n\nYou achieved what no one thought possible: Peace through wisdom.\n\nBy studying the Core Drill's patterns early, understanding Lordgenome's motivations, proposing cooperation over conflict, and proving spiral life can grow responsibly - you transcended the cycle of violence!\n\nNo war. No Spiral Nemesis. No suppression.\n\nJust infinite, responsible evolution.\n\nYou started as a digger. You became the being who dug through centuries of hatred and fear to find the foundation of true peace.\n\nTHIS is the secret ending. The path of the wise drill.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            investigate_alone: {
+                text: "You spend hours examining the Core Drill in secret. It pulses with energy, warm to the touch. You feel connected to it somehow.\n\nSuddenly, the ground shakes. An explosion rocks the village. Through the tunnels, you hear screams and the sound of metal grinding against stone.\n\nSomething is attacking!",
+                location: "🌑 Underground Village - Under Attack!",
+                choices: [
+                    { text: "Grab the Core Drill and investigate", next: 'investigate_attack' },
+                    { text: "Hide with the Core Drill", next: 'hide_coward' }
+                ]
+            },
+            report_chief: {
+                text: "The village chief examines the Core Drill with suspicion. 'Where did you find this? This could be dangerous!'\n\nHe confiscates it immediately. 'I'll keep this safe. You go back to digging. And stay away from unusual objects!'\n\nThat night, you lie awake thinking about the glowing drill. You made a mistake. That was yours.",
+                location: "🌑 Underground Village - Night",
+                choices: [
+                    { text: "Sneak to the chief's house and steal it back", next: 'steal_back' },
+                    { text: "Forget about it and continue life normally", next: 'give_up_drill' }
+                ]
+            },
+            give_up_drill: {
+                text: "You decide to let it go. Days pass. Weeks. You return to digging, to your routine.\n\nOne day, the ceiling collapses during a routine dig. The village is partially destroyed. Many die. The chief's caution didn't save anyone.\n\nYou spend the rest of your life wondering what could have been different if you'd fought for that drill.",
+                location: "🌑 Underground Village - Collapsed",
+                ending: true,
+                achievement: "THE COWARD'S PATH",
+                endingText: "💔 ENDING: You gave up before you even began. The spiral of fate needs warriors, not those who surrender at the first obstacle. Your potential died underground, never seeing the light of day. Sometimes the greatest tragedy is not trying at all.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            steal_back: {
+                text: "You sneak into the chief's house and retrieve the Core Drill. As you're leaving, Kamina spots you.\n\n'Simon! You little thief!' He grins. 'I knew you had it in you! Now let's use that thing!'\n\nSuddenly, an explosion rocks the village. A Gunmen crashes through the ceiling!",
+                location: "🌑 Underground Village - Under Attack!",
+                choices: [
+                    { text: "Face the threat with Kamina", next: 'follow_kamina_attack' }
+                ]
+            },
+            run_safety: {
+                text: "You run away from the battle, hiding with the frightened villagers. Through the chaos, you hear Kamina shouting, fighting.\n\nThen silence. The Gunmen retreats. When you emerge, you find Kamina badly wounded. He looks at you with disappointment before losing consciousness.\n\nThe village is saved, but at what cost?",
+                location: "🌑 Underground Village - After Battle",
+                ending: true,
+                achievement: "THE COWARD'S PATH",
+                endingText: "💔 ENDING: You survived by hiding. Kamina survived too, barely. But the bond between you is broken. He stops talking about the surface. The dream dies. Years later, you're still underground, still afraid. Your spiral never spun at all.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            hide_coward: {
+                text: "You hide in the deepest tunnel you know, clutching the Core Drill. The sounds of battle echo through the rock.\n\nEventually, silence. You emerge to find the village partially destroyed. Kamina is looking for you, covered in dirt and blood.\n\n'Where were you, Simon?' His voice is flat. Disappointed.\n\nYou have no answer.",
+                location: "🌑 Underground Village - After Battle",
+                ending: true,
+                achievement: "THE COWARD'S PATH",
+                endingText: "💔 ENDING: Fear paralyzed you when action was needed. Kamina saved the village alone, but something broke between you that day. He leaves for the surface without you. You live underground forever, knowing you had the key to destiny and were too afraid to use it.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            investigate_attack: {
+                text: "You run toward the chaos, Core Drill in hand. In a damaged tunnel, you find it - a buried Gunmen, much smaller than the attacking one. The Core Drill in your hand suddenly glows brighter.\n\nKamina bursts into the tunnel, chased by the enemy Gunmen. 'Simon! Is that a mech?!'\n\nThe Core Drill is pulling you toward the buried Gunmen's cockpit.",
+                location: "🌑 Underground Village - Hidden Chamber",
+                choices: [
+                    { text: "Insert the Core Drill into the Gunmen", next: 'activate_lagann' }
+                ]
+            },
+            follow_kamina_attack: {
+                text: "You chase after Kamina as he charges at the massive Gunmen. It's suicidal! But in a collapsed section of tunnel, you spot something - a buried mechanical face, just like your Core Drill!\n\n'Kamina! Look!' you shout. The Core Drill in your pocket grows hot, pulling you toward it.\n\nKamina's eyes widen. 'That's... a mech! Simon, can you pilot it?!'\n\nThe enemy Gunmen is closing in.",
+                location: "🌑 Underground Village - Hidden Chamber",
+                choices: [
+                    { text: "Try to activate the buried Gunmen", next: 'activate_lagann' },
+                    { text: "It's too risky, fight without it", next: 'fight_without_mech' }
+                ]
+            },
+            fight_without_mech: {
+                text: "You and Kamina try to fight the Gunmen with your bare hands and tools. It's futile. The beast-man pilot laughs as he aims the Gunmen's weapons.\n\n'Surface dwellers die! Humans die!'\n\nYou realize too late - you had the key to victory in your hand and didn't use it.",
+                location: "🌑 Underground Village - Final Stand",
+                ending: true,
+                achievement: "INSUFFICIENT COURAGE",
+                endingText: "💀 ENDING: You had the Core Drill. You had the Gunmen. But fear held you back from combining them. Kamina dies in your arms, whispering 'You could have...' The village is destroyed. Sometimes having the tools isn't enough - you need the courage to use them.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            activate_lagann: {
+                text: "You leap into the buried Gunmen's cockpit and insert the Core Drill. Instantly, everything lights up. The machine responds to your touch!\n\n'LAGANN ONLINE!' a voice echoes.\n\nThe earth explodes around you as Lagann bursts free. You're piloting a Gunmen! Through the screen, you see the enemy clearly now.\n\n'Simon! You did it!' Kamina cheers. 'Now kick his ass!'\n\nThe beast-man pilot looks shocked. 'Impossible! A human in a Gunmen?!'",
+                location: "🌑 Underground Village - Battle Begin!",
+                choices: [
+                    { text: "Fight with everything you have", next: 'first_battle' },
+                    { text: "Try to talk to the beast-man", next: 'negotiate_beastman' }
+                ]
+            },
+            negotiate_beastman: {
+                text: "'Wait! Why are you attacking us?!' you shout through Lagann's speakers.\n\nThe beast-man pilot laughs. 'Humans underground are forbidden! The Spiral King's law! You will be exterminated!'\n\nHe charges. You've wasted your first strike. Kamina yells, 'Simon! Stop talking and fight!'\n\nBut you hesitate again. The beast-man's drill pierces Lagann's armor.",
+                location: "🌑 Underground Village - Failed Negotiation",
+                ending: true,
+                achievement: "INSUFFICIENT COURAGE",
+                endingText: "💀 ENDING: You tried to reason with an enemy who came to kill. Your hesitation cost you everything. Lagann is destroyed. Kamina dies protecting you as you eject. Some enemies cannot be talked down. Sometimes you must fight, or lose everything.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            first_battle: {
+                text: "You pilot Lagann by instinct! The movements feel natural. You dodge the enemy's attack and counter with a punch that sends the beast-man's Gunmen reeling!\n\n'Yes! That's it, Simon!' Kamina shouts.\n\nThe enemy charges with his drill. You counter with yours. The drills collide in a shower of sparks! Your determination burns hotter!\n\nLagann's drill pierces through the enemy Gunmen! Victory!\n\nAs the enemy retreats through the hole he made, you see it - the surface. The sky. It's real.",
+                location: "🌑 Underground Village - Breakthrough!",
+                choices: [
+                    { text: "Follow the enemy to the surface!", next: 'reach_surface' },
+                    { text: "Stay and help the wounded", next: 'help_wounded' }
+                ]
+            },
+            help_wounded: {
+                text: "You pilot Lagann to help dig out trapped villagers. Kamina looks at you, torn between admiration and frustration.\n\n'You're a good person, Simon. But...' He looks up at the hole to the surface. 'We could have seen the sky.'\n\nThe next day, the village chief seals the hole with rocks. The surface becomes a memory. Your moment of destiny passes.\n\nYears later, you're still underground. Still wondering what if.",
+                location: "🌑 Underground Village - Sealed",
+                ending: true,
+                achievement: "THE CAUTIOUS PATH",
+                endingText: "💔 ENDING: You chose safety over destiny. It's noble to help others, but sometimes you must pursue your dreams to truly help humanity. The surface remains unexplored. Your spiral stops spinning before it truly begins.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            reach_surface: {
+                text: "Lagann bursts through the hole into blinding light! For the first time in your life, you see the sky - vast, blue, endless!\n\nKamina climbs out after you, tears streaming down his face. 'I told you! I TOLD YOU IT WAS REAL!'\n\nBut your celebration is cut short. A girl with a massive rifle appears, pointing it at you. Behind her, dozens of beast-men Gunmen surround you.\n\n'You're surrounded! Surrender or die!' she shouts.",
+                location: "🌍 The Surface - First Sight",
+                choices: [
+                    { text: "Surrender peacefully", next: 'surrender_yoko' },
+                    { text: "Fight your way out", next: 'fight_yoko' },
+                    { text: "Try to explain you're not enemies", next: 'explain_yoko' }
+                ]
+            },
+            surrender_yoko: {
+                text: "'Wait! We're not your enemies!' Kamina shouts, hands up.\n\nThe girl studies you suspiciously. 'You came from underground? And you're piloting a Gunmen?'\n\nShe lowers her rifle slightly. 'I'm Yoko. These beast-men are attacking my village. If you're really human... help us fight them!'\n\nThe beast-men charge! A massive Gunmen leads them - much bigger than the one you fought!",
+                location: "🌍 The Surface - Village Under Siege",
+                choices: [
+                    { text: "Fight alongside Yoko", next: 'first_surface_battle' },
+                    { text: "This isn't your fight, retreat", next: 'retreat_coward' }
+                ]
+            },
+            retreat_coward: {
+                text: "'This isn't our battle!' you shout, pulling Lagann back.\n\nKamina stares at you in disbelief. 'Simon... what are you doing?'\n\nYoko's village is destroyed as you retreat. You hear her screaming as the beast-men capture her.\n\nKamina doesn't speak to you for days. You reached the surface, but lost your soul in the process.",
+                location: "🌍 The Surface - Aftermath",
+                ending: true,
+                achievement: "THE COWARD'S PATH",
+                endingText: "💔 ENDING: You reached the surface only to prove you didn't deserve to be there. Kamina eventually leaves you, unable to stomach your cowardice. You live alone on the surface, forever haunted by the screams of those you could have saved but chose not to.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            fight_yoko: {
+                text: "You immediately attack! Lagann charges at Yoko, who barely dodges!\n\n'Wait! STOP!' Kamina screams. 'She's human!'\n\nBut it's too late. Your drill strikes the ground near her. The beast-men, seeing the chaos, laugh and attack everyone!\n\nIn the confusion, Yoko is captured. The beast-men retreat with their prize.\n\nKamina looks at you with horror. 'What have you done?'",
+                location: "🌍 The Surface - Terrible Mistake",
+                ending: true,
+                achievement: "RECKLESS ABANDON",
+                endingText: "💀 ENDING: Your aggression without understanding led to tragedy. An ally became a victim because you attacked first and asked questions never. Kamina abandons you. You wander the surface alone, forever marked as the one who doomed an innocent. Spiral power requires wisdom, not just rage.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            explain_yoko: {
+                text: "'We're human! We just escaped from underground!' you shout through Lagann's speakers.\n\nYoko's eyes widen. 'Underground? Then you're... wait, those beast-men are attacking my village! If you're really human, help us!'\n\nKamina grins. 'See Simon? I told you surface people would be cool! Let's save her village!'\n\nThe beast-men army charges! Their leader, a massive Gunmen, laughs. 'More humans to crush!'",
+                location: "🌍 The Surface - Village Under Siege",
+                choices: [
+                    { text: "Coordinate with Yoko for a strategy", next: 'strategic_battle' },
+                    { text: "Charge in with Kamina's spirit", next: 'first_surface_battle' }
+                ]
+            },
+            strategic_battle: {
+                text: "You quickly strategize with Yoko. 'I'll provide covering fire! You draw them into the canyon!' she shouts.\n\nIt works! With teamwork, you defeat several beast-men Gunmen. But the leader - a massive machine called 'Enkidu' - remains.\n\n'Impressive, humans,' the pilot growls. 'But you cannot defeat Enkidu!'\n\nKamina pounds on Lagann's hull. 'Simon! We need to combine forces! Let me pilot with you!'",
+                location: "🌍 The Surface - Boss Battle",
+                choices: [
+                    { text: "Let Kamina join you in Lagann", next: 'kamina_copilot' },
+                    { text: "Face Enkidu alone to keep Kamina safe", next: 'solo_enkidu' }
+                ]
+            },
+            solo_enkidu: {
+                text: "You can't risk Kamina! You charge Enkidu alone!\n\nBut Enkidu is too powerful. Your drill can't pierce his armor. He grabs Lagann and starts crushing it!\n\n'Simon!' Kamina screams, trying to help from outside.\n\nYou realize too late - you needed his fighting spirit, his confidence. Without Kamina's fire, your spiral power is incomplete!",
+                location: "🌍 The Surface - Defeat",
+                ending: true,
+                achievement: "INSUFFICIENT COURAGE",
+                endingText: "💀 ENDING: You tried to protect Kamina by fighting alone, but spiral power grows through combination, through bonds! Your isolation led to defeat. Enkidu crushes Lagann. Kamina and Yoko barely escape. Some battles cannot be won alone. You needed to trust in your brother.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            kamina_copilot: {
+                text: "Kamina leaps into Lagann with you! 'NOW we're talking! Simon, your drilling! My fighting spirit! TOGETHER!'\n\nInstantly, Lagann responds differently - stronger, fiercer! The combination of your technical skill and Kamina's burning determination creates something greater!\n\n'GIGA DRILL BREAKER!' Kamina shouts, and somehow you know exactly what to do!\n\nYour drill grows massive, spinning with incredible force! You pierce through Enkidu's armor! Victory!",
+                location: "🌍 The Surface - Victory!",
+                choices: [
+                    { text: "Celebrate with Yoko's village", next: 'victory_celebration' }
+                ]
+            },
+            first_surface_battle: {
+                text: "You fight with courage but without strategy! The battle is chaotic - you destroy several beast-men Gunmen but take heavy damage!\n\nYoko provides covering fire, her sharpshooting picking off enemies. But the leader, Enkidu, seems invincible!\n\nKamina screams, 'Simon! Let me in! We need to combine our power!'\n\nYou're bleeding in the cockpit. Lagann is damaged. You need to make a choice!",
+                location: "🌍 The Surface - Desperate Battle",
+                choices: [
+                    { text: "Let Kamina join you", next: 'kamina_copilot' },
+                    { text: "Retreat to repair and regroup", next: 'tactical_retreat' }
+                ]
+            },
+            tactical_retreat: {
+                text: "You pull back to Yoko's village to repair. It's the smart choice... but Enkidu pursues!\n\nThe village is trapped! Enkidu raises his drill, ready to annihilate everyone!\n\nKamina leaps in front of the attack, weaponless, defiant. 'You'll have to go through me first!'\n\nYour heart stops. Not Kamina!",
+                location: "🌍 The Surface - Village Endangered",
+                choices: [
+                    { text: "Throw yourself in front of Kamina", next: 'sacrifice_play' },
+                    { text: "Launch one desperate final attack", next: 'desperate_attack' }
+                ]
+            },
+            sacrifice_play: {
+                text: "You eject from Lagann and tackle Kamina! The drill meant for him pierces you instead!\n\nAs you fall, you see Kamina's face - horror, rage, grief. 'SIMON! NO!'\n\nSomething in Kamina breaks and reforms harder. He leaps into Lagann, and powered by pure rage and love for you, destroys Enkidu.\n\nBut you're dying. 'Kamina... reach the sky...' Your eyes close.",
+                location: "🌍 The Surface - Sacrifice",
+                ending: true,
+                achievement: "THE MARTYR'S SPIRAL",
+                endingText: "💔 ENDING: Your sacrifice ignited Kamina's greatest rage. He goes on to fight the Spiral King, but without you, he eventually falls. Your death saved him once but doomed him ultimately. True victory required you both to survive and grow together. Brotherhood means living for each other, not dying.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            desperate_attack: {
+                text: "With Lagann nearly destroyed, you channel everything into one attack! Your Core Drill blazes!\n\nBut desperation isn't enough against Enkidu's armor. Your drill breaks against his defenses!\n\nEnkidu crushes Lagann. You barely eject in time. Kamina catches you as you fall.\n\nYoko's village is destroyed. You failed.",
+                location: "🌍 The Surface - Defeat",
+                ending: true,
+                achievement: "INSUFFICIENT COURAGE",
+                endingText: "💀 ENDING: Desperation without true spiral power is just recklessness. You needed Kamina with you in the cockpit, but pride kept you alone. The village falls. Yoko disappears. Kamina becomes bitter. Sometimes you need to swallow your ego and accept help.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            victory_celebration: {
+                text: "The village celebrates! You and Kamina are heroes! Yoko approaches, her expression softer now.\n\n'You saved us. Thank you.' She smiles at Kamina, who immediately puffs up with pride.\n\n'It was nothing! With my fighting spirit and Simon's drilling, we're unbeatable!'\n\nThat night, around a fire, Yoko explains: 'The Spiral King rules the surface with his beast-men. He forbids humans from advancing. From growing. Most humans hide in villages, surviving but not living.'\n\nKamina's eyes blaze. 'Then we'll overthrow this Spiral King!'",
+                location: "🌍 The Surface - Yoko's Village",
+                choices: [
+                    { text: "Join Kamina's dream immediately", next: 'join_revolution' },
+                    { text: "Suggest learning more first", next: 'cautious_approach' },
+                    { text: "This is too dangerous, stay in the village", next: 'stay_village' }
+                ]
+            },
+            stay_village: {
+                text: "You convince Kamina to stay in the village. 'Let's be realistic. We barely survived one battle.'\n\nKamina's fire dims. 'Simon... I thought you believed...'\n\nWeeks pass. Months. The village is peaceful but stagnant. Kamina stops talking about dreams. Yoko trains soldiers, but never for the revolution that never comes.\n\nYou spend your life wondering what could have been if you'd dared to believe.",
+                location: "🌍 The Surface - Years Later",
+                ending: true,
+                achievement: "THE CAUTIOUS PATH",
+                endingText: "💔 ENDING: You chose comfort over revolution. Kamina's spirit slowly died in that village, and part of yours did too. The Spiral King rules forever. Humanity remains suppressed. Your spiral barely spun before you stopped it yourself. Safety killed the dream.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            cautious_approach: {
+                text: "'Kamina, we need information. Training. Allies,' you say carefully.\n\nKamina looks frustrated but nods. 'Fine. We'll prepare. But Simon, don't let preparation become an excuse never to act!'\n\nYoko agrees to train you both. Over weeks, you learn about the Spiral King's generals - the Four Divine Generals. You gather intelligence. You train hard.\n\nOne day, scouts report a Divine General is approaching with an army!",
+                location: "🌍 The Surface - Yoko's Village - Weeks Later",
+                choices: [
+                    { text: "Fight the Divine General with preparation", next: 'prepared_general_fight' },
+                    { text: "We need even more time to prepare", next: 'endless_preparation' }
+                ]
+            },
+            endless_preparation: {
+                text: "'We're not ready!' you insist. 'One more month of training!'\n\nKamina explodes. 'Simon! When will we EVER be ready enough for you?! Sometimes you have to believe and act!'\n\nBut you refuse. The Divine General attacks. Without your leadership, the defense is chaotic. Kamina fights bravely but recklessly without you to ground him.\n\nHe dies in battle. You prepared so much you forgot to live.",
+                location: "🌍 The Surface - Too Late",
+                ending: true,
+                achievement: "THE CAUTIOUS PATH",
+                endingText: "💔 ENDING: Preparation without action is just fear wearing a smart disguise. Kamina needed your caution, but you needed his fire. By waiting forever, you lost everything. Sometimes you must leap before you're ready, trusting your spiral to catch you.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            prepared_general_fight: {
+                text: "The Divine General arrives - Thymilph the Raging Wave! His Gunmen is massive, covered in blades!\n\n'Humans! You dare gather and resist?! I'll crush you all!'\n\nBut you're ready. You've trained. Studied. Yoko has new weapons. Kamina has refined his combat instincts.\n\nTogether in Lagann, you fight as a perfect team! Your drilling precision plus Kamina's aggressive tactics overwhelm Thymilph's brutality!\n\n'Impossible! How can humans be this strong?!' he roars.\n\n'Because we believe in each other!' Kamina shouts. 'GIGA DRILL BREAK!'",
+                location: "🌍 The Surface - Divine General Battle!",
+                choices: [
+                    { text: "Finish him with your ultimate attack!", next: 'defeat_thymilph' }
+                ]
+            },
+            join_revolution: {
+                text: "'Let's do it!' you declare. Kamina grins wildly. Yoko looks concerned but determined.\n\n'If we're really doing this, we need allies. An army. We need to find more humans willing to fight!' Yoko says.\n\nYou begin traveling the surface, freeing villages, defeating beast-men. Your legend grows. Simon and Kamina - the drill that pierces the heavens!\n\nBut soon, you attract dangerous attention. One of the Spiral King's Four Divine Generals is coming for you!",
+                location: "🌍 The Surface - Building the Resistance",
+                choices: [
+                    { text: "Face the Divine General head-on!", next: 'face_general_unprepared' },
+                    { text: "Prepare defenses and strategy first", next: 'prepare_for_general' }
+                ]
+            },
+            face_general_unprepared: {
+                text: "Thymilph the Raging Wave arrives with his massive Gunmen! You charge immediately, confidence high from your earlier victories!\n\nBut Thymilph is on another level! He's fast, brutal, and experienced! Your attacks barely scratch him!\n\n'Arrogant humans! You think beating my soldiers makes you ready for a Divine General?!'\n\nHe strikes Lagann hard. You're losing!",
+                location: "🌍 The Surface - Divine General Battle!",
+                choices: [
+                    { text: "Fight harder with pure determination!", next: 'determination_not_enough' },
+                    { text: "Kamina, we need a strategy NOW!", next: 'emergency_strategy' }
+                ]
+            },
+            determination_not_enough: {
+                text: "You push harder! Your drill spins faster! But Thymilph counters every move!\n\n'Determination without power is nothing!' He grabs Lagann and hurls you into a cliff!\n\nThe cockpit is crushing. Kamina is wounded. 'Simon... I was wrong... we weren't ready...'\n\nThymilph's drill descends for the killing blow. Your revolution ends before it began.",
+                location: "🌍 The Surface - Defeat",
+                ending: true,
+                achievement: "RECKLESS ABANDON",
+                endingText: "💀 ENDING: Kamina's fighting spirit without your careful planning led to destruction. You charged into battle unprepared and paid the ultimate price. Spiral power requires BOTH courage AND wisdom. You had the former but forgot the latter. The revolution dies with you.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            emergency_strategy: {
+                text: "In the middle of battle, you analyze Thymilph's patterns! 'Kamina! He always follows his blade strikes with a drill thrust! When he attacks next, we counter!'\n\n'That's my Simon! Always thinking!'\n\nThymilph attacks predictably! You dodge the blade and counter-drill his exposed cockpit! Your spiral power blazes!\n\n'IMPOSSIBLE!' Thymilph screams as your drill pierces through!\n\nYou win! But barely. You realize - you need to get stronger!",
+                location: "🌍 The Surface - Hard-Won Victory",
+                choices: [
+                    { text: "Continue the revolution with new wisdom", next: 'wise_revolution' }
+                ]
+            },
+            prepare_for_general: {
+                text: "You spend days preparing - scouting, training, setting traps. Yoko helps plan the battlefield.\n\nWhen Thymilph arrives, you're ready! Your combination of Kamina's spirit and your strategy is perfect!\n\nThe battle is intense but controlled. You counter his every move! Finally, an opening!\n\n'Now, Kamina!'\n\n'GIGA DRILL BREAK!'\n\nThymilph falls! Your first Divine General defeated!",
+                location: "🌍 The Surface - Strategic Victory",
+                choices: [
+                    { text: "Press forward to the capital!", next: 'wise_revolution' }
+                ]
+            },
+            defeat_thymilph: {
+                text: "Your drill pierces through Thymilph's Gunmen! He falls, defeated! A Divine General has been destroyed!\n\nNews spreads across the surface! More humans join your cause! You capture Thymilph's massive Gunmen, and Kamina names it 'Gurren'!\n\n'From now on, we're Team Dai-Gurren! And we're taking this fight all the way to the Spiral King!'\n\nYoko joins you permanently. Your army grows. But three Divine Generals remain...",
+                location: "🌍 The Surface - Growing Revolution",
+                choices: [
+                    { text: "March toward the capital!", next: 'wise_revolution' }
+                ]
+            },
+            wise_revolution: {
+                text: "Your revolution grows! Village after village joins! You defeat beast-men armies! Your legend becomes myth!\n\nKamina pilots Gurren. You pilot Lagann. In desperate moments, Lagann can combine with Gurren to form GURREN LAGANN - an unstoppable force!\n\nBut as you approach the capital, Kamina becomes more reckless. 'We're unstoppable, Simon! Nothing can beat us!'\n\nYoko pulls you aside. 'Simon, Kamina's overconfidence worries me. He's been taking more risks.'",
+                location: "🌍 Approaching the Capital - Dai-Gurren",
+                choices: [
+                    { text: "Talk to Kamina about being careful", next: 'warn_kamina' },
+                    { text: "Trust in Kamina's instincts", next: 'trust_kamina' },
+                    { text: "Suggest waiting to gather more forces", next: 'delay_capital' }
+                ]
+            },
+            delay_capital: {
+                text: "You convince everyone to wait, to gather more allies. Weeks pass. Your army grows larger.\n\nBut so does the Spiral King's. He uses the time to prepare a trap.\n\nWhen you finally attack, you're overwhelmed by defenses you could have avoided. Kamina dies in the first wave.\n\nYoko looks at you with hollow eyes. 'We waited too long, Simon. Kamina died waiting for you to be ready.'",
+                location: "🌍 The Capital - Trap",
+                ending: true,
+                achievement: "THE CAUTIOUS PATH",
+                endingText: "💔 ENDING: Your caution became cowardice. Kamina's spirit couldn't survive endless delays. By the time you attacked, his fire had dulled. He died fighting, but without the blazing confidence that made him legendary. Sometimes waiting is just another way of giving up.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            trust_kamina: {
+                text: "You decide to trust Kamina completely. His instincts have never led you wrong!\n\nYou assault the capital! The battle is glorious! Kamina's Gurren and your Lagann tear through defenses!\n\nBut then - an ambush! The Divine General Guame appears with a massive drilling fortress! He separates you from Kamina!\n\n'Simon!' Kamina's voice crackles on the radio. 'Don't worry about me! Keep pushing forward! Believe in the me that believes in you!'\n\nKamina faces Guame alone to buy you time!",
+                location: "🌍 The Capital - Separated!",
+                choices: [
+                    { text: "Go back to help Kamina!", next: 'save_kamina_success' },
+                    { text: "Trust him and push forward", next: 'trust_kamina_death' }
+                ]
+            },
+            trust_kamina_death: {
+                text: "You push forward, trusting Kamina. You break through the capital's gates!\n\nBut then... silence on Kamina's radio.\n\n'Kamina?' Nothing. 'KAMINA!'\n\nYou return to find Gurren destroyed. Kamina is barely alive, crushed in the cockpit.\n\n'Simon... I bought you time... did you... win?' He smiles weakly.\n\n'We're going to win together!' you cry.\n\n'Nah... this is your story now, Simon... Believe in yourself... not in the me who believes in you... believe in the you... who believes in you...'\n\nHis eyes close. Kamina is gone.",
+                location: "🌍 The Capital - Tragedy",
+                choices: [
+                    { text: "Break down completely", next: 'broken_simon' },
+                    { text: "Channel grief into rage", next: 'rage_path' },
+                    { text: "Honor his final words", next: 'growth_path' }
+                ]
+            },
+            broken_simon: {
+                text: "You can't function. Kamina is dead. Your brother. Your confidence. Your fire.\n\nYou abandon Lagann. Abandon the revolution. You wander aimlessly, broken.\n\nYoko tries to reach you. 'Simon, please! We need you! Kamina died believing in you!'\n\nBut you can't hear her. Without Kamina, you're nothing. The revolution collapses without its hero.",
+                location: "🌍 The Surface - Broken",
+                ending: true,
+                achievement: "BROKEN SPIRIT",
+                endingText: "💀 ENDING: You let Kamina's death break you. He died believing you'd carry on, that you'd surpass him. But you proved him wrong. You abandoned everything he fought for. Sometimes the cruelest way to dishonor someone is to give up after they've sacrificed everything. You had his legacy and let it die.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            rage_path: {
+                text: "Rage consumes you! You pilot Lagann like a demon, tearing through enemies without strategy or thought!\n\n'SPIRAL KING! COME FACE ME!' you scream.\n\nBut rage without control is just destruction. You charge the Spiral King's fortress alone. His remaining Divine Generals surround you.\n\nYou fight with insane ferocity, but you're alone. Kamina gave you his spirit, but you took only his rage, not his wisdom.\n\nYou die in glorious battle, but accomplish nothing.",
+                location: "🌍 The Capital - Rage Death",
+                ending: true,
+                achievement: "RECKLESS ABANDON",
+                endingText: "💀 ENDING: You became a mirror of Kamina's weakness without his strengths. Kamina's rage was always tempered by his genuine love for others. Yours was just vengeance. You died like a warrior but failed like a leader. Spiral power without heart is just destruction.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            growth_path: {
+                text: "You cry. You grieve. But you remember his words: 'Believe in the you who believes in you.'\n\nSlowly, you stand. You look at Yoko, at your allies. 'Kamina believed I could do this. He believed in all of us. We don't stop because he's gone. We finish what he started!'\n\nYoko's eyes water, but she smiles. 'That's the Simon we need.'\n\nYou've evolved. You're not Kamina's shadow anymore. You're Simon - the driller, the thinker, the leader. And you will pierce the heavens!",
+                location: "🌍 The Capital - Rebirth",
+                choices: [
+                    { text: "Lead the final assault on the Spiral King!", next: 'final_preparations' }
+                ]
+            },
+            warn_kamina: {
+                text: "You approach Kamina privately. 'Brother, I'm worried. You're being too reckless lately. Remember, we need you alive to win this.'\n\nKamina's expression softens. 'Simon... you're right. I got caught up in our victories. Thanks for keeping me grounded.'\n\nHe's more careful in the capital assault. When Guame ambushes you, Kamina fights smart instead of proud.\n\nTogether, you defeat Guame! Kamina survives! The brotherly bond that started underground has been tempered into something unbreakable!",
+                location: "🌍 The Capital - Brothers United",
+                choices: [
+                    { text: "Face the Spiral King together!", next: 'perfect_duo' }
+                ]
+            },
+            save_kamina_success: {
+                text: "You turn Lagann around and rush back! Kamina is fighting Guame's fortress but losing!\n\n'Simon?! I told you to keep going!'\n\n'We don't abandon each other! NEVER!' you shout!\n\nLagann combines with Gurren! GURREN LAGANN forms! With both your powers united, Guame's fortress is no match!\n\nYou pierce through him! Kamina laughs! 'That's my bro! Couldn't let me have all the fun!'\n\nHe's alive. You're together. And the Spiral King awaits!",
+                location: "🌍 The Capital - Brothers Triumphant",
+                choices: [
+                    { text: "Storm the Spiral King's throne room!", next: 'perfect_duo' }
+                ]
+            },
+            perfect_duo: {
+                text: "You and Kamina storm the throne room together! The remaining Divine Generals attack!\n\nBut Gurren Lagann is unstoppable! Your combination is perfection - Kamina's fighting spirit merged with your strategic brilliance!\n\nFinally, you face him: Lordgenome, the Spiral King! He's massive, godlike, terrifying!\n\n'So... humans have finally come. Impressive. But do you know WHY I suppress humanity?' His voice echoes with power.\n\nKamina shouts, 'We don't care about your reasons! Free the humans or die!'",
+                location: "👑 Teppelin - Throne Room",
+                choices: [
+                    { text: "Attack immediately!", next: 'fight_lordgenome' },
+                    { text: "Demand to know his reasons", next: 'learn_truth' }
+                ]
+            },
+            fight_lordgenome: {
+                text: "You charge! Lordgenome doesn't even move - he catches your drill with one hand!\n\n'Fools. You don't understand what you're doing.'\n\nHe emanates incredible spiral power! He's stronger than anything you've faced! Your drill begins to crack!\n\n'I suppress humanity to SAVE it! The true enemy comes from beyond the stars! If humanity grows too numerous, too powerful, THEY will come and destroy everything!'\n\nHe throws you back. Gurren Lagann is damaged. He could kill you, but he hesitates.",
+                location: "👑 Teppelin - Battle with the King",
+                choices: [
+                    { text: "Press the attack anyway!", next: 'stubborn_ending' },
+                    { text: "Stop and listen to him", next: 'lordgenome_truth' }
+                ]
+            },
+            learn_truth: {
+                text: "'Tell us!' you demand. 'If you have a good reason, we deserve to know!'\n\nLordgenome studies you. 'Very well. Sit. Listen.'\n\nHe tells you the horrible truth: Long ago, he led a spiral race revolution. They grew powerful, built a galaxy-spanning civilization. Then THEY came - the Anti-Spirals, beings of pure anti-life who destroy any spiral race that grows too strong.\n\n'I lost everything. Everyone. The Anti-Spirals genocided my entire civilization. I barely escaped. I suppress humanity's spiral power to hide us from them. To survive.'",
+                location: "👑 Teppelin - The Truth Revealed",
+                choices: [
+                    { text: "Agree to help him suppress humanity", next: 'dystopia_ending' },
+                    { text: "Reject his fear-based solution", next: 'reject_fear' },
+                    { text: "Propose a third option", next: 'third_way' }
+                ]
+            },
+            dystopia_ending: {
+                text: "You see his logic. You agree. Humanity must remain suppressed to survive.\n\nYou and Kamina become Lordgenome's new generals, enforcing the population limit. Kamina hates it but trusts you.\n\nYears pass. Kamina's spirit dies slowly. Yoko looks at you with betrayal in her eyes.\n\nYou've become what you fought against. Humanity survives, but they don't live. You traded freedom for safety.",
+                location: "👑 Teppelin - New Regime",
+                ending: true,
+                achievement: "THE CAUTIOUS PATH",
+                endingText: "💔 ENDING: You chose survival over living. Lordgenome's fear became yours. Humanity endures underground, suppressed, never reaching their potential. You defeated one tyrant only to become another. Sometimes the safe path is the cruelest one. Spiral power means taking risks, even against cosmic horror.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            reject_fear: {
+                text: "'No!' you shout. 'Kamina taught me - if you fear the future, you'll never reach it! We'll grow strong, and when these Anti-Spirals come, we'll FIGHT them!'\n\nKamina grins. 'That's my Simon!'\n\nLordgenome looks at you with something like respect. 'You have courage. Foolish courage, but... perhaps... perhaps fear has ruled me too long.'\n\nHe powers down. 'Defeat me. Take my power. And may you succeed where I failed.'",
+                location: "👑 Teppelin - Lordgenome's Surrender",
+                choices: [
+                    { text: "Fight him honorably", next: 'honorable_victory' }
+                ]
+            },
+            third_way: {
+                text: "'What if we prepare humanity? Not suppress them, but train them! Build a civilization ready to fight when the Anti-Spirals come!'\n\nLordgenome's eyes widen. 'I... never considered... always I thought only in extremes...'\n\nKamina pounds his fist. 'Yes! We'll become so strong that when those Anti-Spiral bastards show up, we'll drill through them!'\n\nLordgenome considers, then nods slowly. 'Perhaps... perhaps there is wisdom in your youth. Very well. Join me. Help me transition from suppression to preparation.'",
+                location: "👑 Teppelin - New Alliance",
+                choices: [
+                    { text: "Form an alliance with Lordgenome", next: 'alliance_path' }
+                ]
+            },
+            stubborn_ending: {
+                text: "You ignore his warnings and attack with everything! Your drill blazes with spiral power!\n\nLordgenome fights back seriously now. His power is overwhelming! He grabs Gurren Lagann and tears it apart!\n\n'I tried to warn you! You've doomed humanity!'\n\nAs you die, you see the sky tear open. Massive geometric shapes descend. The Anti-Spirals have detected the spike in spiral energy from your battle.\n\nHumanity is exterminated within days.",
+                location: "👑 Teppelin - Cosmic Doom",
+                ending: true,
+                achievement: "RECKLESS ABANDON",
+                endingText: "💀 ENDING: Your stubbornness and refusal to listen doomed all of humanity. Lordgenome was flawed, but he was right about the threat. By fighting without understanding, you triggered the very apocalypse he'd spent millennia preventing. Spiral power requires wisdom, not just courage.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            lordgenome_truth: {
+                text: "You stop fighting. 'Tell us everything. All of it.'\n\nLordgenome explains the Spiral Nemesis - if spiral beings grow too powerful, they can destroy the universe itself. The Anti-Spirals hunt spiral races to prevent this cosmic destruction.\n\n'I saw my friends, my lovers, my children consumed by Anti-Spirals. I became Spiral King to prevent humanity from ever facing that horror.'\n\nYoko speaks up: 'So what do we do? Live in fear forever? Or fight for our right to exist?'",
+                location: "👑 Teppelin - Decision Point",
+                choices: [
+                    { text: "We must fight, whatever the cost!", next: 'defiant_path' },
+                    { text: "Propose compromise and preparation", next: 'alliance_path' }
+                ]
+            },
+            defiant_path: {
+                text: "'We'll take our chances!' you declare. 'Humans deserve freedom! If these Anti-Spirals want to stop us, they'll have to try!'\n\nKamina grins wildly. 'Hell yes! Let them come!'\n\nLordgenome looks sad. 'I respect your courage. But courage alone won't save you from what's coming. Still... perhaps I was wrong. Perhaps fear is worse than death.'\n\nHe surrenders his power to you. 'Take my knowledge. My technology. And survive what I could not.'",
+                location: "👑 Teppelin - New Era Begins",
+                choices: [
+                    { text: "Free all of humanity!", next: 'freedom_path' }
+                ]
+            },
+            alliance_path: {
+                text: "With Lordgenome's knowledge and your determination, you rebuild the surface! Humanity is freed but educated about the Anti-Spiral threat!\n\nYou prepare for years. Build defenses. Train warriors. Gurren Lagann evolves into Super Galaxy Gurren Lagann!\n\nKamina leads the military. You lead technology. Yoko trains soldiers. Humanity is united and ready!\n\nThen, one day, the sky tears open. They've found you. The Anti-Spirals have come.",
+                location: "🌍 Earth - Prepared for War",
+                choices: [
+                    { text: "Engage the Anti-Spirals!", next: 'anti_spiral_war' }
+                ]
+            },
+            freedom_path: {
+                text: "You free all humans! Tear down the underground walls! Humanity floods to the surface!\n\nPopulation explodes! Cities are built! Technology advances! Within a year, humanity reaches one million - Lordgenome's forbidden threshold!\n\nThe sky cracks open. Massive geometric warships descend. The Anti-Spiral Messenger appears:\n\n'SPIRAL RACE DETECTED. POPULATION EXCEEDS ACCEPTABLE LIMITS. INITIATING EXTERMINATION PROTOCOL.'\n\nYou're not ready. But you have no choice. It's fight or die.",
+                location: "🌍 Earth - Anti-Spiral Invasion",
+                choices: [
+                    { text: "Fight them with everything!", next: 'desperate_anti_spiral_battle' }
+                ]
+            },
+            honorable_victory: {
+                text: "You and Kamina fight Lordgenome with everything! It's a legendary battle!\n\nLordgenome is powerful beyond measure, but your combined spiral power, your brotherhood, your determination - it's something he lost long ago!\n\n'You... you have what I once had... hope...' He falls to his knees.\n\n'I surrender. Free humanity. And may you succeed where I failed.'\n\nHe transfers his knowledge to you, then peacefully passes. The Spiral King is dead. Humanity is free!",
+                location: "👑 Teppelin - Victory",
+                choices: [
+                    { text: "Liberate humanity!", next: 'freedom_path' },
+                    { text: "Carefully rebuild with his warnings in mind", next: 'cautious_rebuild' }
+                ]
+            },
+            cautious_rebuild: {
+                text: "You free humanity but implement population controls and careful expansion. It takes longer, but you prepare for the Anti-Spiral threat.\n\nYears pass. You build a space fleet. Arc-Gurren Lagann is constructed. When humanity reaches one million, you're ready.\n\nThe Anti-Spirals arrive. But you're prepared. The battle is still devastating, but you have a chance.",
+                location: "🌍 Earth - Controlled Growth",
+                choices: [
+                    { text: "Engage the Anti-Spirals with preparation!", next: 'anti_spiral_war' }
+                ]
+            },
+            desperate_anti_spiral_battle: {
+                text: "You fight with Gurren Lagann! But the Anti-Spirals are cosmic entities! Their power dwarfs anything you've faced!\n\nThey destroy your mecha easily. Capture you, Kamina, Yoko, and all leaders.\n\n'YOU WERE WARNED. SPIRAL RACES MUST BE CONTAINED. YOU WILL BE IMPRISONED IN MULTIDIMENSIONAL LABYRINTHS UNTIL YOU ACCEPT STAGNATION.'\n\nYou're trapped in an infinite mental prison, living fake happy lives, never knowing you're enslaved.",
+                location: "♾️ Multidimensional Labyrinth",
+                ending: true,
+                achievement: "BROKEN SPIRIT",
+                endingText: "💀 ENDING: You rushed to freedom without preparation and paid the ultimate price. The Anti-Spirals were right about one thing - reckless spiral growth leads to destruction. You needed either Lordgenome's wisdom or more time to prepare. Your spiral burned bright but brief, then was extinguished forever.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            anti_spiral_war: {
+                text: "The Anti-Spiral fleet attacks! Their technology is reality-bending! They create pocket dimensions, manipulate probability, rewrite physics!\n\nBut you're ready! Super Galaxy Gurren Lagann launches! Kamina pilots with you! Your combined spiral power is incredible!\n\n'We're humanity's drill!' Kamina roars. 'And we'll pierce through despair itself!'\n\nThe battle rages across dimensions! You're pushed to your limits! The Anti-Spirals reveal their ultimate form!",
+                location: "🌌 Space - Dimensional Battlefield",
+                choices: [
+                    { text: "Transform to match their evolution!", next: 'evolution_battle' },
+                    { text: "Find their weakness through strategy!", next: 'strategic_anti_spiral' }
+                ]
+            },
+            strategic_anti_spiral: {
+                text: "You analyze their attacks! 'Kamina! They manipulate probability, but they follow patterns! They're bound by their own logic!'\n\n'So we do something ILLOGICAL!' Kamina laughs.\n\nYou pilot Gurren Lagann in seemingly random patterns! The Anti-Spirals can't predict you! Their probability weapons miss!\n\nYou find an opening! But it requires a sacrifice - someone must stay behind to hold a dimensional rift open!",
+                location: "🌌 Space - Critical Moment",
+                choices: [
+                    { text: "Kamina volunteers - you let him", next: 'kamina_sacrifice_ending' },
+                    { text: "You volunteer instead", next: 'simon_sacrifice_ending' },
+                    { text: "Find another way - nobody sacrifices!", next: 'perfect_solution' }
+                ]
+            },
+            evolution_battle: {
+                text: "Your spiral power explodes! Gurren Lagann grows! Super Galaxy Gurren Lagann becomes TENGEN TOPPA GURREN LAGANN - a mecha the size of galaxies!\n\nThe Anti-Spirals match you! They create Anti-Spiral Granzeboma!\n\nTwo cosmic entities clash! Each punch destroys star systems! Reality itself tears at the seams!\n\nBut you're winning! Your spiral burns hotter! Kamina's spirit! Your technical skill! Yoko's sharp eye! Everyone's dreams combined!",
+                location: "🌌 Space - Cosmic Battle",
+                choices: [
+                    { text: "Finish them with GIGA DRILL BREAK!", next: 'ultimate_victory_kamina' }
+                ]
+            },
+            kamina_sacrifice_ending: {
+                text: "Kamina grins. 'This is my moment, Simon. I'll hold it open. You finish the mission.'\n\n'No! We do this together!'\n\n'We ARE together. Always. Now go be the legend I always knew you were!'\n\nHe ejects from Gurren Lagann and manually holds the rift. The Anti-Spirals converge on him.\n\nYou charge through, tears streaming. You destroy their core. Humanity is saved.\n\nBut Kamina is gone. You return home a hero who feels like he lost everything.",
+                location: "🌍 Earth - Bittersweet Victory",
+                ending: true,
+                achievement: "THE MARTYR'S SPIRAL",
+                endingText: "💔 ENDING: Victory, but at tremendous cost. Kamina sacrificed himself so humanity could be free. You honor his memory by building a peaceful civilization. His statue overlooks the city you name after him. You succeeded, but part of your spirit died with him. Some victories are more bitter than sweet.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            simon_sacrifice_ending: {
+                text: "'I'm staying!' you announce. 'Kamina, you finish this! You're the one who always believed!'\n\n'Simon, no!'\n\n'Believe in the me who believes in you! Now GO!'\n\nYou hold the rift open. Kamina, tears in his eyes, charges through and destroys the Anti-Spiral core.\n\nAs reality collapses around you, you smile. You finally believed in yourself. And you saved everyone.\n\nKamina returns to Earth alone, forever haunted by your sacrifice.",
+                location: "♾️ Collapsing Dimension",
+                ending: true,
+                achievement: "THE MARTYR'S SPIRAL",
+                endingText: "💔 ENDING: You gave everything so others could live free. Kamina builds a civilization in your honor, but he's never the same. Your sacrifice saved humanity, but the cost was immeasurable. You believed in yourself at the end, and that belief saved everything. A noble end, but a sad one.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            perfect_solution: {
+                text: "'Wait!' you shout. 'Our spiral power grows through bonds! If we combine EVERYONE'S will - all of humanity - we can hold the rift AND attack!'\n\nKamina's eyes blaze. 'YES! That's the Simon I know! Always finding the impossible solution!'\n\nYou broadcast to Earth: 'Everyone! Believe in us! Lend us your spiral power!'\n\nHumanity responds! A billion drills of light spiral into Gurren Lagann! The rift holds by itself, powered by human will!\n\nYou charge through with Kamina! Together, you destroy the Anti-Spiral core!",
+                location: "🌌 Space - Unity Victory",
+                choices: [
+                    { text: "Return to Earth as heroes!", next: 'perfect_victory' }
+                ]
+            },
+            ultimate_victory_kamina: {
+                text: "You and Kamina combine your will into one ultimate attack! Your drill becomes the size of the universe itself!\n\n'THIS IS THE DRILL THAT WILL PIERCE THE HEAVENS!' you shout together!\n\n'GIGA DRILL BREAK!'\n\nThe Anti-Spirals shatter! Their philosophy of stagnation cannot withstand your unified belief in growth and evolution!\n\nAs they dissolve, their leader speaks: 'Perhaps... we were wrong... to stop evolution... your way... might lead to a better universe...'\n\nThey vanish. The war is won!",
+                location: "🌌 Space - Ultimate Victory",
+                choices: [
+                    { text: "Return home victorious!", next: 'perfect_victory' }
+                ]
+            },
+            perfect_victory: {
+                text: "You return to Earth as the greatest heroes in history! The Anti-Spiral threat is ended! Humanity is free to grow, to evolve, to reach the stars!\n\nYears pass. You and Kamina lead humanity into a golden age. Cities float in the sky. Humanity spreads across the galaxy. Always remembering: with great power comes responsibility.\n\nYoko becomes Earth's protector. The Gurren Brigade becomes legend. And you - you're the digger who became a cosmic hero.",
+                location: "🌍 Earth - Golden Age",
+                choices: [
+                    { text: "But what of the Spiral Nemesis warning?", next: 'final_test' }
+                ]
+            },
+            final_test: {
+                text: "One day, an alert: Spiral energy is approaching critical mass. The universe is destabilizing. Lordgenome's warning was real.\n\nThe Spiral Nemesis is beginning. If humanity continues growing unchecked, the universe will collapse!\n\nYou and Kamina face the ultimate choice:\n\nLimit humanity's growth forever, living small but safe.\n\nOr...\n\nFind a way to grow that doesn't destroy everything. The impossible solution.",
+                location: "🌍 Earth - Final Crisis",
+                choices: [
+                    { text: "Accept limits and live peacefully", next: 'peaceful_ending' },
+                    { text: "Search for the impossible third option", next: 'secret_final_choice' }
+                ]
+            },
+            peaceful_ending: {
+                text: "You choose wisdom. Humanity will grow, but carefully. Responsibly. You implement limits that allow freedom but prevent cosmic destruction.\n\n'Sometimes,' you tell Kamina, 'knowing when to stop is the ultimate act of courage.'\n\nHe nods. 'Yeah. We've evolved enough to know when enough is enough.'\n\nHumanity spreads across galaxies, but never recklessly. You've learned balance. The spiral continues, but controlled. It's not the most glorious ending, but it's wise. And it lasts forever.",
+                location: "🌍 Earth - Eternal Civilization",
+                ending: true,
+                achievement: "WISDOM OF THE SPIRAL",
+                endingText: "🌟 GOOD ENDING: You achieved what Lordgenome couldn't - defeating the Anti-Spirals while learning from his fears. Humanity is free but responsible. You've evolved beyond blind rebellion into true wisdom. The spiral continues infinitely, balanced and beautiful. Not the ultimate victory, but a great one.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            secret_final_choice: {
+                text: "'No,' you whisper. 'There's always another way. That's what spiral power means!'\n\nKamina grins. 'I knew you'd say that. So what's your crazy plan?'\n\nYou dive into research. Months pass. Then you find it - the Anti-Spirals were wrong. The Spiral Nemesis only occurs if spiral races grow SELFISHLY.\n\nBut if growth is unified, selfless, focused on mutual evolution...\n\n'Kamina! We can evolve the universe ITSELF! Make it grow with us! We don't destroy it - we TRANSFORM it!'",
+                location: "🌍 Earth - Revelation",
+                choices: [
+                    { text: "Attempt to evolve the universe itself!", next: 'true_final_challenge' }
+                ]
+            },
+            true_final_challenge: {
+                text: "You gather every spiral being in the universe. Not just humans - all life. You connect every consciousness.\n\n'We're going to evolve together!' you broadcast across reality. 'Not to destroy the universe, but to ascend it to something greater!'\n\nSpiral power explodes across all dimensions! Reality itself begins transforming! Kamina laughs with joy!\n\nBut then - resistance. A force opposes you. It's... Lordgenome?!\n\nHis spirit appears. 'Simon. Kamina. What you're attempting... it's never been done. If you fail, all reality ends. Are you CERTAIN?'",
+                location: "♾️ Edge of Reality",
+                choices: [
+                    { text: "We're certain! Pierce the heavens!", next: 'secret_ultimate_ending' },
+                    { text: "...Maybe this is too far", next: 'retreat_from_edge' }
+                ]
+            },
+            retreat_from_edge: {
+                text: "You pull back at the last moment. 'No... we've pushed far enough. Maybe this is the limit.'\n\nKamina looks disappointed but nods. 'If you're not sure, then we shouldn't risk everything.'\n\nYou return to the peaceful path. Humanity grows carefully. It's a good ending, but not the ultimate one.\n\nYou wonder for the rest of your life: what if we'd tried?",
+                location: "🌍 Earth - Safe Return",
+                ending: true,
+                achievement: "WISDOM OF THE SPIRAL",
+                endingText: "🌟 GOOD ENDING: You had the courage to pursue the impossible, and the wisdom to know when you weren't ready. Not every battle needs fighting. Not every heaven needs piercing. Sometimes wisdom means accepting good enough. You saved everything by not risking it. Peace, if not perfection.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            secret_ultimate_ending: {
+                text: "You and Kamina combine your will one final time!\n\n'Lordgenome! Join us! All the spiral power that ever was and ever will be - UNITED!'\n\nLordgenome's spirit blazes bright! 'Yes! Let's finish what I started a thousand years ago! Let's evolve beyond everything!'\n\nSIMON! KAMINA! LORDGENOME! YOKO! ALL OF HUMANITY! ALL SPIRAL BEINGS!\n\nYour combined drill grows beyond size, beyond dimensions! It becomes SUPER TENGEN TOPPA GIGA DRILL!\n\nYou pierce through reality itself!\n\nThe universe TRANSFORMS! Not destroyed - EVOLVED! A new cosmos where all life can grow infinitely without destruction! The Spiral Nemesis becomes the Spiral Paradise!\n\nYou've done the impossible! You've PIERCED THE HEAVENS THEMSELVES!",
+                location: "🌟 The New Universe",
+                ending: true,
+                achievement: "PIERCE THE HEAVENS - TRUE ENDING",
+                endingText: "✨🌟✨ ULTIMATE ENDING - PIERCE THE HEAVENS! ✨🌟✨\n\nYou've achieved the impossible! Not just defeating the Anti-Spirals, not just surviving, but TRANSFORMING ALL OF REALITY ITSELF! \n\nYou and Kamina stand at the center of a new universe - one where spiral power leads to infinite evolution without destruction! All beings can grow forever!\n\nYou started as a digger underground. You became the being who DRILLED THROUGH THE VERY FABRIC OF EXISTENCE!\n\nTHIS IS WHAT IT MEANS TO PIERCE THE HEAVENS!\n\nYour legend echoes through infinite dimensions. Yours is the drill that created eternity!",
+                choices: [
+                    { text: "Start Over - Try Other Paths", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "THE COWARD'S PATH",
+            "THE CAUTIOUS PATH",
+            "INSUFFICIENT COURAGE",
+            "RECKLESS ABANDON",
+            "BROKEN SPIRIT",
+            "THE MARTYR'S SPIRAL",
+            "WISDOM OF THE SPIRAL",
+            "PIERCE THE HEAVENS - TRUE ENDING",
+            "ARCHITECT OF PEACE - SECRET PERFECT ENDING"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '⚡ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                // Check if all main achievements are unlocked
+                const mainAchievements = achievements.filter(a => allAchievements.includes(a));
+                if (mainAchievements.length === allAchievements.length && !achievements.includes("TEAM DAI-GURREN LEGEND")) {
+                    setTimeout(() => {
+                        achievements.push("TEAM DAI-GURREN LEGEND");
+                        showAchievementPopup("TEAM DAI-GURREN LEGEND");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "TEAM DAI-GURREN LEGEND";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("TEAM DAI-GURREN LEGEND") ? 1 : 0);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "TEAM DAI-GURREN LEGEND" ? ' ultimate' : '');
+                    badge.textContent = '🌟 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update quest log display
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>\n
