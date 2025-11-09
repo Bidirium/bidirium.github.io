@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Divergence Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #2a0a1a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff88;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 136, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a1a;
+            border-color: #00ff88;
+            color: #00ff88;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff88, #ff00ff);
+            border-color: #00ff88;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff88;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 136, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .divergence-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a1a;
+            color: #00ff88;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a2a;
+            color: #005544;
+            border-color: #005544;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff88;
+            color: #000;
+            box-shadow: 0 0 15px #00ff88;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .divergence-meter {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff00ff;
+            text-align: center;
+        }
+
+        .divergence-number {
+            font-size: 1.5rem;
+            color: #ff00ff;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+
+        .location-icon {
+            color: #00ff88;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff88;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a1a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005544;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005544, #00ff88);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 100, 0.5);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff88, #ff00ff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ff00ff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff00ff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff88ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff88;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #ff00ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005544;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a1a;
+            color: #00ff88;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ff88;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff88;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005544;
+        }
+
+        .history-title {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a1a;
+            color: #00ff88;
+        }
+
+        .history-button.current {
+            background-color: #00ff88;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 50, 0.5);
+            color: #00ff88;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 100, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a1a;
+            color: #005544;
+        }
+
+        .history-hint {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .memory-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005544;
+        }
+
+        .memory-log-title {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .memory-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .memory-log-entries {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .memory-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005544;
+            margin-bottom: 0.5rem;
+        }
+
+        .memory-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="divergence-icon">⌚</span>
+                    THE DIVERGENCE QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <div class="divergence-meter">
+                <div style="font-size: 0.75rem; color: #ff00ff; margin-bottom: 0.25rem;">DIVERGENCE METER</div>
+                <div class="divergence-number" id="divergenceValue">1.048596</div>
+            </div>
+
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ WORLDLINE CONCLUDED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                TIMELINE HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that point in time</p>
+        </div>
+
+        <div id="memoryLogBox" class="memory-log-box" style="display: none;">
+            <h3 class="memory-log-title">
+                <span>📜</span>
+                MEMORY LOG
+            </h3>
+            <div class="memory-log-entries" id="memoryLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "Summer. The lab is cramped, filled with old computer parts and half-finished inventions. You're a university student with too much curiosity and not enough sense.\n\nYour phone—a modified device you call the 'Phone Microwave'—just sent a text message into the past. Impossible, yet it happened.\n\nYour friend bursts in: 'Did you see the news? The scientist who was supposed to give a lecture today... she died in a strange accident last week. But we saw her today!'",
+                location: "🔬 The Lab - Present",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Investigate the scientist's death immediately", next: 'investigate_death' },
+                    { text: "Test the Phone Microwave again", next: 'test_device' },
+                    { text: "This is too dangerous, destroy everything", next: 'destroy_evidence' }
+                ]
+            },
+            investigate_death: {
+                text: "You rush to the conference building. Police tape everywhere. Witnesses say she died days ago, yet others swear they saw her today.\n\nYou find her research notes in the trash—equations about time travel, warnings about 'temporal paradoxes,' and a cryptic message: 'They're watching. If you change the past, they'll come.'",
+                location: "🏢 Conference Building",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Take the research notes", next: 'take_notes' },
+                    { text: "Photograph them and leave", next: 'photo_notes' },
+                    { text: "Leave everything alone", next: 'walk_away_early' }
+                ]
+            },
+            test_device: {
+                text: "You send another message to the past: a lottery number from yesterday. Your phone buzzes immediately—a text from yourself, timestamped yesterday, with that exact number.\n\nThe timeline shifts. You feel dizzy. When you check, you won the lottery yesterday. Money appears in your account. But something feels wrong about reality itself.",
+                location: "🔬 The Lab",
+                divergence: 1.130205,
+                choices: [
+                    { text: "Keep experimenting carefully", next: 'careful_experiments' },
+                    { text: "Use it to fix personal regrets", next: 'fix_regrets' },
+                    { text: "Shut it down now", next: 'early_shutdown' }
+                ]
+            },
+            destroy_evidence: {
+                text: "You smash the Phone Microwave with a hammer. Your friend watches in horror.\n\n'What are you doing?!' They grab your arm. 'This could change everything!'\n\nBut you've seen enough sci-fi to know how this ends. Some doors shouldn't be opened.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "IGNORANCE PRESERVED",
+                endingText: "⚡ ENDING: You destroyed your greatest discovery to protect the timeline. Life continues normally. You sometimes wonder what might have been, but you sleep peacefully. Some mysteries are better left unsolved. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            take_notes: {
+                text: "You pocket the research. As you leave, you notice someone watching from a black car. Government plates.\n\nYour phone buzzes: An unknown text. 'We know what you found. We know what you have. Stop now, or face consequences.'\n\nThey're already tracking you.",
+                location: "🏢 Conference Building - Exit",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Run and hide", next: 'go_underground' },
+                    { text: "Confront them directly", next: 'confront_watchers' },
+                    { text: "Use time travel to erase this moment", next: 'erase_moment' }
+                ]
+            },
+            photo_notes: {
+                text: "Smart. Leave no physical evidence. You photograph everything and slip away unnoticed.\n\nBack at the lab, you study the equations. They're legitimate. The scientist was on the verge of something massive—and someone killed her for it.\n\nYour friend texts: 'Someone broke into the lab. They trashed everything but left the Phone Microwave.'",
+                location: "🔬 The Lab - Evening",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Check the lab immediately", next: 'check_lab' },
+                    { text: "Stay away and analyze the photos", next: 'analyze_remote' }
+                ]
+            },
+            walk_away_early: {
+                text: "You leave the notes. Walk away. Pretend you never saw anything.\n\nBut that night, you dream of the scientist. She's trying to tell you something, but you can't hear. You wake up to news: your friend is missing.\n\nTheir last text: 'I tested the device alone. Something went wrong. Help me.'",
+                location: "🏠 Your Apartment - Night",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Go to the lab to save them", next: 'save_friend_unprepared' },
+                    { text: "Call the authorities", next: 'call_authorities' }
+                ]
+            },
+            careful_experiments: {
+                text: "Over the following week, you test the device methodically. Small changes only. Moving a coffee cup. Preventing minor accidents.\n\nEach test shifts the divergence number slightly. You're learning the rules. But you also notice: someone is following you. Black suits. Earpieces. Professional.",
+                location: "🔬 The Lab - One Week Later",
+                divergence: 1.123445,
+                choices: [
+                    { text: "Document everything before they catch you", next: 'document_research' },
+                    { text: "Confront your pursuers", next: 'confront_watchers' },
+                    { text: "Use the device to escape into a different timeline", next: 'escape_timeline' }
+                ]
+            },
+            fix_regrets: {
+                text: "You send messages back, changing small personal failures. You ask out your crush—it works. You ace an exam you failed—it works.\n\nBut each change creates ripples. Your friend doesn't recognize a reference you made. Your favorite coffee shop closed last year instead of last month. Reality is becoming unstable around your changes.",
+                location: "🔬 The Lab",
+                divergence: 1.238776,
+                choices: [
+                    { text: "Keep fixing things, push further", next: 'reality_breakdown' },
+                    { text: "Stop and try to stabilize the timeline", next: 'stabilize_attempt' }
+                ]
+            },
+            early_shutdown: {
+                text: "You disconnect the Phone Microwave. Hide the components. Tell no one.\n\nBut three days later, your friend is excited: 'Look what I built while you were gone!' They show you their own version of the device. Less refined, more dangerous.\n\n'Let me show you what it can do!'",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Stop them before they use it", next: 'stop_friend' },
+                    { text: "Let them demonstrate", next: 'friend_demonstrates' }
+                ]
+            },
+            go_underground: {
+                text: "You disappear. New apartment, cash only, destroy your phone. The research notes are your only possession.\n\nYou study them obsessively. The equations suggest something terrifying: every time travel attempt creates a new timeline. The organization hunting you wants to control all timelines.\n\nYou're a fugitive in possession of reality-breaking knowledge.",
+                location: "🏠 Safe House",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Find others who know about time travel", next: 'find_allies' },
+                    { text: "Complete the scientist's work alone", next: 'complete_work_solo' }
+                ]
+            },
+            confront_watchers: {
+                text: "You walk straight to the black car. Knock on the window. A woman in a dark suit steps out.\n\n'Brave or stupid?' she asks. 'We're not your enemy. We're the Organization for Timeline Stability. That device you built—it's the seventh we've found this year. All the others led to catastrophe.'\n\nShe offers a card. 'Work with us, or watch everyone you love cease to exist.'",
+                location: "📍 Street Corner",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Join the Organization", next: 'join_organization' },
+                    { text: "Refuse and run", next: 'refuse_organization' },
+                    { text: "Ask about the catastrophes", next: 'learn_history' }
+                ]
+            },
+            erase_moment: {
+                text: "You send a message to your past self: 'Don't investigate. Don't take the notes. Walk away.'\n\nThe timeline shifts. You're back at the conference building, but this time you walk past the research notes. You feel the shift—memories of two timelines existing simultaneously.\n\nBut the watchers are still there. They exist outside normal time. They remember both timelines.",
+                location: "🏢 Conference Building - Altered",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Accept you can't escape this way", next: 'accept_fate' },
+                    { text: "Keep trying different erasures", next: 'erasure_loop' }
+                ]
+            },
+            check_lab: {
+                text: "You arrive to find the lab ransacked—except for the Phone Microwave, which sits untouched on the desk. A message written on the wall in marker: 'BUILD IT PROPERLY OR STOP TRYING.'\n\nYour friend is gone. Their phone goes to voicemail. But there's a new text on your phone, timestamped from tomorrow: 'I'm safe. Trust no one. Complete the device.'",
+                location: "🔬 The Lab - Ransacked",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Complete the device as instructed", next: 'complete_device' },
+                    { text: "Find your friend first", next: 'prioritize_friend' }
+                ]
+            },
+            analyze_remote: {
+                text: "You stay away and study the photographs. The equations are brilliant but incomplete. There's a gap—a crucial element the scientist didn't finish.\n\nAs you work, you realize: the missing piece requires temporal data you can only get by sending information back and measuring the results. You need the Phone Microwave after all.\n\nBut someone took it from the lab.",
+                location: "🏠 Your Apartment",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Return to the lab to find it", next: 'return_for_device' },
+                    { text: "Try to rebuild it from memory", next: 'rebuild_device' }
+                ]
+            },
+            save_friend_unprepared: {
+                text: "You rush to the lab. The Phone Microwave is active, sparking dangerously. Your friend is unconscious beside it, their hand still on the send button.\n\nThe device is stuck in a loop, sending the same message repeatedly into the past. Each iteration is changing reality. The walls flicker. You see multiple versions of the room overlapping.",
+                location: "🔬 The Lab - Temporal Collapse",
+                divergence: 1.382944,
+                choices: [
+                    { text: "Shut down the device immediately", next: 'emergency_shutdown' },
+                    { text: "Try to save your friend first", next: 'save_friend_first' }
+                ]
+            },
+            call_authorities: {
+                text: "You call the police. They take a report but seem unconcerned. 'Adults can go missing for 24 hours,' they say.\n\nYou hang up. Your phone immediately rings—unknown number. A distorted voice: 'The authorities can't help with temporal anomalies. Your friend is trapped between timelines. Only you can retrieve them. Go to the lab. Now.'",
+                location: "🏠 Your Apartment",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Go to the lab", next: 'save_friend_unprepared' },
+                    { text: "Ignore the call", next: 'ignore_warning' }
+                ]
+            },
+            document_research: {
+                text: "You work frantically, writing everything down. The equations, the test results, the divergence patterns. You encrypt it, upload copies to hidden servers.\n\nAs you finish, the door crashes open. The Organization has arrived. 'Step away from the device,' they command. They're not asking.",
+                location: "🔬 The Lab",
+                divergence: 1.123445,
+                choices: [
+                    { text: "Surrender peacefully", next: 'peaceful_surrender' },
+                    { text: "Send yourself a warning message before they stop you", next: 'final_warning' },
+                    { text: "Destroy the device and the data", next: 'destroy_everything' }
+                ]
+            },
+            escape_timeline: {
+                text: "You send a massive change into the past—you never attended this university. Never met your friend. Never built the device.\n\nThe world dissolves and reconstructs. You're in a different timeline now. Different job. Different life. No pursuers. But also... no friends. No purpose. Just safety and emptiness.",
+                location: "🏢 Corporate Office - Alternative Timeline",
+                divergence: 2.104532,
+                ending: true,
+                achievement: "COWARD'S PARADISE",
+                endingText: "💔 ENDING: You escaped into a timeline where you never discovered time travel. Safe but hollow. You live an ordinary life, haunted by fading memories of another existence. Sometimes you see people who look familiar, but they don't know you. Divergence: 2.104532 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            reality_breakdown: {
+                text: "You push further. You save people who died. You prevent disasters. You become a god of your own timeline.\n\nBut reality is fracturing. You see ghosts of other timelines bleeding through. Your friend exists in three states simultaneously. Buildings flicker between demolished and standing. The divergence meter spins wildly.",
+                location: "🔬 The Lab - Reality Unstable",
+                divergence: 2.847393,
+                choices: [
+                    { text: "Try to undo everything", next: 'desperate_reset' },
+                    { text: "Embrace the chaos", next: 'chaos_ending' }
+                ]
+            },
+            stabilize_attempt: {
+                text: "You try to reverse the changes, but you've lost track. Which messages did you send? What was the original timeline? Your memories are corrupted, mixing multiple realities.\n\nYour friend helps you reconstruct the original divergence number. Together, you send corrective messages. Slowly, reality stabilizes. But you've learned: time travel has limits you must respect.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Continue with extreme caution", next: 'cautious_path' },
+                    { text: "Share your findings with others", next: 'share_knowledge' }
+                ]
+            },
+            stop_friend: {
+                text: "You grab their hand before they activate it. 'Don't. I already tested one. It's dangerous.'\n\nThey look hurt. 'You didn't trust me enough to tell me?' The friendship strains. But you explain everything. The risks. The watchers. The instability.\n\nTogether, you decide what to do next.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Work together carefully", next: 'partner_path' },
+                    { text: "Destroy both devices together", next: 'mutual_destruction' }
+                ]
+            },
+            friend_demonstrates: {
+                text: "Your friend activates their device. They send a message: 'Buy Bitcoin in 2010.'\n\nThe timeline shifts violently. You both stagger. Their phone shows a bank balance in millions. They laugh, amazed. But you see it—black cars pulling up outside. Multiple timelines converging. They've attracted attention from something worse than the Organization.",
+                location: "🔬 The Lab",
+                divergence: 1.329847,
+                choices: [
+                    { text: "Grab your friend and run", next: 'run_together' },
+                    { text: "Stand and face whatever's coming", next: 'face_convergence' }
+                ]
+            },
+            find_allies: {
+                text: "You search online using the scientist's notes as a cipher. You find them—others who've discovered time travel. A secret network. They call themselves 'Timeline Guardians.'\n\nThey're not organization agents. They're individuals trying to prevent temporal catastrophe while the Organization hunts them all.",
+                location: "💻 Encrypted Network",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Join the Guardians", next: 'join_guardians' },
+                    { text: "Use them for information only", next: 'use_guardians' }
+                ]
+            },
+            complete_work_solo: {
+                text: "Weeks pass. You finish the scientist's equations. You understand now—true time travel doesn't change the past. It creates branching timelines. Every change spawns a new universe.\n\nYou can save anyone, undo anything. But only by abandoning this timeline and everyone in it. The ultimate selfish power.",
+                location: "🏠 Safe House - Breakthrough",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Use this power to save everyone you love", next: 'selfish_salvation' },
+                    { text: "Publish the research for the world", next: 'public_release' },
+                    { text: "Destroy the research", next: 'destroy_knowledge' }
+                ]
+            },
+            join_organization: {
+                text: "You accept. They take you to their headquarters—a facility outside normal space-time. You see the scope: thousands of timelines monitored. Agents working to prevent paradoxes.\n\n'Welcome to the Organization,' she says. 'Your timeline is one of 847 we're tracking. All because of amateur time travel experiments. Help us clean up the mess.'",
+                location: "⏰ Organization HQ - Outside Time",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Work as their agent", next: 'agent_path' },
+                    { text: "Learn their secrets and escape", next: 'infiltrate_organization' }
+                ]
+            },
+            refuse_organization: {
+                text: "You run. They don't chase—they don't need to. They exist in all timelines simultaneously. Wherever you go, whenever you go, they're already there.\n\nYou realize the truth: running from the Organization is like running from time itself. Impossible.",
+                location: "📍 Unknown",
+                divergence: 1.062057,
+                ending: true,
+                achievement: "FUTILE RESISTANCE",
+                endingText: "💀 ENDING: You spend years running, always one step behind them. Eventually, exhausted, you stop. They're waiting. They remove you from the timeline quietly. No one remembers you existed. Divergence: N/A (Erased)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            learn_history: {
+                text: "'Six previous discoveries,' she explains. 'First one: grad student in 2005. Used it to prevent 9/11. Created a timeline where nuclear war happened in 2009. Second: hedge fund manager. Created 47 overlapping timelines. All collapsed into each other.'\n\nShe shows you photos of temporal zones—areas where reality fractured permanently. 'That's what uncontrolled time travel does. Still want to keep experimenting?'",
+                location: "📍 Street Corner",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Work with them to prevent disaster", next: 'join_organization' },
+                    { text: "You can do better than the others did", next: 'arrogant_path' }
+                ]
+            },
+            accept_fate: {
+                text: "You stop fighting. The watchers approach. But they're not hostile—they're tired. One removes their sunglasses. You recognize them. It's you. Older. From a different timeline.\n\n'I tried everything,' they say. 'Every escape. Every fix. This is the only stable path. Work with the Organization or doom everyone you love.'",
+                location: "📍 Street Corner",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Trust your future self", next: 'join_organization' },
+                    { text: "Reject this destiny", next: 'reject_future_self' }
+                ]
+            },
+            erasure_loop: {
+                text: "You keep sending messages back, trying different erasures. Don't build the device. Don't go to the conference. Don't meet your friend.\n\nEach erasure creates a new timeline, but you retain memories of all of them. Your mind fractures. You exist in superposition—aware of hundreds of failed timelines simultaneously. Madness sets in.",
+                location: "🔬 The Lab - Mental Breakdown",
+                divergence: "ERROR",
+                ending: true,
+                achievement: "SHATTERED MIND",
+                endingText: "💀 ENDING: Your consciousness fragments across infinite timelines. You perceive all realities simultaneously but can act in none. Your body sits catatonic while your mind screams across dimensions. The Organization arrives to contain the temporal anomaly you've become. Divergence: UNDEFINED",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            complete_device: {
+                text: "You work through the night, following the instructions from the future. The Phone Microwave evolves into something more sophisticated—a true temporal manipulation device.\n\nWhen it's complete, you receive a call from your own number. Your future self: 'It's ready. Now the real work begins. But know this—completing it means you can never have a normal life again.'",
+                location: "🔬 The Lab - Device Complete",
+                divergence: 1.123698,
+                choices: [
+                    { text: "Accept your role as time traveler", next: 'accept_destiny' },
+                    { text: "Ask what the 'real work' means", next: 'question_destiny' }
+                ]
+            },
+            prioritize_friend: {
+                text: "You ignore the device and search for your friend. Following digital breadcrumbs, you track them to an abandoned building. They're there, but different. Older. They've been time-looping, experiencing months while only days passed for you.\n\n'I've seen things,' they say, haunted. 'The timelines where we fail. Where everyone dies. There's only one path to victory, and it requires sacrifice.'",
+                location: "🏚️ Abandoned Building",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Learn about the sacrifice needed", next: 'learn_sacrifice' },
+                    { text: "Refuse to sacrifice anything", next: 'refuse_sacrifice' }
+                ]
+            },
+            return_for_device: {
+                text: "You return to the lab cautiously. The Phone Microwave is exactly where you left it, but there's a new component attached—something you didn't build. A note: 'Upgrade from your future self. You'll need this. Trust the process.'\n\nThe device can now send not just messages, but consciousness itself back in time.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Test the consciousness transfer", next: 'test_leap' },
+                    { text: "Remove the unknown component", next: 'reject_upgrade' }
+                ]
+            },
+            rebuild_device: {
+                text: "You gather components and rebuild from memory. It takes weeks. When complete, it's cruder than the original but functional.\n\nFirst test: you send yourself a message. It arrives yesterday. The timeline shifts subtly. But you notice: each shift makes it harder to remember the original timeline. You're becoming unstuck in time.",
+                location: "🏠 Your Apartment - Makeshift Lab",
+                divergence: 1.098337,
+                choices: [
+                    { text: "Keep detailed written records", next: 'document_everything' },
+                    { text: "Stop before you lose yourself", next: 'early_retirement' }
+                ]
+            },
+            emergency_shutdown: {
+                text: "You hit the power switch. The sparking stops. Reality snaps back to a single state. Your friend gasps awake.\n\n'What... what happened?' They're disoriented. 'I saw... futures. Hundreds of them. Different timelines. In most of them, one of us dies trying to fix what we've started.'\n\nThe device is fried, smoking. But your friend's warning remains.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Rebuild it better, learn from this", next: 'rebuild_safer' },
+                    { text: "Take the warning seriously, stop", next: 'heed_warning' }
+                ]
+            },
+            save_friend_first: {
+                text: "You pull your friend away from the device first. As you do, the temporal loop completes. The message they sent—a warning to themselves not to test it alone—reaches the past.\n\nThe timeline shifts. Your friend never tested it alone. This moment never happened. But you remember both versions. You saved them by letting the loop complete.",
+                location: "🔬 The Lab - Timeline Shifted",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Tell your friend what almost happened", next: 'share_experience' },
+                    { text: "Keep the memory to yourself", next: 'burden_alone' }
+                ]
+            },
+            ignore_warning: {
+                text: "You ignore the call. Days pass. Your friend is officially missing. Police investigate but find nothing.\n\nThen one night, you see them on the street. They look right at you but don't recognize you. When you call their name, they walk away. They exist in a different timeline now, one where you're strangers.",
+                location: "🌃 City Street - Night",
+                divergence: 1.382596,
+                ending: true,
+                achievement: "LOST CONNECTION",
+                endingText: "💔 ENDING: Your friend exists in a parallel timeline, forever out of reach. You see them occasionally, living a different life, unknowing. The temporal anomaly made them a stranger. You live with the guilt of inaction. Divergence: 1.382596 (Stable but Isolated)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            peaceful_surrender: {
+                text: "You raise your hands. They confiscate the device and your research. The lead agent reviews it carefully.\n\n'Impressive work. Dangerous, but impressive. We have two options for you: join us and help manage temporal stability, or we perform a memory wipe and you live a normal life, never knowing any of this happened.'\n\nShe seems genuine. The choice is real.",
+                location: "🔬 The Lab - Under Custody",
+                divergence: 1.123445,
+                choices: [
+                    { text: "Join them", next: 'join_organization' },
+                    { text: "Accept the memory wipe", next: 'memory_wipe_ending' }
+                ]
+            },
+            final_warning: {
+                text: "You send one last message to your past self: everything you've learned about temporal mechanics, the Organization, the dangers. The message sends just as they grab you.\n\nThey see what you did. The lead agent smiles coldly. 'Clever. But we'll intercept it. We always do.' They drag you away. But you saw the transmission confirm—maybe, in some timeline, you got the warning.",
+                location: "🔬 The Lab - Captured",
+                divergence: 1.123445,
+                ending: true,
+                achievement: "HOPE IN DARKNESS",
+                endingText: "⚡ ENDING: You're taken to an Organization facility. Your work is confiscated. But in another timeline, your past self received the warning. You may be captured here, but another version of you is free, forewarned, and prepared. Your sacrifice spawned a better timeline. Divergence: 1.123445 (Captured) / 0.998712 (Free)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            destroy_everything: {
+                text: "You smash the device and wipe the servers. The Organization agents watch you do it. When you're done, exhausted, they lower their weapons.\n\n'Smart choice. You're free to go.' They leave. Just like that.\n\nYou're left in the destroyed lab, wondering if you made the right choice or the coward's choice.",
+                location: "🔬 The Lab - Destroyed",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "IGNORANCE PRESERVED",
+                endingText: "⚡ ENDING: You destroyed it all to protect the timeline. The Organization leaves you alone. Life continues. You return to being an ordinary student. Sometimes you wonder about the roads not taken. But the world is safe. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            desperate_reset: {
+                text: "You send message after message, trying to reset to the original timeline. But each attempt creates new branches. The timelines multiply exponentially.\n\nYour friend grabs you. 'Stop! You're making it worse!' But you can't stop. You need to fix this. You need to undo everything.\n\nThe device overloads. Reality fractures completely.",
+                location: "🔬 The Lab - Timeline Collapse",
+                divergence: "CRITICAL",
+                ending: true,
+                achievement: "TIMELINE COLLAPSE",
+                endingText: "💀 ENDING: The timelines collapse into each other. Reality in a 50-mile radius becomes a temporal dead zone where all possibilities exist simultaneously. The Organization quarantines the area. Inside, you experience every possible version of your life at once, forever. Divergence: COLLAPSED",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            chaos_ending: {
+                text: "You stop fighting the chaos. You embrace it. If reality wants to be multiple timelines at once, so be it.\n\nYou become something new—a being existing across all versions simultaneously. No longer quite human. You can see all timelines, influence all outcomes. But you've lost your humanity in the process.",
+                location: "⚡ Beyond Time",
+                divergence: "TRANSCENDENT",
+                ending: true,
+                achievement: "BEYOND HUMAN",
+                endingText: "🌟 ENDING: You transcended normal existence, becoming a temporal entity. You exist outside conventional reality, perceiving all timelines. The Organization can't touch you. Your friends can't reach you. You've gained everything and lost everything. Divergence: TRANSCENDENT",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            cautious_path: {
+                text: "You continue experimenting, but carefully. Document everything. Test small changes. Your friend helps, providing accountability.\n\nOver months, you master temporal mechanics. You learn the rules: changes create branches, not alterations. Divergence numbers track timeline distance from the origin. You're becoming an expert.\n\nThen the Organization finds you anyway.",
+                location: "🔬 The Lab - Months Later",
+                divergence: 1.186772,
+                choices: [
+                    { text: "Show them your responsible methods", next: 'demonstrate_responsibility' },
+                    { text: "Escape using time travel", next: 'time_escape' }
+                ]
+            },
+            share_knowledge: {
+                text: "You publish everything online. Temporal mechanics for the masses. Within days, thousands are attempting time travel. The Organization can't contain it.\n\nTimeline stability collapses globally. Divergence numbers spike everywhere. You've democratized time travel—and doomed everyone.",
+                location: "💻 Online - Viral",
+                divergence: "CASCADING",
+                ending: true,
+                achievement: "PANDORA'S BOX",
+                endingText: "💀 ENDING: Within months, temporal paradoxes destabilize the entire planet. Millions experience timeline fragmentation. The Organization can't contain it. Reality itself becomes negotiable. You wanted to share knowledge; you created apocalypse. Divergence: CASCADING FAILURE",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            partner_path: {
+                text: "Together, you research carefully. Your friend's perspective helps you avoid blind spots. You make steady progress.\n\nYou discover something crucial: there's a 'beta timeline'—a stable configuration where time travel was never invented. You could send humanity there, safe from temporal paradoxes. But you'd have to erase your own existence to do it.",
+                location: "🔬 The Lab - Discovery",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Pursue the beta timeline option", next: 'beta_timeline_path' },
+                    { text: "Keep working in this timeline", next: 'alpha_timeline_path' }
+                ]
+            },
+            mutual_destruction: {
+                text: "Together, you destroy both devices. No hesitation. No regrets. Your friendship survives, stronger for the shared choice.\n\nLife returns to normal. You graduate, get jobs, move on. But you both carry the secret: you held the power to change history and chose not to use it. That takes a different kind of courage.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "FRIENDSHIP OVER POWER",
+                endingText: "⚡ GOOD ENDING: You chose friendship and stability over power and chaos. Life continues normally. You both sometimes wonder 'what if,' but you sleep peacefully. Some doors are better left closed. Your bond is stronger than any timeline. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            run_together: {
+                text: "You grab your friend and run. Behind you, the building warps. Space-time agents—not the Organization, something worse—emerge from temporal rifts.\n\n'What did you do?!' you shout. Your friend is pale. 'I... I changed something big. Too big. They're Timeline Enforcers. They eliminate entire timelines that become too unstable.'",
+                location: "🏃 City Streets - Running",
+                divergence: 1.329847,
+                choices: [
+                    { text: "Find a way to undo the change", next: 'undo_big_change' },
+                    { text: "Accept this timeline is doomed, escape to another", next: 'escape_doomed_timeline' }
+                ]
+            },
+            face_convergence: {
+                text: "You stand your ground. The Enforcers materialize—beings of pure temporal energy. They speak in unison: 'This timeline has exceeded stability thresholds. Termination initiated.'\n\nYou try to argue, but they're not interested in debate. Reality starts to dissolve around you.",
+                location: "🔬 The Lab - Timeline Ending",
+                divergence: 1.329847,
+                ending: true,
+                achievement: "TIMELINE TERMINATION",
+                endingText: "💀 ENDING: The Enforcers erase your entire timeline. You, your friend, everyone—deleted from existence. In the moment before you cease to be, you understand: some changes are too dangerous, and the universe has safeguards against them. Divergence: TERMINATED",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            join_guardians: {
+                text: "You join their network. They teach you advanced temporal mechanics, share resources, and coordinate to prevent paradoxes without the Organization's authoritarian methods.\n\nTogether, you become a force for responsible time travel. But you're always hunted, always underground. Freedom has a cost.",
+                location: "💻 Guardian Network",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Lead a mission to save a collapsing timeline", next: 'guardian_mission' },
+                    { text: "Focus on evading the Organization", next: 'evasion_focus' }
+                ]
+            },
+            use_guardians: {
+                text: "You extract information from them but remain independent. They notice. 'You're using us,' one says. 'That's fine. But when you need help—and you will—don't expect us to answer.'\n\nThey cut contact. You're alone again, with knowledge but no allies.",
+                location: "🏠 Safe House - Isolated",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Complete your work solo", next: 'complete_work_solo' },
+                    { text: "Try to reconcile with the Guardians", next: 'reconcile_guardians' }
+                ]
+            },
+            selfish_salvation: {
+                text: "You use your power selfishly. Create a perfect timeline where everyone you love lives, succeeds, is happy. You're the architect of paradise.\n\nBut it's hollow. They don't know what you sacrificed. What timelines you abandoned. What versions of themselves you erased. You're a god they'll never thank.",
+                location: "🌅 Perfect Timeline",
+                divergence: 0.523012,
+                ending: true,
+                achievement: "HOLLOW VICTORY",
+                endingText: "💔 ENDING: You created a perfect world for your loved ones by abandoning countless others. They live in happiness, ignorant of the cost. You exist among them, alone in your knowledge, unable to share the burden. Victory feels like defeat. Divergence: 0.523012 (Engineered)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            public_release: {
+                text: "You publish everything—the scientist's work and your own. Within hours, it's everywhere. Within days, governments have it. Within weeks, temporal warfare begins.\n\nThe Organization arrives too late. Timeline stability collapses globally. Your gift to humanity becomes its curse.",
+                location: "💻 Post-Release",
+                divergence: "CRITICAL",
+                ending: true,
+                achievement: "PANDORA'S BOX",
+                endingText: "💀 ENDING: Your idealistic release of temporal technology triggers global temporal warfare. Nations alter each other's pasts. Reality fractures. The Organization's warnings were right. Knowledge isn't always liberation—sometimes it's annihilation. Divergence: CASCADING FAILURE",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            destroy_knowledge: {
+                text: "You burn the research. All of it. The scientist died to protect this knowledge from misuse. You honor that sacrifice.\n\nYou live quietly, carrying the memory of what could have been. Sometimes you wonder if you made the right choice. But the world remains stable. That has to count for something.",
+                location: "🏠 Safe House",
+                divergence: 1.062057,
+                ending: true,
+                achievement: "GUARDIAN OF SECRETS",
+                endingText: "⚡ GOOD ENDING: You destroyed the most powerful knowledge in history to protect humanity. The Organization never finds you—you're no longer a threat. You live a simple life, the last keeper of a secret that died with you. Divergence: 1.062057 (Protected)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            agent_path: {
+                text: "You become an Organization agent, traveling between timelines to prevent paradoxes. You save lives, stabilize realities, and witness wonders beyond imagination.\n\nBut you also do dark work. Erasing people who know too much. Terminating unstable timelines. Your hands are never clean.",
+                location: "⏰ Organization HQ",
+                divergence: "VARIABLE",
+                choices: [
+                    { text: "Accept the moral cost", next: 'hardened_agent' },
+                    { text: "Try to reform the Organization from within", next: 'reformer_path' }
+                ]
+            },
+            infiltrate_organization: {
+                text: "You play along, learning their secrets. The Organization isn't what they claim. They're not protecting timelines—they're controlling them. They decide which realities deserve to exist.\n\nYou discover their master plan: collapse all timelines into one 'perfect' reality they control. You have to stop them.",
+                location: "⏰ Organization HQ - Restricted Area",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Sabotage their plan", next: 'sabotage_organization' },
+                    { text: "Escape and warn others", next: 'warn_others' }
+                ]
+            },
+            arrogant_path: {
+                text: "You dismiss their warnings. You're smarter than those other amateurs. You'll do it right.\n\nYou experiment boldly. For a while, it works. You make precise changes, monitor divergence carefully. But then one change has unexpected ripples. A person you saved goes on to cause a catastrophe. Your hubris catches up.",
+                location: "🔬 The Lab",
+                divergence: 2.147665,
+                ending: true,
+                achievement: "PRIDE BEFORE FALL",
+                endingText: "💀 ENDING: Your confidence exceeded your wisdom. The butterfly effect of your changes cascaded into disaster. A war breaks out. Millions die. The Organization arrives to contain the damage you caused. You realize too late: the warnings were right. Divergence: 2.147665 (Catastrophic)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            reject_future_self: {
+                text: "'I don't believe you,' you tell your future self. 'There's always another way.'\n\nThey look sad. 'I said the same thing. Good luck.' They vanish, leaving you alone with your choices.\n\nYou continue searching for a better path, determined to prove them wrong.",
+                location: "📍 Street Corner",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Find the better path alone", next: 'solo_better_path' },
+                    { text: "Seek help from your friend", next: 'friend_help_path' }
+                ]
+            },
+            accept_destiny: {
+                text: "You accept your role. You become a time traveler, operating in the shadows. You prevent disasters, save lives, and maintain timeline stability. It's lonely work, but meaningful.\n\nYears pass. You age while jumping between timelines. Eventually, you realize: you've become the mysterious figure who sent yourself messages back at the beginning. The loop is complete.",
+                location: "⏰ Multiple Timelines",
+                divergence: "STABLE",
+                choices: [
+                    { text: "Complete the loop by helping your past self", next: 'close_loop' },
+                    { text: "Try to break the loop", next: 'break_loop' }
+                ]
+            },
+            question_destiny: {
+                text: "Your future self explains: 'There's a convergence point coming. A moment where multiple timelines collapse into one. Someone has to be there to guide it toward a stable outcome. That someone is you.'\n\n'What happens if I refuse?' you ask.\n\n'Then I keep looping, trying to convince you, until you accept or we all cease to exist.'",
+                location: "🔬 The Lab",
+                divergence: 1.123698,
+                choices: [
+                    { text: "Accept the mission", next: 'accept_convergence_mission' },
+                    { text: "Demand more information first", next: 'demand_info' }
+                ]
+            },
+            learn_sacrifice: {
+                text: "Your friend explains: 'I've seen hundreds of timelines. The only stable path requires one of us to become a temporal anchor—existing outside normal time, holding the timeline stable. It's a one-way trip.'\n\nThey look at you seriously. 'I'm willing to do it. But you have to choose.'",
+                location: "🏚️ Abandoned Building",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Let your friend become the anchor", next: 'friend_sacrifice' },
+                    { text: "Volunteer yourself instead", next: 'self_sacrifice' },
+                    { text: "Reject the premise, find another way", next: 'reject_binary_choice' }
+                ]
+            },
+            refuse_sacrifice: {
+                text: "'No one has to sacrifice anything,' you insist. 'We'll find another way.'\n\nYour friend shakes their head. 'I've tried. Every timeline where we both survive leads to catastrophe. Sometimes wisdom means accepting hard truths.'\n\nThey hand you a device. 'This will let you verify my timeline readings. See for yourself.'",
+                location: "🏚️ Abandoned Building",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Use the device to check", next: 'verify_timelines' },
+                    { text: "Still refuse to accept it", next: 'stubborn_hope' }
+                ]
+            },
+            test_leap: {
+                text: "You activate the consciousness transfer. Your awareness shoots backward through time. You experience yesterday again, but with your current memories intact.\n\nYou can change anything. You have perfect foreknowledge. But you also feel it—the strain on reality. Each leap damages the timeline's stability a little more.",
+                location: "🔬 The Lab - Yesterday",
+                divergence: 1.130426,
+                choices: [
+                    { text: "Use it to prevent disasters", next: 'leap_hero' },
+                    { text: "Test its limits carefully", next: 'leap_scientist' },
+                    { text: "Destroy the upgrade", next: 'reject_leap' }
+                ]
+            },
+            reject_upgrade: {
+                text: "You carefully remove the unknown component. As you do, the device activates one final time, sending a message: 'Understood. Good luck with the harder path.'\n\nYour future self respects your choice. You're on your own now, with only the basic device and your own ingenuity.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Continue with the basic device", next: 'basic_path' },
+                    { text: "Reconsider and reattach the upgrade", next: 'second_thoughts' }
+                ]
+            },
+            document_everything: {
+                text: "You keep meticulous written records of each timeline. A journal of realities. It helps you maintain coherence even as your memories fragment.\n\nOver time, you master timeline navigation. But you notice something disturbing: the more you use the device, the more you cease to exist in any one timeline. You're becoming unstuck from reality itself.",
+                location: "🏠 Your Apartment - Weeks Later",
+                divergence: 1.098337,
+                choices: [
+                    { text: "Accept becoming unstuck as necessary", next: 'embrace_instability' },
+                    { text: "Anchor yourself to one timeline", next: 'choose_timeline' }
+                ]
+            },
+            early_retirement: {
+                text: "You stop before you lose yourself. Dismantle the device. Return to normal life. But the experience changed you—you can still feel the other timelines, like phantom limbs.\n\nSometimes you wonder about the roads not taken. But you're still you, still human. That's worth something.",
+                location: "🏠 Your Apartment",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "PRESERVED SELF",
+                endingText: "⚡ GOOD ENDING: You stopped before time travel consumed you. You retain your humanity, your identity, your sanity. The power to change history isn't worth losing yourself. You live a normal life, carrying extraordinary memories. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            rebuild_safer: {
+                text: "You rebuild the device with safety protocols. Multiple failsafes. Your friend helps design stability monitors. Together, you create something that won't kill you.\n\nWith the safer device, you can experiment responsibly. You're learning to be careful masters of time rather than reckless amateurs.",
+                location: "🔬 The Lab - Rebuilt",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Use it for good carefully", next: 'responsible_use' },
+                    { text: "Study the Organization's methods", next: 'learn_from_org' }
+                ]
+            },
+            heed_warning: {
+                text: "You take your friend's warning seriously. No more time travel. You destroy the device, publish no papers, tell no one.\n\nYour friend recovers from their temporal trauma. Life returns to normal. But you both carry the knowledge of what you almost unleashed. It changes you, makes you more cautious, more thoughtful.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "WISDOM EARNED",
+                endingText: "⚡ GOOD ENDING: You learned from near-disaster and chose safety over discovery. Your friend survives. Your timeline remains stable. You live normal lives, bound by a shared secret. Sometimes the bravest choice is walking away. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            share_experience: {
+                text: "You tell your friend everything—the loop, the multiple timelines, the memories you have that they don't. They believe you.\n\n'So we almost destroyed reality?' they ask. You nod. Together, you decide: some experiments are too dangerous. You dismantle the device as partners.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "FRIENDSHIP OVER POWER",
+                endingText: "⚡ GOOD ENDING: You shared the truth and made a joint decision to stop. Your friendship, strengthened by shared near-disaster, matters more than any scientific discovery. You both move forward, wiser and closer. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            burden_alone: {
+                text: "You keep the memory to yourself. Your friend doesn't need to know how close they came to disaster. You dismantle the device quietly.\n\nBut the secret weighs on you. You saved them, yes, but you also carry a truth you can never share. The loneliness of that knowledge grows over time.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "SILENT GUARDIAN",
+                endingText: "💔 ENDING: You protected your friend from the trauma of knowing. They live happily, ignorant of the danger. You carry the burden alone. It's a sacrifice of a different kind—bearing knowledge that isolates you forever. Divergence: 1.048596 (Stable but Lonely)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            memory_wipe_ending: {
+                text: "You choose the wipe. They use advanced technology—or maybe time travel, you're not sure. There's a flash of light.\n\nYou wake up in your apartment. It's a normal day. You have a vague sense you were working on something important, but can't remember what. Life continues. Peacefully. Ignorantly.",
+                location: "🏠 Your Apartment",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "IGNORANCE PRESERVED",
+                endingText: "⚡ ENDING: Your memories were wiped clean. You live a normal, happy life without the burden of temporal knowledge. Somewhere, in another timeline, a version of you is still fighting. But here, you're at peace. Divergence: 1.048596 (Stable - Aware branch terminated)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            demonstrate_responsibility: {
+                text: "You show them your meticulous documentation. Your safety protocols. Your conservative approach. The lead agent reviews everything.\n\n'Impressive. You're self-taught, yet you understand temporal mechanics better than some of our trained agents.' She makes a decision. 'Join us. Officially. We need people who understand both the power and the responsibility.'",
+                location: "🔬 The Lab",
+                divergence: 1.186772,
+                choices: [
+                    { text: "Accept their offer", next: 'join_organization' },
+                    { text: "Politely decline", next: 'decline_offer' }
+                ]
+            },
+            time_escape: {
+                text: "You activate the device and leap to a different timeline—one where the Organization doesn't exist. You arrive successfully. Free!\n\nBut this timeline is different in other ways. Your friend doesn't exist here. Your family doesn't know you. You escaped your pursuers but lost everything that mattered.",
+                location: "🌆 Alternative Timeline",
+                divergence: 2.310554,
+                ending: true,
+                achievement: "COWARD'S PARADISE",
+                endingText: "💔 ENDING: You escaped to a timeline where you're free but alone. No Organization, but no loved ones either. You traded persecution for isolation. Free but hollow. You exist but don't truly live. Divergence: 2.310554 (Isolated)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            beta_timeline_path: {
+                text: "You work on the equations for months. Your friend helps. Together, you solve it—a way to shift humanity to the beta timeline, a world without time travel, paradoxes, or temporal threats.\n\nBut the cost is clear: you, your friend, and everyone who knows about time travel must cease to exist. The beta timeline has no place for you.",
+                location: "🔬 The Lab - Final Calculations",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Execute the beta timeline shift", next: 'beta_ending' },
+                    { text: "Can't do it, stay in alpha", next: 'alpha_timeline_path' }
+                ]
+            },
+            alpha_timeline_path: {
+                text: "You choose to remain in the alpha timeline, accepting the risks. You and your friend work to minimize temporal paradoxes while keeping time travel knowledge contained.\n\nYears pass. You become experts, guardians of a dangerous secret. It's not a perfect solution, but it's one you can live with—literally.",
+                location: "🔬 The Lab - Years Later",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "ETERNAL VIGIL",
+                endingText: "⚡ GOOD ENDING: You chose to stay and manage the danger rather than erase yourselves. You and your friend spend your lives as secret guardians of temporal stability. It's a burden, but you carry it together. The world remains safe because you're watching. Divergence: 1.048596 (Guarded)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            undo_big_change: {
+                text: "You grab the device and frantically try to reverse the Bitcoin change. But it's too late—the Timeline Enforcers are already here. They exist outside causality. Your reversal won't help.\n\n'Timeline corruption exceeds acceptable parameters,' they announce. 'Termination authorized.'",
+                location: "🏃 City Streets",
+                divergence: 1.329847,
+                ending: true,
+                achievement: "TIMELINE TERMINATION",
+                endingText: "💀 ENDING: The Enforcers terminate your entire timeline for instability. In your final moment, you understand: there are forces beyond the Organization, beyond human control, that maintain cosmic order. You violated their rules. Divergence: TERMINATED",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            escape_doomed_timeline: {
+                text: "You grab your friend and activate emergency temporal displacement. You jump blind, hoping for any stable timeline.\n\nYou land somewhere new. This timeline is stable, but foreign. Your friend made the Bitcoin change here too, but earlier, and used the wealth to fund research. They're a billionaire here. You're nobody. The dissonance is dizzying.",
+                location: "🌆 Alternate Timeline - Rich Version",
+                divergence: 0.847332,
+                choices: [
+                    { text: "Try to fit in this timeline", next: 'adapt_new_timeline' },
+                    { text: "Keep jumping, find home", next: 'timeline_nomad' }
+                ]
+            },
+            guardian_mission: {
+                text: "The Guardians send you to a collapsing timeline. A rogue time traveler created too many paradoxes. You arrive to find reality fragmenting—people existing in multiple states, buildings phasing between demolished and whole.\n\nYou have to find the source paradox and resolve it. Fast.",
+                location: "🌆 Collapsing Timeline",
+                divergence: "CRITICAL",
+                choices: [
+                    { text: "Track the source paradox", next: 'solve_paradox' },
+                    { text: "Evacuate who you can", next: 'evacuation_mission' }
+                ]
+            },
+            evasion_focus: {
+                text: "You become an expert at staying hidden. Moving between timelines, using false identities, always one step ahead of the Organization.\n\nYou're free but isolated. Years pass in this nomadic existence. You're good at surviving but not at living.",
+                location: "📍 Unknown - Constantly Moving",
+                divergence: "VARIABLE",
+                ending: true,
+                achievement: "ETERNAL FUGITIVE",
+                endingText: "💔 ENDING: You spend your life running, never settling, never connecting. You're alive and free but profoundly alone. The Organization never catches you, but they don't have to—your life of perpetual flight is its own prison. Divergence: VARIABLE (Unstable existence)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            reconcile_guardians: {
+                text: "You reach out to reconcile. They're skeptical but willing to listen. 'Why should we trust you now?' the leader asks.\n\nYou show them your complete research—everything you've learned. You hold nothing back. 'I was wrong to use you. I want to actually help now.'",
+                location: "💻 Guardian Network",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Prove yourself with actions", next: 'prove_worth' },
+                    { text: "Share information and leave", next: 'information_exchange' }
+                ]
+            },
+            hardened_agent: {
+                text: "You accept the moral cost. You become efficient, clinical. You terminate timelines, erase people, maintain stability through ruthless action.\n\nYears pass. You're one of the Organization's top agents. But your humanity erodes. You barely recognize yourself anymore.",
+                location: "⏰ Organization HQ",
+                divergence: "CONTROLLED",
+                ending: true,
+                achievement: "NECESSARY EVIL",
+                endingText: "💔 ENDING: You became the monster you once feared, telling yourself it's necessary. You maintain temporal stability through countless dark acts. Efficient. Effective. Empty. You save countless lives but lose your soul. Divergence: CONTROLLED (At terrible cost)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            reformer_path: {
+                text: "You work within the system to change it. Propose ethical guidelines. Argue for transparency. Advocate for rehabilitation over termination.\n\nSome agents support you. Others resist. Change is slow. But you're making progress. The Organization, slowly, becomes slightly less monstrous because you're pushing from within.",
+                location: "⏰ Organization HQ - Reform Movement",
+                divergence: "CONTROLLED",
+                choices: [
+                    { text: "Continue the long fight for reform", next: 'long_reform' },
+                    { text: "Push for radical change now", next: 'radical_reform' }
+                ]
+            },
+            sabotage_organization: {
+                text: "You plant a virus in their temporal systems. When it activates, it will free all controlled timelines simultaneously, returning agency to their inhabitants.\n\nBut you're caught mid-upload. The Director appears. 'We let you roam to see if you'd do something like this. Guards, secure them.'",
+                location: "⏰ Organization HQ - Restricted Area",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Activate the virus immediately", next: 'emergency_activation' },
+                    { text: "Try to talk your way out", next: 'talk_escape' }
+                ]
+            },
+            warn_others: {
+                text: "You escape and warn the Guardians. They believe you. Together, you form a resistance against the Organization's plan.\n\nBut the Organization has vast resources and temporal technology. This will be a long fight. You've chosen sides. There's no going back.",
+                location: "💻 Guardian Network - War Room",
+                divergence: 1.062057,
+                choices: [
+                    { text: "Lead the resistance", next: 'resistance_leader' },
+                    { text: "Support role, stay safe", next: 'support_role' }
+                ]
+            },
+            solo_better_path: {
+                text: "You search alone for years. Testing theories. Trying approaches your future self never mentioned. You're determined to prove there's a better way.\n\nFinally, exhausted, you realize: maybe your future self was right. Maybe some struggles don't have perfect solutions. Maybe 'better' is the enemy of 'good enough.'",
+                location: "🔬 The Lab - Years Later",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Accept the lesson", next: 'accept_imperfection' },
+                    { text: "One more attempt", next: 'final_attempt' }
+                ]
+            },
+            friend_help_path: {
+                text: "You bring your friend into the full picture. They help you search for alternatives. Together, you're smarter, more creative, more resilient.\n\nAfter months of work, you find something your future self might have missed—a narrow path that requires perfect timing but could work.",
+                location: "🔬 The Lab - Discovery",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Attempt the narrow path", next: 'narrow_path_attempt' },
+                    { text: "Too risky, find something safer", next: 'safer_alternative' }
+                ]
+            },
+            close_loop: {
+                text: "You send the messages back to your past self. Provide the upgrades. Offer the warnings. The loop closes perfectly. Time is a circle, and you're part of it.\n\nYou've become the mysterious mentor figure from your own past. The paradox is stable. The timeline is secure. But you wonder: who started this loop? Who was the first version of you?",
+                location: "⏰ The Loop - Complete",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "CLOSED LOOP",
+                endingText: "⚡ ENDING: You completed the stable time loop, becoming your own mentor. The timeline is secure, but the philosophical questions remain. Did you have free will, or were you always going to make these choices? Divergence: 1.048596 (Perfect Loop)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            break_loop: {
+                text: "You refuse to close the loop. You send different messages to your past self. New information. New choices. You're trying to break free from predetermined fate.\n\nThe loop destabilizes. Timeline integrity wavers. You might have just freed yourself from destiny—or doomed your entire timeline. Only time will tell.",
+                location: "⏰ The Loop - Breaking",
+                divergence: "UNSTABLE",
+                choices: [
+                    { text: "See where this new path leads", next: 'broken_loop_path' },
+                    { text: "Emergency stabilization", next: 'stabilize_break' }
+                ]
+            },
+            accept_convergence_mission: {
+                text: "You accept. Your future self teaches you advanced temporal mechanics. You learn to perceive the convergence point—a moment when multiple timeline branches must collapse into one.\n\n'You'll have to make impossible choices,' they warn. 'Save timelines or save individuals. The needs of the many versus the needs of the few. It will break your heart.'",
+                location: "🔬 The Lab - Advanced Training",
+                divergence: 1.123698,
+                choices: [
+                    { text: "I'm ready for the mission", next: 'convergence_mission' },
+                    { text: "Teach me everything first", next: 'thorough_preparation' }
+                ]
+            },
+            demand_info: {
+                text: "Your future self sighs. 'Fine. The convergence is caused by the Organization's master plan. They're trying to collapse all timelines into one they control. If we do nothing, they succeed. If we intervene wrong, all timelines destabilize. There's one narrow path to victory.'\n\n'And that path requires?'\n\n'You have to become something more than human. A being that exists across all timelines simultaneously. It's the only way to counter them.'",
+                location: "🔬 The Lab",
+                divergence: 1.123698,
+                choices: [
+                    { text: "Accept the transformation", next: 'transcendence_path' },
+                    { text: "There must be another way", next: 'alternative_search' }
+                ]
+            },
+            friend_sacrifice: {
+                text: "Your friend smiles sadly. 'I knew you'd try to stop me, but I'm doing it anyway.' They activate the device before you can intervene.\n\nThey begin to phase out of normal time. 'Remember me,' they say as they fade. 'And make it count.'\n\nThey're gone. The timeline stabilizes. Your friend exists outside time now, holding reality together. Alone. Forever.",
+                location: "🏚️ Abandoned Building - After",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "SACRIFICE ACCEPTED",
+                endingText: "💔 ENDING: Your friend sacrificed themselves to stabilize the timeline. They exist outside normal time now, a guardian watching over reality eternally. You live in the stable world they created, carrying the weight of their sacrifice forever. Divergence: 1.048596 (Anchored)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            self_sacrifice: {
+                text: "'No,' you say firmly. 'I'll do it. You've suffered enough in your loops. Let me be the anchor.'\n\nYour friend protests, but you activate the device first. You feel yourself phasing out of normal time. You're becoming the anchor, existing in all moments simultaneously.\n\nYou watch your friend live their life, have a family, grow old. You're there for all of it, unseen. A ghost holding reality together. It's lonely, but you chose this. They deserve happiness.",
+                location: "⏰ Outside Time - Eternal",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "ULTIMATE SACRIFICE",
+                endingText: "🌟 ENDING: You became the temporal anchor, sacrificing your existence in linear time to hold reality stable. You experience all moments simultaneously—your friend's happiness, humanity's future, the stability you enabled. Lonely but meaningful. Divergence: 1.048596 (Eternally Anchored)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            reject_binary_choice: {
+                text: "'There's always another way,' you insist. 'We just haven't found it yet.'\n\nYour friend shows you their timeline calculations. 'I've checked thousands of paths. This is the only stable configuration.'\n\nBut you refuse to accept it. You take their data and start recalculating, looking for the variable they missed, the path they didn't consider.",
+                location: "🏚️ Abandoned Building",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Find the hidden third path", next: 'discover_third_path' },
+                    { text: "Accept you were wrong", next: 'accept_binary' }
+                ]
+            },
+            verify_timelines: {
+                text: "You use the device to verify their timeline readings. They're correct. In every timeline where both of you survive, something catastrophic happens. War. Plague. Reality collapse.\n\nThe data is undeniable. One of you must sacrifice. But which one?",
+                location: "🏚️ Abandoned Building",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Volunteer yourself", next: 'self_sacrifice' },
+                    { text: "Let your friend do it", next: 'friend_sacrifice' },
+                    { text: "Still search for another way", next: 'stubborn_hope' }
+                ]
+            },
+            stubborn_hope: {
+                text: "You refuse to accept the binary choice. For months, you search desperately for an alternative. Your friend watches with sad eyes, knowing what you'll eventually realize.\n\nFinally, exhausted, you understand: sometimes there is no third option. Sometimes the best we can do is choose which tragedy we can live with.",
+                location: "🔬 The Lab - Months Later",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Make the sacrifice yourself", next: 'self_sacrifice' },
+                    { text: "Let your friend sacrifice", next: 'friend_sacrifice' }
+                ]
+            },
+            leap_hero: {
+                text: "You use consciousness leaping to prevent disasters. You save lives, stop accidents, prevent tragedies. You become a temporal guardian angel.\n\nBut each leap damages reality more. Divergence numbers spike. The timeline is becoming unstable. The Organization detects your activity.\n\n'You're tearing apart reality to play hero,' they tell you when they arrive. 'Noble intentions. Catastrophic results.'",
+                location: "🔬 The Lab",
+                divergence: 2.456789,
+                ending: true,
+                achievement: "DESTRUCTIVE HEROISM",
+                endingText: "💀 ENDING: Your heroic interventions destabilized the timeline beyond repair. The lives you saved exist in a reality that's fragmenting. The Organization quarantines the entire area. You saved individuals but doomed everyone. Intentions aren't enough. Divergence: CRITICAL FAILURE",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            leap_scientist: {
+                text: "You test consciousness leaping methodically. Small leaps. Careful observations. You document the effect on timeline stability with each use.\n\nYou discover crucial limits: leaps longer than 48 hours cause irreparable damage. More than 3 leaps per week destabilize reality. You're learning to use the power responsibly.\n\nThis knowledge makes you valuable to many factions.",
+                location: "🔬 The Lab - Research Complete",
+                divergence: 1.130426,
+                choices: [
+                    { text: "Share findings with responsible parties", next: 'share_leap_research' },
+                    { text: "Keep this power secret", next: 'secret_leaper' }
+                ]
+            },
+            reject_leap: {
+                text: "You destroy the consciousness transfer upgrade. Too dangerous. Too tempting. Too much power for any one person.\n\nYour future self would understand—or maybe they sent it knowing you'd reject it. Maybe that was the test. Did you pass or fail? You'll never know.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "TEMPTATION REFUSED",
+                endingText: "⚡ GOOD ENDING: You rejected ultimate power, choosing safety and sanity over godlike ability. Your timeline remains stable. You remain human. Sometimes the strongest choice is saying no. Your future self would be proud—or perhaps they already knew. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            basic_path: {
+                text: "You continue with just the basic device. Progress is slower, safer. You make small, careful changes. Monitor stability constantly.\n\nYears pass. You never achieve the dramatic results you might have with the upgrade, but you also never destabilize reality. It's unglamorous work, but it's honest work.",
+                location: "🔬 The Lab - Years Later",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "STEADY HAND",
+                endingText: "⚡ GOOD ENDING: You chose the cautious path and stuck with it. No dramatic victories, but no catastrophic failures either. You help people in small ways, maintain stability, and live a meaningful life. Sometimes boring is beautiful. Divergence: 1.048596 (Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            second_thoughts: {
+                text: "You reconsider and reattach the upgrade. As it connects, you receive another message from your future self: 'Good. You'll need this for what's coming. Trust yourself.'\n\nThe device hums with new power. You're ready for whatever comes next.",
+                location: "🔬 The Lab",
+                divergence: 1.130426,
+                choices: [
+                    { text: "Test consciousness leaping", next: 'test_leap' }
+                ]
+            },
+            embrace_instability: {
+                text: "You accept becoming unstuck from time. You exist in superposition—present in multiple timelines simultaneously. It's disorienting at first, then liberating.\n\nYou become something new. Not quite human anymore, but not inhuman either. A temporal being with unprecedented perception and ability. The Organization can't track you. You operate outside their jurisdiction now.",
+                location: "⏰ Multiple States",
+                divergence: "TRANSCENDENT",
+                choices: [
+                    { text: "Use this power to help others", next: 'transcendent_helper' },
+                    { text: "Explore the boundaries of existence", next: 'explore_transcendence' }
+                ]
+            },
+            choose_timeline: {
+                text: "You choose to anchor yourself to one timeline—this one. The one with your friends, your life, your identity. You give up the power to traverse timelines freely.\n\nYou're human again. Limited again. But whole again. Your friend welcomes you back. 'Good to have you fully here,' they say.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "CHOSEN HOME",
+                endingText: "⚡ GOOD ENDING: You chose to remain human and anchored to one timeline. You gave up cosmic power for human connection. Your friend is real, your life is real, you are real. Power is nothing compared to belonging. Divergence: 1.048596 (Anchored by Choice)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            responsible_use: {
+                text: "With your safer device, you use time travel responsibly. Small interventions. Preventing accidents. Helping people in need. Never anything that would destabilize the timeline.\n\nThe Organization notices but doesn't intervene. You're doing their job for them, essentially. An uneasy détente forms. You operate with their tacit approval as long as you stay responsible.",
+                location: "🔬 The Lab - Years of Service",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "RESPONSIBLE POWER",
+                endingText: "⚡ GOOD ENDING: You wielded immense power responsibly for years. The Organization tolerates your existence because you prove that ethical time travel is possible. You make the world subtly better, one small change at a time. Divergence: 1.048596 (Monitored but Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            learn_from_org: {
+                text: "You study the Organization's methods from a distance. Learn their protocols without joining them. Apply their stability measures to your own work.\n\nOver time, you become an independent operator with Organization-level expertise. They notice. 'Join us officially,' they offer. 'You've essentially been doing our work anyway.'",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Finally join them", next: 'join_organization' },
+                    { text: "Remain independent", next: 'independent_expert' }
+                ]
+            },
+            decline_offer: {
+                text: "'Thank you, but no,' you tell them. 'I need to work independently. Your methods... they're effective but too harsh for my conscience.'\n\nThe agent nods. 'We understand. But know this: we'll be watching. Stay responsible, and we'll leave you alone. Abuse this power, and we'll intervene decisively.'\n\nYou've earned conditional freedom.",
+                location: "🔬 The Lab",
+                divergence: 1.186772,
+                choices: [
+                    { text: "Continue your independent research", next: 'independent_researcher' }
+                ]
+            },
+            beta_ending: {
+                text: "You and your friend activate the beta timeline shift together. Reality reshapes itself. Humanity shifts to a world without time travel, paradoxes, or temporal threats.\n\nAs you fade from existence, you see the new world taking shape. People live normal lives, free from temporal instability. Your sacrifice made it possible.\n\nYou and your friend smile at each other as you fade. Worth it.",
+                location: "⏰ Transition - Beta Timeline",
+                divergence: 1.000000,
+                ending: true,
+                achievement: "STEINS GATE REACHED",
+                endingText: "🌟 TRUE ENDING: You sacrificed your existence to shift humanity to the Steins Gate—the beta timeline where time travel was never invented. Everyone you love lives in peace, never knowing the danger they were in or the heroes who saved them. The perfect sacrifice. Divergence: 1.000000 (STEINS GATE)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            adapt_new_timeline: {
+                text: "You try to adapt. Your friend—or this timeline's version of them—is kind but distant. They don't remember the bond you shared because it never existed here.\n\nYou get a job. Make new friends. Try to build a life. But you're always haunted by memories of another world. You're a ghost living in someone else's life.",
+                location: "🌆 Alternate Timeline",
+                divergence: 0.847332,
+                ending: true,
+                achievement: "DISPLACED SOUL",
+                endingText: "💔 ENDING: You adapted to a new timeline but never truly belonged. You live with memories of a life that never happened here, relationships that never formed. You survived but lost everything that made you you. Divergence: 0.847332 (Stable but Wrong)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            timeline_nomad: {
+                text: "You keep jumping, searching for a timeline that feels like home. But each jump costs you. Your memories blur. Your identity fragments. You're losing yourself in the search.\n\nFinally, you realize: home isn't a place or a timeline. Home was the people, and you left them behind when you first jumped. You can never find what you're looking for because it's not where you're going—it's what you left.",
+                location: "⏰ Between Timelines",
+                divergence: "LOST",
+                ending: true,
+                achievement: "ETERNAL WANDERER",
+                endingText: "💔 ENDING: You became a nomad between timelines, forever searching for a home you can never find. Your identity dissolved across infinite realities. You exist everywhere and nowhere, everyone and no one. Lost in the infinite. Divergence: UNDEFINED (Nomadic)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            solve_paradox: {
+                text: "You track the source—a man who's been sending messages back for years, trying to save his daughter from a car accident. Each change creates new problems, forcing more changes. The paradoxes compound exponentially.\n\nYou find him, exhausted and desperate. 'I can save her,' he insists. 'Just one more change.'\n\nBut you see the truth: his daughter dies in every stable timeline. The universe itself requires it. Some fates can't be changed without destroying everything.",
+                location: "🌆 Collapsing Timeline - Source Found",
+                divergence: "CRITICAL",
+                choices: [
+                    { text: "Help him accept her death", next: 'accept_fate_paradox' },
+                    { text: "Help him try one final time", next: 'final_save_attempt' }
+                ]
+            },
+            evacuation_mission: {
+                text: "You can't fix this. Too far gone. But you can evacuate. You start pulling people out, shifting them to stable timelines where their counterparts died, allowing them to take those places.\n\nIt's exhausting. Desperate. You save hundreds before the timeline collapses completely. But thousands more are lost. You did what you could. It's not enough, but it's something.",
+                location: "⏰ Evacuation Point",
+                divergence: "COLLAPSED",
+                ending: true,
+                achievement: "PARTIAL SALVATION",
+                endingText: "⚡ ENDING: You saved who you could from a dying timeline. Hundreds live because of you. Thousands died despite you. You carry both the pride and the guilt. Sometimes there are no good options, only less terrible ones. Divergence: SOURCE COLLAPSED",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            prove_worth: {
+                text: "You take on dangerous missions for the Guardians. Risky timeline stabilizations. Paradox resolutions. You prove through action that you've changed.\n\nOver time, you become a trusted member. They share their full knowledge with you. Together, you work to protect timelines from both rogue travelers and the Organization's authoritarian control.",
+                location: "💻 Guardian Network - Trusted Member",
+                divergence: 1.062057,
+                ending: true,
+                achievement: "GUARDIAN PROVED",
+                endingText: "⚡ GOOD ENDING: You earned the Guardians' trust through action and sacrifice. You work with them to protect timeline stability while preserving freedom. It's dangerous work, but meaningful. You've found your place. Divergence: 1.062057 (Protected)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            information_exchange: {
+                text: "You share your research and leave. It's a fair exchange—information for information. No further obligations.\n\nYou continue as a solo operator, but now with connections if you need them. It's a middle path between complete isolation and full commitment.",
+                location: "🏠 Safe House",
+                divergence: 1.062057,
+                ending: true,
+                achievement: "PRAGMATIC INDEPENDENCE",
+                endingText: "⚡ ENDING: You maintained independence while building useful connections. Not quite alone, not quite part of a team. You operate in the gray areas, helping when you can, surviving when you must. Divergence: 1.062057 (Independent)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            long_reform: {
+                text: "You spend decades working within the Organization, slowly pushing for reform. Policy changes. Ethical guidelines. Accountability measures.\n\nIt's slow. Frustrating. But when you retire, the Organization is measurably better than when you joined. Not perfect, but better. Sometimes change takes a lifetime.",
+                location: "⏰ Organization HQ - Years Later",
+                divergence: "CONTROLLED",
+                ending: true,
+                achievement: "SLOW REVOLUTION",
+                endingText: "⚡ GOOD ENDING: You changed the Organization from within through patient, persistent reform. The next generation of agents operates under better rules because of your lifetime of work. Change isn't always dramatic—sometimes it's gradual and no less important. Divergence: CONTROLLED (Improved)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            radical_reform: {
+                text: "You push for immediate, radical change. Transparency. Democratic oversight. Limits on power.\n\nThe old guard resists violently. It becomes an internal war. The Organization fractures. In the chaos, multiple timelines destabilize. Your radical reforms might have been right, but the timing was catastrophic.",
+                location: "⏰ Organization HQ - Civil War",
+                divergence: "DESTABILIZING",
+                ending: true,
+                achievement: "REVOLUTIONARY CHAOS",
+                endingText: "💀 ENDING: Your well-intentioned radical reforms tore apart the Organization at the worst possible time. Timeline stability collapsed globally. You were right about the problems but wrong about the solution. Good intentions, catastrophic execution. Divergence: CRITICAL INSTABILITY",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            emergency_activation: {
+                text: "You activate the virus immediately. It spreads through their temporal systems, freeing all controlled timelines simultaneously.\n\nChaos erupts. Billions suddenly aware they're in controlled realities. The Organization scrambles. You're arrested, but the damage is done. You've liberated countless timelines—and possibly destabilized all of reality in the process.",
+                location: "⏰ Organization HQ - System Crash",
+                divergence: "CASCADING",
+                choices: [
+                    { text: "Accept the consequences", next: 'accept_chaos_consequences' }
+                ]
+            },
+            talk_escape: {
+                text: "'You don't understand what they're planning,' you plead. The Director studies you coldly.\n\n'We understand perfectly. We're creating order from chaos. One perfect timeline instead of infinite unstable ones. You'd doom everyone to preserve your precious freedom.'\n\nThere's no reasoning with them. You're taken into custody.",
+                location: "⏰ Organization HQ - Detained",
+                divergence: 1.062057,
+                ending: true,
+                achievement: "FAILED REVOLUTIONARY",
+                endingText: "💀 ENDING: You tried to stop them but failed. You're held in temporal stasis while the Organization executes their plan. You remain conscious, watching as they collapse all timelines into their 'perfect' controlled reality. Aware but powerless. Divergence: 1.000000 (CONTROLLED)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            resistance_leader: {
+                text: "You lead the resistance against the Organization. It's a temporal cold war—fights across multiple timelines, paradox weapons, timeline sabotage.\n\nYears of conflict. Many casualties. But you're holding them back, preventing their master plan. The war continues, but freedom survives because you're fighting for it.",
+                location: "💻 Resistance HQ",
+                divergence: "WAR STATE",
+                ending: true,
+                achievement: "ETERNAL RESISTANCE",
+                endingText: "⚡ ENDING: You lead the eternal resistance against temporal tyranny. The war never ends, but neither does freedom die. You sacrifice peace for liberty. Whether that's noble or tragic, history will decide—if history survives. Divergence: COMBAT STATUS (Multiple)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            support_role: {
+                text: "You support the resistance without being on the front lines. Intelligence. Planning. Supply chains. The unglamorous work that makes victories possible.\n\nYou survive the war. The resistance survives. It's not glorious, but you contributed meaningfully without becoming a martyr. Sometimes wisdom is knowing your limits.",
+                location: "💻 Resistance HQ - Support Division",
+                divergence: 1.062057,
+                ending: true,
+                achievement: "UNSUNG HERO",
+                endingText: "⚡ GOOD ENDING: You served the resistance in a support role, enabling victories without seeking glory. You survive to see freedom preserved. Heroes don't always fight on the front lines. Your contribution mattered. Divergence: 1.062057 (Preserved)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            accept_imperfection: {
+                text: "You accept that some problems don't have perfect solutions. You work with what's possible rather than holding out for the impossible.\n\nYou implement the best available option. It's not perfect, but it's stable. People live. The timeline survives. That's enough.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "WISDOM EARNED",
+                endingText: "⚡ GOOD ENDING: You learned to accept imperfect solutions. Perfection is the enemy of good. You chose pragmatism over idealism and created a stable, livable future. Sometimes maturity is accepting 'good enough.' Divergence: 1.048596 (Acceptably Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            final_attempt: {
+                text: "One more attempt. One final try to find the perfect solution. You push your device to its limits. Calculations stream. Timelines flicker. You're so close...\n\nAnd then you see it. Hidden in the calculations. A path so narrow, so precise, that it's almost impossible. But it exists. A way to have everything—no sacrifice, total stability, perfect outcome.\n\nBut can you execute it?",
+                location: "🔬 The Lab - Discovery",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Attempt the perfect solution", next: 'perfect_solution_attempt' }
+                ]
+            },
+            narrow_path_attempt: {
+                text: "You and your friend attempt the narrow path. It requires perfect timing across multiple timeline branches, precise to the microsecond.\n\nYou work in perfect synchronization. Years of friendship translate to flawless cooperation. You execute each step perfectly.\n\nIt's working. Against all odds, you're succeeding. Neither of you has to sacrifice. The timeline stabilizes. You're doing it!",
+                location: "🔬 The Lab - Perfect Execution",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Complete the perfect path", next: 'perfect_victory' }
+                ]
+            },
+            safer_alternative: {
+                text: "The narrow path is too risky. You find a safer alternative—not perfect, but acceptable. A compromise where minor sacrifices preserve major goods.\n\nYou both give up your time travel abilities permanently. The devices are destroyed. But you both survive, the timeline is stable, and your friendship endures. A good trade.",
+                location: "🔬 The Lab",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "ACCEPTABLE COMPROMISE",
+                endingText: "⚡ GOOD ENDING: You chose safety over perfection. You both gave up time travel but kept everything else that matters. The world is stable, your friendship intact, your lives meaningful. Not every story needs a perfect ending. Divergence: 1.048596 (Stable Compromise)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            broken_loop_path: {
+                text: "You follow the new path you created by breaking the loop. It's uncharted territory. No future self to guide you. True free will, for better or worse.\n\nThe timeline stabilizes in a new configuration. You've escaped predestination. What you do next is truly your choice, not fate's script. Terrifying. Liberating.",
+                location: "🔬 The Lab - New Path",
+                divergence: 1.287443,
+                ending: true,
+                achievement: "FREE WILL ACHIEVED",
+                endingText: "⚡ GOOD ENDING: You broke free from the predestined loop. Your future is unwritten, your choices truly your own. It's scary without a script, but it's genuine. You've achieved something rare—actual free will in a deterministic universe. Divergence: 1.287443 (Newly Stable)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            stabilize_break: {
+                text: "You perform emergency stabilization. The loop reforms, but differently. Not identical to before—altered by your attempt to break it.\n\nYou're still in a loop, but a new one. Better? Worse? Different. You'll never know what the old loop would have been. This uncertainty is its own kind of freedom.",
+                location: "⏰ The Loop - Reformed",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "NEW LOOP",
+                endingText: "⚡ ENDING: You reformed the time loop into a new configuration. Still cyclical, but different from what fate originally planned. It's not freedom from the loop, but it's agency within it. You shaped your own cage. Divergence: 1.048596 (Modified Loop)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            convergence_mission: {
+                text: "You arrive at the convergence point. Multiple timelines collapsing into one. The Organization is here too, trying to control which timeline survives.\n\nYou can see all possibilities. In one timeline, humanity is free but vulnerable. In another, safe but controlled. You must choose which timeline becomes reality.",
+                location: "⏰ Convergence Point",
+                divergence: "CRITICAL",
+                choices: [
+                    { text: "Choose freedom", next: 'choose_freedom_timeline' },
+                    { text: "Choose safety", next: 'choose_safety_timeline' },
+                    { text: "Try to merge the best of both", next: 'merge_attempt' }
+                ]
+            },
+            thorough_preparation: {
+                text: "Your future self trains you extensively. Combat. Temporal mechanics. Paradox resolution. Timeline navigation. You become an expert.\n\n'You're ready,' they finally say. 'More ready than I was. Maybe you'll do better than I did.'\n\nYou face the convergence point fully prepared.",
+                location: "🔬 The Lab - Fully Trained",
+                divergence: 1.123698,
+                choices: [
+                    { text: "Face the convergence", next: 'convergence_prepared' }
+                ]
+            },
+            transcendence_path: {
+                text: "You accept the transformation. Your consciousness expands across all timelines simultaneously. You become a being of pure temporal awareness.\n\nYou can see everything. Past, present, future, all possibilities. You exist beyond human limitation. But you also cease to be human. Your friends, your life, your identity—all left behind.",
+                location: "⏰ Transcendent State",
+                divergence: "BEYOND",
+                choices: [
+                    { text: "Use this power to save everyone", next: 'transcendent_salvation' }
+                ]
+            },
+            alternative_search: {
+                text: "You refuse the transformation. There must be another way. You search desperately for months, years. Your future self watches patiently.\n\nFinally, exhausted, you find it—a technical solution using quantum temporal mechanics. No transformation needed. Just brilliant engineering and perfect timing.",
+                location: "🔬 The Lab - Breakthrough",
+                divergence: 1.123698,
+                choices: [
+                    { text: "Implement the technical solution", next: 'technical_victory' }
+                ]
+            },
+            discover_third_path: {
+                text: "After weeks of calculation, you find it. Hidden in the data. A third path where neither of you sacrifices, but both of you change.\n\nYou'll both become temporal consultants—existing partially outside time, able to perceive and guide but not control. Different from normal humans, but not gone. Together in this strange new existence.",
+                location: "🔬 The Lab - Discovery",
+                divergence: 1.186534,
+                choices: [
+                    { text: "Take the third path together", next: 'third_path_victory' }
+                ]
+            },
+            accept_binary: {
+                text: "You check the calculations one final time. Your friend was right. There are only two stable paths, and both require sacrifice.\n\n'I'm sorry I doubted you,' you say. Together, you make the hard choice.",
+                location: "🏚️ Abandoned Building",
+                divergence: 1.186534,
+                choices: [
+                    { text: "You sacrifice yourself", next: 'self_sacrifice' },
+                    { text: "Your friend sacrifices", next: 'friend_sacrifice' }
+                ]
+            },
+            share_leap_research: {
+                text: "You share your consciousness leaping research with responsible parties—the Guardians, ethical scientists, carefully selected individuals.\n\nWith proper guidelines, consciousness leaping becomes a tool for good. Controlled. Regulated. Safe. You've given humanity a gift without destroying it.",
+                location: "💻 Research Publication",
+                divergence: 1.130426,
+                ending: true,
+                achievement: "RESPONSIBLE INNOVATION",
+                endingText: "⚡ GOOD ENDING: You shared powerful technology responsibly. With proper safeguards, consciousness leaping helps humanity without destroying it. Innovation and ethics combined. You've advanced civilization safely. Divergence: 1.130426 (Monitored Innovation)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            secret_leaper: {
+                text: "You keep consciousness leaping secret. Only you know its full potential. You use it sparingly, carefully, to help people without anyone knowing.\n\nYou're a ghost in time. An unseen guardian. No one knows what you do, but the world is subtly better because of you. Lonely but meaningful.",
+                location: "⏰ Operating Covertly",
+                divergence: 1.130426,
+                ending: true,
+                achievement: "SILENT GUARDIAN",
+                endingText: "⚡ GOOD ENDING: You kept the ultimate power secret and used it wisely. No glory, no recognition, just quiet heroism across multiple timelines. The world is better and never knows why. True altruism requires no audience. Divergence: 1.130426 (Covert Operations)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            transcendent_helper: {
+                text: "As a transcendent being, you use your power to help. You guide people toward better choices. Prevent disasters. Create opportunities. All while existing outside normal causality.\n\nYou're no longer human, but you use your new existence for human benefit. A strange guardian angel watching over multiple timelines.",
+                location: "⏰ Transcendent State",
+                divergence: "BEYOND",
+                ending: true,
+                achievement: "BEYOND HUMAN",
+                endingText: "🌟 ENDING: You transcended humanity but retained humanity's best qualities. You exist across all timelines, guiding without controlling, helping without interfering. You've become something new—perhaps something better. Divergence: TRANSCENDENT (Benevolent)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            explore_transcendence: {
+                text: "You explore the boundaries of your new existence. What can you perceive? What can you influence? You discover realities beyond human comprehension. Dimensions outside normal physics.\n\nYou become an explorer of the infinite. Humanity is far behind you now. You experience wonders no human can imagine—but at the cost of everything human you were.",
+                location: "⏰ Beyond Comprehension",
+                divergence: "INFINITE",
+                ending: true,
+                achievement: "COSMIC EXPLORER",
+                endingText: "🌟 ENDING: You evolved beyond humanity into a cosmic explorer. You experience realities beyond human comprehension. Your friends can't follow where you've gone. You've gained infinite knowledge but lost finite connection. Worth it? Only you can say. Divergence: BEYOND MEASUREMENT",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            independent_expert: {
+                text: "You remain independent but with Organization-level expertise. You operate in the spaces they can't or won't—helping people they'd deem not worth saving, taking risks they won't approve.\n\nIt's dangerous. The Organization tolerates you only because you're effective. But you're doing good work your way.",
+                location: "🔬 Independent Operations",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "ROGUE EXPERT",
+                endingText: "⚡ GOOD ENDING: You became an independent expert, operating in the gray areas the Organization ignores. Not heroic enough for legends, not dark enough for villainy. Just someone doing necessary work their own way. Divergence: 1.048596 (Tolerated Independence)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            independent_researcher: {
+                text: "You continue as an independent researcher. No Organization oversight. No Guardian network. Just you, your device, and your conscience.\n\nIt's lonely but free. You make your own rules. The Organization watches but doesn't interfere—you've earned their wary respect.",
+                location: "🔬 The Lab - Independent",
+                divergence: 1.186772,
+                ending: true,
+                achievement: "LONE WOLF",
+                endingText: "⚡ GOOD ENDING: You maintained complete independence. No masters, no team, no compromise. You operate alone, guided only by your own ethics. Lonely but authentic. You answer to no one but yourself. Divergence: 1.186772 (Independent)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            accept_fate_paradox: {
+                text: "You help the man accept his daughter's death. It's painful. He resists. But you show him the mathematics—his daughter's death is a fixed point. Fighting it only causes suffering.\n\nHe finally lets go. The paradoxes resolve. The timeline stabilizes. He'll grieve, but he'll survive. Sometimes acceptance is the only way forward.",
+                location: "🌆 Timeline - Stabilizing",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "ACCEPTANCE TAUGHT",
+                endingText: "⚡ GOOD ENDING: You helped someone accept an unchangeable tragedy. The timeline stabilized. It's sad, but it's stable. You prevented catastrophe by facilitating grief. Sometimes the kindest thing is helping people accept reality. Divergence: 1.048596 (Stabilized through Acceptance)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            final_save_attempt: {
+                text: "Against your better judgment, you help him try one more time. One perfect change. Perfect timing. Perfect execution.\n\nHis daughter survives. The timeline holds. Against all odds, you did it. A fixed point... wasn't so fixed after all. Sometimes miracles happen.",
+                location: "🌆 Timeline - Saved",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "MIRACLE WORKER",
+                endingText: "⚡ GOOD ENDING: You achieved the impossible. You saved someone from a fixed point in time without breaking reality. It cost everything you had, but you proved that sometimes, with perfect execution and desperate hope, miracles are real. Divergence: 1.048596 (Miracle Achieved)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            accept_chaos_consequences: {
+                text: "You accept imprisonment. But outside your cell, the chaos you unleashed spreads. Some timelines thrive with their newfound freedom. Others collapse without Organization oversight.\n\nYou're both liberator and destroyer. History will debate your legacy forever. You're at peace with that.",
+                location: "⏰ Organization Prison",
+                divergence: "CHAOTIC",
+                ending: true,
+                achievement: "REVOLUTIONARY PRISONER",
+                endingText: "⚡ ENDING: You freed countless timelines and caused countless problems. Some call you a hero. Others a terrorist. You accept both labels. You acted according to your principles and face the consequences. History will judge—if history survives. Divergence: CASCADING (Contained)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            choose_freedom_timeline: {
+                text: "You guide the convergence toward the freedom timeline. Humanity gains agency but loses safety. They'll face dangers without the Organization's protection.\n\nBut they'll face them as free beings. You've given humanity its destiny back. What they do with it is their choice now.",
+                location: "⏰ Convergence - Freedom Selected",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "FREEDOM CHOSEN",
+                endingText: "⚡ GOOD ENDING: You chose freedom over safety. Humanity faces an uncertain future, but it's their future to shape. Dangerous but authentic. You gave them back their agency. Whatever comes next, it's their choice. Divergence: 1.048596 (Free Will Timeline)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            choose_safety_timeline: {
+                text: "You guide the convergence toward the safety timeline. The Organization's control remains, but humanity is protected from temporal catastrophe.\n\nIt's a gilded cage. Safe but constrained. You chose security over freedom. People will live comfortable lives never knowing what they lost. Is that mercy or betrayal?",
+                location: "⏰ Convergence - Safety Selected",
+                divergence: 1.000000,
+                ending: true,
+                achievement: "SAFETY CHOSEN",
+                endingText: "💔 ENDING: You chose safety over freedom. Humanity survives in a controlled, stable timeline. They're protected but not free. You made the pragmatic choice. Whether it was the right choice, you'll wonder forever. Divergence: 1.000000 (Controlled Timeline)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            merge_attempt: {
+                text: "You attempt to merge the best of both timelines. Freedom AND safety. It's incredibly difficult, requiring precise manipulation of the convergence.\n\nYou pour everything into it. Your knowledge, your skill, your will. The timelines resist merging—they're fundamentally incompatible. But you keep trying...",
+                location: "⏰ Convergence - Merging",
+                divergence: "CRITICAL",
+                choices: [
+                    { text: "Push through to completion", next: 'perfect_merge' }
+                ]
+            },
+            convergence_prepared: {
+                text: "Fully prepared, you face the convergence. The Organization is here, but you're ready for them. You counter their moves perfectly. Guide the timeline convergence with expert precision.\n\nIt's working. You're creating a stable timeline that's both free and safe. Your preparation is paying off. Almost there...",
+                location: "⏰ Convergence Point",
+                divergence: "STABILIZING",
+                choices: [
+                    { text: "Complete the convergence", next: 'perfect_convergence' }
+                ]
+            },
+            transcendent_salvation: {
+                text: "As a transcendent being, you reshape reality itself. You create a timeline where time travel was never dangerous. Where freedom and safety coexist. Where humanity thrives.\n\nYou've become a benevolent god. You no longer experience life as they do, but you've ensured they experience it well. Your sacrifice created paradise.",
+                location: "⏰ Transcendent - Creation Complete",
+                divergence: 0.000000,
+                ending: true,
+                achievement: "DIVINE SACRIFICE",
+                endingText: "🌟 ENDING: You sacrificed your humanity to save humanity. You exist beyond them now, a guardian they'll never know about. They live in the paradise you created, free and safe. Your transcendence was the ultimate act of love. Divergence: 0.000000 (Perfect World)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            technical_victory: {
+                text: "You implement the technical solution. Quantum temporal mechanics create a stable field where multiple timelines coexist peacefully. No collapse, no sacrifice, no transformation needed.\n\nJust brilliant science solving an impossible problem. The Organization backs down—your solution is better than theirs. You've won through intelligence, not power.",
+                location: "🔬 The Lab - Solution Implemented",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "TECHNICAL GENIUS",
+                endingText: "⚡ GOOD ENDING: You solved an impossible problem through pure intellect and determination. No sacrifice, no compromise. Just brilliant science. The Organization adopts your solution. You've saved everyone without losing anything. Divergence: 1.048596 (Technical Solution)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            third_path_victory: {
+                text: "You and your friend take the third path together. You both transform into temporal consultants. You exist partially outside time, able to perceive and guide.\n\nIt's strange but not lonely—you're together in this new existence. You help people across timelines. You're different from human, but you're together. And that makes all the difference.",
+                location: "⏰ Temporal Consultants",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "TOGETHER FOREVER",
+                endingText: "⚡ GOOD ENDING: You found the third path and took it together. Changed but not lost. Different but not alone. You guide humanity together through temporal challenges. Your friendship transcended the limits of time itself. Divergence: 1.048596 (Third Path)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            perfect_merge: {
+                text: "You push through the resistance. The timelines fight merging, but you force it. Slowly, impossibly, they begin to combine.\n\nFreedom and safety. Agency and protection. The impossible compromise is working. You're creating something new—a timeline that shouldn't exist but does because you willed it into being.\n\nThe convergence completes. You've achieved the impossible.",
+                location: "⏰ Convergence - Merged",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Witness the result", next: 'perfect_timeline' }
+                ]
+            },
+            perfect_convergence: {
+                text: "With perfect preparation and perfect execution, you guide the convergence to its ideal conclusion. A timeline emerges that's both free and stable. Safe yet authentic.\n\nThe Organization withdraws. They can't argue with success. Your future self watches from across time and smiles—you did it. You succeeded where they failed.\n\nThe timeline stabilizes. Everyone survives. Everyone is free. You've achieved victory.",
+                location: "⏰ Convergence - Perfect",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Return to normal life", next: 'return_normal_hero' }
+                ]
+            },
+            perfect_solution_attempt: {
+                text: "You attempt the perfect solution. The calculations are insane. The timing impossible. The precision required is beyond human capability.\n\nBut you're not just human anymore—you're someone who's mastered time itself. You execute each step flawlessly. Variables align. Timelines stabilize. Divergence locks at the perfect number.\n\nIt's working. Against all probability, you're achieving perfection.",
+                location: "🔬 The Lab - Perfect Execution",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Complete the perfect solution", next: 'absolute_victory' }
+                ]
+            },
+            perfect_victory: {
+                text: "You complete the narrow path. Neither of you sacrifices. The timeline is perfectly stable. All your loved ones are safe. The future is secure.\n\nYou and your friend embrace. Against impossible odds, through perfect cooperation and years of friendship, you achieved the perfect outcome. No compromises. No sacrifices. Total victory.\n\nThe divergence meter reads: 1.048596 - The Steins Gate.",
+                location: "🔬 The Lab - Victory",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Celebrate your victory", next: 'perfect_ending_sequence' }
+                ]
+            },
+            perfect_timeline: {
+                text: "The merged timeline is stable. Humanity has both freedom and safety. The Organization transforms into advisors rather than controllers. The Guardians become teachers rather than rebels.\n\nYou've created something unprecedented—a world where temporal technology exists responsibly. Where humanity makes its own choices within a safe framework. The best of all possible worlds.",
+                location: "🌅 The Perfect Timeline",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Live in the world you created", next: 'live_perfect_world' }
+                ]
+            },
+            return_normal_hero: {
+                text: "With the convergence complete and timelines stable, you return to normal life. Your device is deactivated—no longer needed. The world is safe.\n\nYou continue your studies. Graduate. Get a job. Live an ordinary life. But you carry the memory of what you did. You saved everyone, and only a handful of people will ever know.\n\nThat's okay. You didn't do it for recognition.",
+                location: "🎓 University - Years Later",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "HUMBLE HERO",
+                endingText: "⚡ GOOD ENDING: You saved the world and returned to normal life. No fame, no glory, just the quiet satisfaction of knowing everyone is safe because of you. You're a hero who chose anonymity. The best kind. Divergence: 1.048596 (Hero's Peace)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            absolute_victory: {
+                text: "You complete the perfect solution. Every variable aligns. Every timeline stabilizes. Every person you care about survives and thrives.\n\nThe divergence meter locks at 1.048596—the Steins Gate. The world line where everything is possible. Where you don't have to choose between freedom and safety, between loved ones and humanity, between self and others.\n\nYou've achieved absolute victory. The perfect timeline.",
+                location: "🔬 The Lab - Absolute Victory",
+                divergence: 1.048596,
+                choices: [
+                    { text: "Realize what you've accomplished", next: 'ultimate_realization' }
+                ]
+            },
+            perfect_ending_sequence: {
+                text: "You and your friend celebrate. Others join—everyone you saved, everyone who helped, everyone who believed in you.\n\nThe Organization sends a message: 'Congratulations. You've achieved what we thought impossible. The Steins Gate is real, and you found it.'\n\nYou've won completely. No compromises. No sacrifices. Perfect victory.\n\nThe divergence meter glows: 1.048596 - STEINS GATE ACHIEVED.",
+                location: "🔬 The Lab - Celebration",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "STEINS GATE REACHED",
+                endingText: "🌟 TRUE ENDING: You reached the Steins Gate—the perfect world line where everyone survives and thrives. Through determination, intelligence, friendship, and hope, you achieved what was thought impossible. The perfect timeline is real. You made it real. Divergence: 1.048596 (STEINS GATE - PERFECT)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            live_perfect_world: {
+                text: "You live in the perfect world you created. It's not paradise—people still face challenges. But they face them with agency, support, and hope.\n\nYou age gracefully. You see the world flourish. Humanity embraces temporal technology responsibly. The timeline remains stable. Your legacy is a world that works.\n\nOn your deathbed, you smile. You did it. You actually did it.",
+                location: "🏥 Hospital - Many Years Later",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "LIFE WELL LIVED",
+                endingText: "⚡ GOOD ENDING: You created a perfect world and lived to see it flourish. You died old, surrounded by loved ones, in a timeline you personally saved. You achieved immortality not through time travel but through legacy. Divergence: 1.048596 (Lifetime of Peace)",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            },
+            ultimate_realization: {
+                text: "You stand in the lab, looking at the divergence meter reading 1.048596. The Steins Gate. The perfect world line.\n\nYour friend enters. 'We did it,' they say simply. You nod.\n\nNo more time travel. No more paradoxes. No more impossible choices. Just life. Normal, beautiful, precious life.\n\nYou've saved everyone. Including yourself.\n\nAnd then you notice something. In your pocket—a message from your future self. It simply says: 'Thank you. Now live well.'\n\nYou've closed the loop. You've achieved victory. The quest is complete.",
+                location: "🔬 The Lab - Final Moment",
+                divergence: 1.048596,
+                ending: true,
+                achievement: "PERFECT VICTORY",
+                endingText: "🌟 PERFECT ENDING: You achieved absolute victory. Everyone survives. Everyone is free. The timeline is stable. You found the Steins Gate and brought everyone through it. Through every challenge, every choice, every sacrifice avoided—you found the perfect path. El Psy Kongroo. Divergence: 1.048596 (STEINS GATE - ULTIMATE VICTORY)",
+                choices: [
+                    { text: "One more thing...", next: 'secret_path_unlock' }
+                ]
+            },
+            secret_path_unlock: {
+                text: "Wait. There's something else. A notification on your device you've never seen before.\n\n'CONGRATULATIONS ON FINDING ALL PATHS. SECRET PROTOCOL UNLOCKED: OBSERVER MODE.'\n\nA new option appears. You can now observe all timelines simultaneously. See every choice, every ending, every possibility. Not to change them—just to witness.\n\nYou've transcended the quest itself. You're no longer just a player. You're the Observer.",
+                location: "⏰ Beyond the Quest",
+                divergence: "OBSERVER",
+                ending: true,
+                achievement: "THE OBSERVER - MASTER OF ALL TIMELINES",
+                endingText: "🌟🌟🌟 SECRET ENDING UNLOCKED: You found every path, achieved every ending, and unlocked Observer Mode. You can now see all timelines simultaneously—every choice, every consequence, every possibility. You've mastered time itself. Not as a traveler, but as a witness to all that was, is, and could be. You are The Observer. El Psy Kongroo. Divergence: ∞ (ALL TIMELINES OBSERVED)",
+                choices: [
+                    { text: "Begin again, with all knowledge", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "IGNORANCE PRESERVED",
+            "COWARD'S PARADISE",
+            "LOST CONNECTION",
+            "SHATTERED MIND",
+            "TIMELINE COLLAPSE",
+            "BEYOND HUMAN",
+            "SACRIFICE ACCEPTED",
+            "ULTIMATE SACRIFICE",
+            "STEINS GATE REACHED",
+            "PERFECT VICTORY"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let memoryLog = [];
+
+        function init() {
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('divergenceValue').textContent = currentScenario.divergence || '1.048596';
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateMemoryLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            memoryLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                memoryLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("THE OBSERVER - MASTER OF ALL TIMELINES")) {
+                    setTimeout(() => {
+                        achievements.push("THE OBSERVER - MASTER OF ALL TIMELINES");
+                        showAchievementPopup("THE OBSERVER - MASTER OF ALL TIMELINES");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "THE OBSERVER - MASTER OF ALL TIMELINES";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("THE OBSERVER - MASTER OF ALL TIMELINES") ? 1 : 0);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "THE OBSERVER - MASTER OF ALL TIMELINES" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateMemoryLogDisplay() {
+            const memoryLogBox = document.getElementById('memoryLogBox');
+            if (memoryLog.length > 0) {
+                memoryLogBox.style.display = 'block';
+                const memoryLogEntries = document.getElementById('memoryLogEntries');
+                memoryLogEntries.innerHTML = '';
+                memoryLog.slice(-10).forEach((entry) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'memory-log-entry';
+                    entryDiv.textContent = entry.substring(0, 150) + (entry.length > 150 ? '...' : '');
+                    memoryLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                memoryLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
