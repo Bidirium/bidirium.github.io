@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Omnitrix Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a3a0a 50%, #0a2a0a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff00;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            border-color: #00ff00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff00;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .omnitrix-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005500;
+            border-color: #005500;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ff00;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005500;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005500, #00ff00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 0, 0.5);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #00ffff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005500;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005500;
+        }
+
+        .history-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .history-button.current {
+            background-color: #00ff00;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 0, 0.5);
+            color: #00ff00;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 0, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005500;
+        }
+
+        .history-hint {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005500;
+        }
+
+        .quest-log-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005500;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="omnitrix-icon">⌚</span>
+                    THE OMNITRIX QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ STORY CONCLUDED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                ADVENTURE LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "Summer vacation. You're ten years old, heading to a camping trip with your Grandpa Max and cousin Gwen. The RV rumbles down the highway.\n\n'This is going to be so boring,' Gwen complains, reading a book.\n\nSuddenly, through the window, you see something streak across the sky. A meteor? It's coming down fast, heading toward the forest ahead.\n\n'Did you guys see that?' you ask.",
+                location: "🚐 The Rust Bucket - Highway",
+                choices: [
+                    { text: "Ask Grandpa to check it out", next: 'investigate' },
+                    { text: "Ignore it and continue the trip", next: 'ignore_meteor' },
+                    { text: "Suggest camping near the crash site", next: 'camp_nearby' }
+                ]
+            },
+            
+            ignore_meteor: {
+                text: "'Probably just space junk,' Grandpa Max says, but you notice concern in his voice.\n\nYou arrive at the campsite. That night, you can't sleep. You keep thinking about that meteor. What if it was something important?\n\nThe next morning, news reports mention a 'meteorite impact' nearby. Authorities have cordoned off the area.",
+                location: "🏕️ Campsite",
+                ending: true,
+                achievement: "THE ROAD NOT TAKEN",
+                endingText: "📺 ENDING: You never investigated the crash site. The Omnitrix was eventually found by government agents and locked away in a classified facility. You live a normal life, never knowing you could have been a hero. Sometimes you wonder about that meteor...",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            camp_nearby: {
+                text: "'That's... actually not a bad idea,' Grandpa Max says, surprising you. 'We can set up camp and check it out in the morning when it's safer.'\n\nThat night, you sneak out of the RV. You can't wait until morning. The forest is dark, but you can see a faint green glow through the trees.\n\nYou're getting closer to something that will change your life forever.",
+                location: "🌲 Forest - Night",
+                choices: [
+                    { text: "Follow the green glow", next: 'find_omnitrix' },
+                    { text: "Go back to the RV (you're scared)", next: 'chicken_out' }
+                ]
+            },
+
+            chicken_out: {
+                text: "You turn back. The forest is too dark, too scary. You climb back into the RV and try to sleep.\n\nThe next morning, when you finally go to investigate, the site is already surrounded by mysterious agents in black suits. They won't let anyone near.\n\nWhatever crashed there is gone now. Seized by the government.",
+                location: "🏕️ Campsite - Morning",
+                ending: true,
+                achievement: "THE ROAD NOT TAKEN",
+                endingText: "🚫 ENDING: Fear stopped you from discovering your destiny. The Omnitrix fell into government hands. You spend your summer vacation normally, but always wonder 'what if?' Some opportunities only come once.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            investigate: {
+                text: "'Well, I suppose we could take a quick look,' Grandpa Max says. Something in his tone suggests he's more interested than he's letting on.\n\nHe parks the RV off the road. You hike into the forest, following the smoke trail. Gwen reluctantly joins.\n\nYou find a crater. And in the center, a strange pod, still glowing green and smoking. It's clearly not from Earth.",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Approach the pod carefully", next: 'approach_pod' },
+                    { text: "Let Grandpa check it first", next: 'grandpa_first' },
+                    { text: "Touch the pod immediately", next: 'reckless_touch' }
+                ]
+            },
+
+            grandpa_first: {
+                text: "'Good thinking, Ben. Stay back.' Grandpa Max approaches the pod cautiously. Too cautiously.\n\nSuddenly, the pod opens! A bright green flash. Something shoots out—not at Grandpa, but at YOU. It latches onto your wrist before you can react.\n\n'Ben!' Grandpa shouts, rushing over. But it's too late. The device is already bonding with your DNA.",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Try to remove it", next: 'remove_attempt' },
+                    { text: "Ask Grandpa what it is", next: 'grandpa_explains' },
+                    { text: "Examine the watch calmly", next: 'examine_watch' }
+                ]
+            },
+
+            reckless_touch: {
+                text: "Before anyone can stop you, you reach out and touch the pod. It's warm, pulsing with energy.\n\nSuddenly it opens! A device shoots out and latches onto your wrist. It looks like a watch, but way cooler—green and black, with a glowing hourglass symbol.\n\n'Ben! What did you do?!' Gwen yells.\n\nYou try to pull it off. It won't budge.",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Panic and pull harder", next: 'panic_pull' },
+                    { text: "Stay calm and examine it", next: 'examine_watch' },
+                    { text: "Ask Grandpa for help", next: 'grandpa_explains' }
+                ]
+            },
+
+            panic_pull: {
+                text: "You pull frantically at the device. It starts beeping. The symbol pops up, projecting a holographic silhouette.\n\n'Ben, stop!' Grandpa warns. Too late. You accidentally slam your palm down on the watch face.\n\nGREEN LIGHT EXPLODES AROUND YOU. Your body feels like it's being rearranged at the molecular level. When the light fades, you're not you anymore.\n\nYou're FOUR ARMS—a massive alien with incredible strength!",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Freak out and smash things", next: 'four_arms_rampage' },
+                    { text: "Try to stay calm and figure this out", next: 'controlled_transformation' }
+                ]
+            },
+
+            four_arms_rampage: {
+                text: "You panic. Your four massive arms flail wildly. You accidentally punch a tree—it splinters like a toothpick.\n\n'BEN! CALM DOWN!' Grandpa yells, but you can't. You're running through the forest, destroying everything in your path.\n\nYou crash through the forest for what feels like hours. Eventually, the watch times out. You transform back, exhausted, lost, and terrified.",
+                location: "🌲 Deep Forest - Lost",
+                ending: true,
+                achievement: "WILD CARD",
+                endingText: "😱 ENDING: Your panic caused chaos. By the time you transformed back, you were miles from Grandpa and Gwen. They found you eventually, but the damage was done. Grandpa decided you weren't ready for the Omnitrix. He contacted some old friends who safely removed it. You never got to be a hero. Control matters.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            controlled_transformation: {
+                text: "You take a deep breath—hard to do with this massive alien body. You look at your four arms. Feel the incredible strength.\n\n'That's it, Ben. Stay calm,' Grandpa says gently. 'The watch will time out soon.'\n\nSure enough, after a few minutes, you flash green and transform back to normal. You're breathing hard, but you're okay.\n\n'Grandpa... what WAS that?'",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Listen to Grandpa's explanation", next: 'grandpa_explains' }
+                ]
+            },
+
+            approach_pod: {
+                text: "You step carefully toward the smoking pod. It's covered in alien symbols, pulsing with green light.\n\nAs you get close, it suddenly opens! Before you can react, a device shoots out and attaches to your wrist.\n\nIt looks like a watch—green, black, with a glowing hourglass symbol. It's locked tight to your wrist.",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Try to remove it immediately", next: 'remove_attempt' },
+                    { text: "Examine it carefully", next: 'examine_watch' },
+                    { text: "Ask Grandpa what's happening", next: 'grandpa_explains' }
+                ]
+            },
+
+            remove_attempt: {
+                text: "You pull at the device frantically. It won't budge. It's like it's part of your wrist now.\n\n'Stop, Ben! You might damage it,' Grandpa warns. Something about his tone... he knows more than he's saying.\n\nGwen leans in. 'What is it, Grandpa? You recognize this thing, don't you?'",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Demand Grandpa tell the truth", next: 'grandpa_explains' },
+                    { text: "Ignore them and examine the watch", next: 'examine_watch' }
+                ]
+            },
+
+            find_omnitrix: {
+                text: "You push through the dark forest, following the eerie green glow. Your heart is pounding.\n\nYou find a crater. In the center, a strange pod, smoking and glowing. It's definitely not from Earth.\n\nAs you approach, it opens. A device shoots out and latches onto your wrist before you can react. A watch? But like nothing you've ever seen.",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Try to remove it", next: 'remove_attempt' },
+                    { text: "Examine it carefully", next: 'examine_watch' },
+                    { text: "Run back to get Grandpa", next: 'get_grandpa' }
+                ]
+            },
+
+            get_grandpa: {
+                text: "You run back through the forest, the strange watch stuck to your wrist.\n\n'Grandpa! Gwen! Something attached to me!' You burst into the RV.\n\nGrandpa Max sees the device and his eyes widen. 'The Omnitrix... here? How?'\n\n'You KNOW what this is?' you ask, shocked.",
+                location: "🚐 The Rust Bucket",
+                choices: [
+                    { text: "Listen to his explanation", next: 'grandpa_explains' }
+                ]
+            },
+
+            examine_watch: {
+                text: "You study the device carefully. It's incredibly advanced—green and black, with a glowing hourglass symbol in the center. When you touch it, the symbol pops up, projecting holographic silhouettes.\n\n'Careful, Ben,' Grandpa warns. 'That's dangerous technology.'\n\n'How do you know?' Gwen asks suspiciously.\n\nGrandpa sighs. 'I suppose it's time you both knew the truth.'",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Hear the truth", next: 'grandpa_explains' }
+                ]
+            },
+
+            grandpa_explains: {
+                text: "Grandpa Max takes a deep breath. 'I used to work for a secret organization called the Plumbers. We dealt with extraterrestrial threats. That device on your wrist is called the Omnitrix.'\n\n'Aliens are REAL?' Gwen gasps.\n\n'Very real. The Omnitrix contains the DNA of thousands of alien species. It was sent to Earth for a hero to use. But it chose you, Ben. That means something.'",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "This is awesome! Show me how it works!", next: 'eager_learner' },
+                    { text: "This is too dangerous. Help me remove it.", next: 'remove_request' },
+                    { text: "I want to learn properly and responsibly", next: 'responsible_path' }
+                ]
+            },
+
+            eager_learner: {
+                text: "'Whoa, slow down,' Grandpa says. 'The Omnitrix is powerful, but dangerous if misused. You need to learn control first.'\n\nBut you're already fiddling with it. The dial pops up, showing alien silhouettes. You cycle through them—each one looks incredible.\n\n'Ben, wait!' Gwen warns. You slam down on the watch face.\n\nGREEN FLASH! You transform into... something!",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "See what you've become", next: 'first_transformation_random' }
+                ]
+            },
+
+            remove_request: {
+                text: "'I appreciate the caution, Ben. But the Omnitrix chose you. It won't come off until it's ready—or until its purpose is fulfilled.'\n\n'So I'm stuck with it?' you ask.\n\n'For now. But maybe that's not such a bad thing. The galaxy is in danger. Vilgax, an intergalactic warlord, wants the Omnitrix. He'll come looking for it. For you.'",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "We need to prepare then", next: 'responsible_path' },
+                    { text: "Can't we hide from him?", next: 'hiding_attempt' }
+                ]
+            },
+
+            hiding_attempt: {
+                text: "'Hide? From Vilgax?' Grandpa shakes his head. 'He has tracking technology, armies of drones. Hiding only delays the inevitable.'\n\n'Then what do we do?' Gwen asks.\n\n'We fight. We train Ben to use the Omnitrix properly. We contact the Plumbers. And we stop Vilgax before he can use the Omnitrix to conquer the universe.'",
+                location: "🌲 Forest - Crash Site",
+                choices: [
+                    { text: "Okay, teach me everything", next: 'responsible_path' }
+                ]
+            },
+
+            responsible_path: {
+                text: "'Good attitude,' Grandpa nods. 'First lesson: the Omnitrix has a timeout feature. You'll only stay transformed for about 10 minutes. After that, you need to recharge.'\n\nHe shows you how to activate it properly, how to select aliens, how to time out safely.\n\nOver the next few days, you practice. You discover aliens like Four Arms, Heatblast, XLR8, and more. You're learning control.",
+                location: "🏕️ Campsite - Training Ground",
+                choices: [
+                    { text: "Continue training diligently", next: 'training_continues' },
+                    { text: "Get impatient and want real action", next: 'impatient_hero' }
+                ]
+            },
+
+            training_continues: {
+                text: "You train for days. Each transformation becomes more controlled. You learn each alien's strengths and weaknesses.\n\nFour Arms: Raw strength. Heatblast: Fire control. XLR8: Super speed. Diamondhead: Crystal constructs and durability.\n\n'You're a natural,' Grandpa admits. 'Better than I expected.'\n\nThen the signal comes. A Plumber distress beacon. Something's attacking a nearby town.",
+                location: "🏕️ Campsite - Training Ground",
+                choices: [
+                    { text: "This is what we trained for. Let's go!", next: 'first_mission_prepared' }
+                ]
+            },
+
+            impatient_hero: {
+                text: "'Come on, Grandpa! I can handle this. Let me be a hero!' you complain.\n\n'Patience, Ben. Rushing leads to mistakes.'\n\nBut that night, you sneak into town. You spot a robbery in progress. Finally, your chance to be a hero!\n\nYou activate the Omnitrix without checking which alien you're selecting.",
+                location: "🌃 Town - Night",
+                choices: [
+                    { text: "Transform and stop the robbery", next: 'botched_heroics' }
+                ]
+            },
+
+            botched_heroics: {
+                text: "You transform into Grey Matter—a tiny, intelligent alien. Not exactly what you needed for a robbery.\n\nThe robbers see you. 'What the—a talking frog?' one laughs. They try to step on you!\n\nYou barely escape, hiding under a car. Your timeout happens at the worst moment. You're stuck, powerless, and the robbers got away.\n\nWorse, they saw you transform. By morning, blurry cell phone videos of 'the alien kid' are everywhere.",
+                location: "🌃 Town - Hiding",
+                ending: true,
+                achievement: "RECKLESS ROOKIE",
+                endingText: "📱 ENDING: Your impatience exposed you to the world before you were ready. Government agencies, alien bounty hunters, and Vilgax himself now know exactly where to find you. Grandpa tries to protect you, but you're overwhelmed. The Omnitrix falls into Vilgax's hands. Patience and training matter.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            first_transformation_random: {
+                text: "You're HEATBLAST—a walking inferno! Flames cover your entire body. Everything you touch starts burning.\n\n'Ben! Control it!' Grandpa yells, backing away from the heat.\n\nYou try to stay calm, but fire shoots from your hands involuntarily. A tree catches fire. Then another. The forest is starting to burn!\n\n'BEN! You have to focus!'",
+                location: "🌲 Forest - Burning",
+                choices: [
+                    { text: "Try to control the flames", next: 'learn_control' },
+                    { text: "Panic and run away", next: 'forest_fire' }
+                ]
+            },
+
+            forest_fire: {
+                text: "You run, but everywhere you step bursts into flame. The fire spreads rapidly. By the time you timeout and transform back, half the forest is ablaze.\n\nFirefighters arrive. News helicopters circle overhead. They caught footage of a 'fire creature' starting the blaze.\n\nGrandpa gets you away, but the damage is done. You're a fugitive now, hunted by authorities who think you're a threat.",
+                location: "🚐 The Rust Bucket - Fleeing",
+                ending: true,
+                achievement: "WILD CARD",
+                endingText: "🔥 ENDING: Your lack of control caused disaster. Between the authorities hunting you and Vilgax tracking the Omnitrix, your summer vacation becomes a nightmare of running and hiding. Eventually, you're captured. The Omnitrix is removed and locked away. You never got to be the hero you could have been.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            learn_control: {
+                text: "You close your eyes. Focus. The flames around you respond to your thoughts. You direct them away from the trees, into a clearing.\n\nSlowly, carefully, you absorb the flames back into yourself. The fire dies down. When you timeout, the forest is scarred but not destroyed.\n\n'That... was impressive,' Grandpa says. 'You learned control under pressure. That's rare, Ben.'",
+                location: "🌲 Forest - Controlled",
+                choices: [
+                    { text: "Ask to learn more about the Omnitrix", next: 'responsible_path' }
+                ]
+            },
+
+            first_mission_prepared: {
+                text: "You arrive at the town. The distress signal came from here. Something's definitely wrong—buildings are damaged, people are hiding.\n\nThen you see them. Robot drones, scanning for something. They have a symbol you don't recognize.\n\n'Vilgax's drones,' Grandpa whispers. 'They're searching for the Omnitrix. For you.'",
+                location: "🌃 Town - Under Attack",
+                choices: [
+                    { text: "Transform and fight the drones", next: 'drone_fight_prepared' },
+                    { text: "Try to lead them away from civilians", next: 'tactical_approach' },
+                    { text: "Hide and observe first", next: 'observe_enemy' }
+                ]
+            },
+
+            observe_enemy: {
+                text: "You watch from hiding. The drones are methodical, scanning every building. They're armed with energy weapons.\n\nYou notice a pattern—they're focusing on areas with high tech readings. That's how they'll find you.\n\n'Smart,' Grandpa whispers. 'Know your enemy before engaging. But we can't let them hurt anyone.'",
+                location: "🌃 Town - Observing",
+                choices: [
+                    { text: "Use the pattern to set a trap", next: 'strategic_hero' },
+                    { text: "Attack now with best alien choice", next: 'drone_fight_prepared' }
+                ]
+            },
+
+            strategic_hero: {
+                text: "You tell Grandpa your plan. Lure the drones to an isolated area—the old factory—using the Omnitrix signal. Then ambush them.\n\n'Brilliant,' Grandpa grins. 'You're thinking like a real hero. Not just strong, but smart.'\n\nYou execute the plan perfectly. The drones follow you to the factory. You transform into Four Arms and destroy them all before they can call for reinforcements.",
+                location: "🏭 Old Factory",
+                choices: [
+                    { text: "Check for survivors in town", next: 'hero_emergence' }
+                ]
+            },
+
+            drone_fight_prepared: {
+                text: "You select Four Arms and transform. SLAM! You crash into the drones with all four fists flying.\n\nYour training pays off. You know Four Arms' strengths—raw power, durability, intimidation. The drones don't stand a chance.\n\nOne by one, you smash them. The townspeople watch from windows. You've saved them.",
+                location: "🌃 Town - Battle",
+                choices: [
+                    { text: "Make sure everyone's safe", next: 'hero_emergence' }
+                ]
+            },
+
+            tactical_approach: {
+                text: "You run into the street, making yourself visible. 'Hey! Robot jerks! Looking for this?' You hold up the Omnitrix.\n\nThe drones immediately target you. Perfect. You lead them away from the civilians, toward the outskirts of town.\n\nOnce you're clear of bystanders, you transform into XLR8 and take them down at super speed.",
+                location: "🌾 Town Outskirts",
+                choices: [
+                    { text: "Return to check on the town", next: 'hero_emergence' }
+                ]
+            },
+
+            hero_emergence: {
+                text: "You return to town, transforming back to normal. People emerge from hiding, thanking you. Some are scared, but most are grateful.\n\n'You saved us,' a kid says, eyes wide. 'Are you a superhero?'\n\nYou look at Grandpa. He nods. 'I guess I am,' you say. 'I'm... Ben 10.'\n\nThe name just came to you. Ten-year-old kid with ten alien heroes. It fits.",
+                location: "🌃 Town - Aftermath",
+                choices: [
+                    { text: "Continue the hero journey", next: 'reputation_builds' }
+                ]
+            },
+
+            reputation_builds: {
+                text: "Over the following weeks, you stop more threats. Vilgax sends assassins—you defeat them. Criminals try to exploit the alien chaos—you stop them.\n\nYour reputation grows. 'Ben 10' becomes known. Some see you as a hero. Others fear you. The government wants to study you.\n\n'This is getting complicated,' Gwen says. She's been learning magic to help you, but tensions are rising.",
+                location: "🚐 The Rust Bucket - Traveling",
+                choices: [
+                    { text: "Register with the government for legitimacy", next: 'government_path' },
+                    { text: "Stay independent and underground", next: 'independent_path' },
+                    { text: "Seek out the Plumbers for guidance", next: 'plumber_path' }
+                ]
+            },
+
+            government_path: {
+                text: "You meet with government officials. They want oversight, regulations, tracking devices.\n\n'For everyone's safety,' they claim. But Grandpa warns you: 'Once they control the Omnitrix, they control you. You'll be a weapon, not a hero.'\n\nYou realize he's right. You politely refuse and leave.\n\nBut now the government sees you as a threat too.",
+                location: "🏛️ Government Facility",
+                choices: [
+                    { text: "Go underground to stay free", next: 'independent_path' },
+                    { text: "Seek Plumber help instead", next: 'plumber_path' }
+                ]
+            },
+
+            independent_path: {
+                text: "You decide to stay independent. No governments, no organizations. Just you, Grandpa, and Gwen doing what's right.\n\nIt's harder this way. You're hunted by authorities, chased by bounty hunters, and constantly looking over your shoulder.\n\nBut you're free. And you're making a difference on your own terms.\n\nThen Vilgax himself arrives on Earth.",
+                location: "🚐 The Rust Bucket - On the Run",
+                choices: [
+                    { text: "Face Vilgax alone", next: 'vilgax_confrontation_solo' },
+                    { text: "Call for help from anyone who'll listen", next: 'desperate_alliance' }
+                ]
+            },
+
+            plumber_path: {
+                text: "Grandpa contacts his old Plumber colleagues. They're scattered, mostly retired, but they answer the call.\n\nYou meet them—Max Tennyson's old team. They train you further, teach you about alien species, give you intel on Vilgax.\n\n'The Plumbers aren't what they used to be,' one admits. 'But with you and the Omnitrix, maybe we can rebuild. Become something greater.'\n\nYou're not just a solo hero anymore. You're part of something bigger.",
+                location: "🛸 Plumber Base - Mount Rushmore",
+                choices: [
+                    { text: "Help rebuild the Plumbers", next: 'plumber_rebuild' },
+                    { text: "Focus on stopping Vilgax first", next: 'vilgax_priority' }
+                ]
+            },
+
+            plumber_rebuild: {
+                text: "You spend months helping rebuild the Plumbers. Recruiting new members, establishing bases, creating protocols.\n\nIt's important work. But while you're building infrastructure, Vilgax is getting closer. His ship enters Earth's orbit.\n\n'We're not ready,' a Plumber warns. 'We needed more time.'\n\nVilgax isn't going to give you that time.",
+                location: "🛸 Plumber Base - Mount Rushmore",
+                choices: [
+                    { text: "Face Vilgax with unprepared Plumbers", next: 'vilgax_confrontation_plumbers_weak' },
+                    { text: "Face him alone to protect them", next: 'vilgax_confrontation_solo' }
+                ]
+            },
+
+            vilgax_priority: {
+                text: "'Smart choice,' Grandpa says. 'Vilgax won't wait for us to be ready. We focus all our resources on preparing for him.'\n\nThe Plumbers gather intelligence, analyze his ship, study his past battles. You train intensively with every alien form.\n\nWhen his ship finally arrives, you're ready. As ready as you can be.\n\n'This is it,' Grandpa says. 'Everything comes down to this.'",
+                location: "🛸 Plumber Base - Mount Rushmore",
+                choices: [
+                    { text: "Board Vilgax's ship", next: 'ship_assault' },
+                    { text: "Draw him down to Earth for the fight", next: 'earth_battlefield' }
+                ]
+            },
+
+            ship_assault: {
+                text: "You infiltrate Vilgax's ship. The Plumbers provide covering fire and distraction while you sneak aboard.\n\nInside, it's a nightmare. Drones, automated defenses, alien soldiers. You fight through them all, cycling through your alien forms.\n\nFinally, you reach the command deck. And there he is. Vilgax. Even bigger and more terrifying than the intel suggested.",
+                location: "🛸 Vilgax's Ship - Command Deck",
+                choices: [
+                    { text: "Challenge him to single combat", next: 'vilgax_honor_duel' },
+                    { text: "Use strategy and terrain advantage", next: 'vilgax_tactical' },
+                    { text: "Try to reason with him first", next: 'vilgax_negotiation' }
+                ]
+            },
+
+            earth_battlefield: {
+                text: "You broadcast a challenge. 'Vilgax! You want the Omnitrix? Come down and take it!'\n\nHis ship descends. The ground shakes as he lands, stepping out in full battle armor.\n\n'Foolish child,' his voice rumbles. 'I've conquered a hundred worlds. You're just a boy playing with technology you don't understand.'\n\n'Then come prove it,' you reply, activating the Omnitrix.",
+                location: "🏜️ Desert Battlefield",
+                choices: [
+                    { text: "Transform into your strongest alien", next: 'vilgax_power_fight' },
+                    { text: "Use tactics and multiple transformations", next: 'vilgax_smart_fight' },
+                    { text: "Unlock the Master Control first", next: 'master_control_attempt' }
+                ]
+            },
+
+            vilgax_honor_duel: {
+                text: "'You want single combat?' Vilgax actually seems impressed. 'Very well. No drones. No assistance. Just you and me.'\n\nYou transform into Four Arms. It's your most reliable combat form. The battle is brutal—Vilgax is stronger, more experienced.\n\nBut you're faster, more creative. You use the ship's environment, technology, structural weaknesses.\n\nIt's not enough. Vilgax grabs you and slams you into the wall. Your timeout happens. You're vulnerable.",
+                location: "🛸 Vilgax's Ship - Command Deck",
+                ending: true,
+                achievement: "BRAVE BUT FOOLISH",
+                endingText: "💀 ENDING: Your courage was admirable, but Vilgax has centuries of combat experience. In a straight fight, you never stood a chance. He takes the Omnitrix, conquers Earth, then the galaxy. Sometimes bravery isn't enough. You need wisdom too.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_tactical: {
+                text: "You don't fight Vilgax directly. Instead, you sabotage his ship systems, using Grey Matter's intelligence and XLR8's speed.\n\nYou disable his weapons, his shields, his life support. Vilgax chases you through the ship, growing more frustrated.\n\n'Face me, coward!' he roars.\n\n'I'm not a coward. I'm smart!' you yell back, triggering the ship's self-destruct.\n\nYou escape. Vilgax is forced to evacuate. His ship explodes.",
+                location: "🛸 Escape Pod - Falling",
+                choices: [
+                    { text: "Land safely and regroup", next: 'vilgax_tactical_victory' }
+                ]
+            },
+
+            vilgax_tactical_victory: {
+                text: "You land back on Earth. Vilgax's ship is destroyed, but he escaped too. He's stranded on Earth now, wounded but dangerous.\n\n'He'll come for you again,' Grandpa warns. 'But you bought us time. Time to prepare properly.'\n\nThe Plumbers track Vilgax's location. You have a choice: End this now while he's weak, or prepare for a final confrontation.",
+                location: "🛸 Plumber Base",
+                choices: [
+                    { text: "Strike while he's weakened", next: 'weakened_vilgax_fight' },
+                    { text: "Prepare for the ultimate battle", next: 'final_preparation' }
+                ]
+            },
+
+            weakened_vilgax_fight: {
+                text: "You track Vilgax to an abandoned military base. He's repairing himself with salvaged tech. Still dangerous, but vulnerable.\n\nYou attack with everything—Way Big for size and power, backed by Plumber forces.\n\nThe battle is fierce but short. Vilgax, weakened and without his ship, finally falls. You've won.\n\nBut at what cost? You look at the destruction, the injuries. Victory feels hollow.",
+                location: "🏚️ Abandoned Base",
+                ending: true,
+                achievement: "SWIFT JUSTICE",
+                endingText: "⚡ ENDING: You defeated Vilgax through strategy and timing. Earth is safe. You continue as Ben 10, protecting the planet with the Plumbers. But you always wonder—was there another way? Could you have found peace instead of victory through violence? Still, you saved countless lives. That matters.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            final_preparation: {
+                text: "You spend weeks training, mastering aliens you rarely use. Gwen perfects her magic. Grandpa rallies every Plumber he can find.\n\nYou discover something: Azmuth, the creator of the Omnitrix, has been watching. He contacts you.\n\n'You've proven yourself worthy, Ben Tennyson. I'm going to give you access to the Omnitrix's true power: Master Control.'",
+                location: "🛸 Plumber Base - Training Facility",
+                choices: [
+                    { text: "Accept the Master Control", next: 'master_control_given' }
+                ]
+            },
+
+            master_control_given: {
+                text: "Azmuth unlocks the Master Control. Suddenly, you can transform instantly, stay transformed indefinitely, and switch between aliens at will.\n\nYou feel the full power of the Omnitrix. It's incredible.\n\n'Use it wisely,' Azmuth warns. 'Power without wisdom leads to tyranny.'\n\nVilgax makes his move. His final assault. He's repaired himself and stolen Earth weapons. This is the endgame.",
+                location: "🛸 Plumber Base",
+                choices: [
+                    { text: "Face Vilgax with ultimate power", next: 'final_battle_master_control' }
+                ]
+            },
+
+            final_battle_master_control: {
+                text: "You face Vilgax in an abandoned city. The perfect battlefield. No civilians to endanger.\n\nWith Master Control, you're unstoppable. You switch between aliens instantly—Diamondhead's defense, Four Arms' offense, XLR8's speed.\n\nVilgax can't keep up. For the first time, he looks worried.\n\n'This power... you're mastering it faster than any before you,' he admits.",
+                location: "🏙️ Abandoned City",
+                choices: [
+                    { text: "Finish him with maximum force", next: 'destroy_vilgax' },
+                    { text: "Offer him mercy and redemption", next: 'vilgax_mercy' },
+                    { text: "Find a creative solution", next: 'vilgax_creative_end' }
+                ]
+            },
+
+            destroy_vilgax: {
+                text: "You transform into Way Big—the most powerful alien in your arsenal. You're massive, towering over buildings.\n\nVilgax looks up at you, defiant to the end. 'Do it, child. But others will come. The Omnitrix will always be hunted.'\n\n'Then I'll stop them too,' you say, and end the threat of Vilgax forever.\n\nEarth is safe. But you're different now. Harder. You've killed, even if it was a monster.",
+                location: "🏙️ Abandoned City",
+                ending: true,
+                achievement: "ULTIMATE VICTOR",
+                endingText: "👊 ENDING: You defeated Vilgax through overwhelming power. Earth is saved. You continue as Ben 10, humanity's greatest defender. But the victory came through violence. You sometimes wonder if there was a better way, but you sleep soundly knowing Earth is safe. You're the ultimate hero—powerful, decisive, victorious.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_mercy: {
+                text: "'I could destroy you,' you say, holding Vilgax at your mercy. 'But I won't. Leave Earth. Leave this galaxy. Never come back.'\n\nVilgax stares at you. 'Mercy? You're either the wisest wielder the Omnitrix has ever had, or the most foolish.'\n\n'Maybe both,' you admit. 'But I'm choosing to believe even you can change.'\n\nVilgax leaves. Whether he'll honor this mercy, only time will tell.",
+                location: "🏙️ Abandoned City",
+                ending: true,
+                achievement: "MERCIFUL HERO",
+                endingText: "🕊️ ENDING: You chose mercy over vengeance. Vilgax left Earth, shocked by your compassion. Some call you naive. Others call you the truest hero Earth has ever had. Vilgax never returns—your mercy broke something in him, made him question his path. You proved power isn't just about strength. It's about choices.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_creative_end: {
+                text: "You don't kill Vilgax. You don't let him go. Instead, using Grey Matter's intellect and the Omnitrix's technology, you reprogram his cybernetics.\n\n'What are you doing?' Vilgax demands.\n\n'Giving you a choice,' you explain. 'Your programming is forcing you to conquer. I'm removing that compulsion. Now you can choose who you want to be.'\n\nVilgax's eyes widen as his cybernetic impulses fade. For the first time in centuries, he's truly free to choose.",
+                location: "🏙️ Abandoned City",
+                choices: [
+                    { text: "See what he chooses", next: 'vilgax_redemption' }
+                ]
+            },
+
+            vilgax_redemption: {
+                text: "Vilgax stands there, processing his newfound freedom. Then, incredibly, he kneels.\n\n'I've conquered a hundred worlds. Destroyed millions. And a child showed me more wisdom than I've seen in a thousand years.'\n\n'So what now?' you ask.\n\n'Now... I try to undo some of the damage I've caused. If you'll allow it.'\n\nYou've turned your greatest enemy into an ally. Azmuth contacts you: 'Remarkable, Ben. Truly remarkable.'",
+                location: "🏙️ Abandoned City",
+                choices: [
+                    { text: "Build a new future together", next: 'perfect_ending_setup' }
+                ]
+            },
+
+            perfect_ending_setup: {
+                text: "With Vilgax's knowledge and resources, you rebuild the Plumbers into something greater. An intergalactic peacekeeping force.\n\nAzmuth makes you an official Omnitrix bearer. Gwen becomes a master magician. Grandpa Max leads the Plumbers.\n\nVilgax, impossibly, works to undo his past conquests, freeing worlds he once enslaved.\n\n'You've done something no one thought possible,' Azmuth tells you. 'You've brought peace, not through conquest, but through compassion and wisdom.'\n\nBut there's one more challenge ahead.",
+                location: "🛸 Plumber Headquarters - Earth",
+                choices: [
+                    { text: "Face the final test", next: 'final_test' }
+                ]
+            },
+
+            final_test: {
+                text: "Azmuth reveals a secret: 'The Omnitrix was a test. Not just of power, but of character. You've passed every challenge. But there's one final choice.'\n\nHe shows you a device. 'This can copy the Omnitrix's power to anyone. You could give humanity the power to transform. Democratize it. Or keep it yourself, remain the sole protector.'\n\nGwen and Grandpa look at you. Even Vilgax watches quietly. This is YOUR choice.",
+                location: "🛸 Azmuth's Laboratory",
+                choices: [
+                    { text: "Share the power with humanity", next: 'democracy_ending' },
+                    { text: "Keep the power and responsibility yourself", next: 'guardian_ending' },
+                    { text: "Destroy both devices and end the Omnitrix", next: 'sacrifice_ending' },
+                    { text: "Ask Azmuth about the true purpose", next: 'secret_ending_path' }
+                ]
+            },
+
+            democracy_ending: {
+                text: "You choose to share the power. Within months, people across Earth have Omnitrix replicas. Everyone can be a hero.\n\nBut power corrupts. Not everyone uses it wisely. Crime rises. Alien-human conflicts spark. The world descends into chaos.\n\n'I'm sorry, Ben,' Azmuth says sadly. 'Humanity wasn't ready. Your idealism was noble, but premature.'\n\nYou spend years trying to fix the mess you created. It's a hard lesson: good intentions aren't enough.",
+                location: "🌍 Earth - Chaos",
+                ending: true,
+                achievement: "IDEALIST'S FOLLY",
+                endingText: "⚖️ ENDING: You tried to give everyone power, believing in humanity's goodness. But power without wisdom creates chaos. You spend your life managing the consequences, a guardian of a broken dream. You meant well, but timing and wisdom matter as much as intention. Some gifts must be earned.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            guardian_ending: {
+                text: "You keep the Omnitrix. The responsibility stays with you.\n\n'I'll continue protecting Earth. Humanity will develop their own heroes in time. But for now, they need a guardian who's proven themselves.'\n\nAzmuth nods approvingly. Years pass. You grow stronger, wiser. New threats come—you stop them. Earth thrives under your protection.\n\nOn your 18th birthday, you finally pass the Omnitrix to a worthy successor. Your duty is complete.",
+                location: "🌍 Earth - Peaceful",
+                ending: true,
+                achievement: "ETERNAL GUARDIAN",
+                endingText: "🛡️ ENDING: You remained Earth's guardian, never abusing your power, never shirking your duty. You protected humanity until they could protect themselves. When you finally passed on the Omnitrix, it was to someone who earned it, just as you did. You were the hero Earth needed, at exactly the right time.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            sacrifice_ending: {
+                text: "'No one should have this much power,' you say, destroying both devices. The Omnitrix pulses once, then goes dark forever.\n\n'Ben, no!' Gwen cries.\n\n'It's the right choice,' you say firmly. 'Power like this creates targets, creates conflict. Humanity needs to stand on their own.'\n\nAzmuth looks at you with deep respect. 'You gave up ultimate power by choice. Few beings in the universe could do that.'\n\nYou live a normal life. But you know you made the right choice.",
+                location: "🛸 Azmuth's Laboratory",
+                ending: true,
+                achievement: "ULTIMATE SACRIFICE",
+                endingText: "🌟 ENDING: You destroyed the Omnitrix, giving up ultimate power for the greater good. Humanity learns to defend itself without relying on alien technology. It's harder, slower, but they grow stronger for it. You live knowing you could have been a god, but chose to be human. That's the truest heroism.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            secret_ending_path: {
+                text: "'Azmuth... what's the REAL purpose of the Omnitrix?' you ask. 'Not just protection. There's something more, isn't there?'\n\nAzmuth's eyes widen. 'Remarkable. You're the first wielder to ask that question.'\n\nHe reveals the truth: 'The Omnitrix is a bridge. Its true purpose is to unite all intelligent species through understanding. By becoming them, you can truly understand them. Empathy through transformation.'\n\n'So this whole time...'\n\n'You've been preparing for something greater than heroism. Unity.'",
+                location: "🛸 Azmuth's Laboratory",
+                choices: [
+                    { text: "Ask what comes next", next: 'secret_revelation' }
+                ]
+            },
+
+            secret_revelation: {
+                text: "Azmuth brings you to a hidden chamber. Inside, a massive device—the Unitrix.\n\n'The Omnitrix was preparation. THIS is the goal. The Unitrix can connect all species' consciousnesses. Create true universal empathy. End all war forever.'\n\n'But it requires a host. Someone who's proven they can understand multiple perspectives. Someone who's shown wisdom, mercy, and strength. Someone like you, Ben.'\n\nYour choice will echo through eternity.",
+                location: "🛸 Secret Chamber",
+                choices: [
+                    { text: "Become the Unitrix host", next: 'transcendence_ending' },
+                    { text: "This power is too dangerous, refuse", next: 'humble_wisdom_ending' },
+                    { text: "Suggest another way", next: 'ultimate_secret_ending' }
+                ]
+            },
+
+            transcendence_ending: {
+                text: "You accept. The Unitrix bonds with you. Suddenly, you feel EVERYTHING. Every species, every mind, connected through you.\n\nYou become a living bridge between all intelligent life. War ends. Conflict dissolves. Unity spreads across the galaxy.\n\nBut you're no longer really Ben. You're something more. Something greater. You've transcended your humanity to save everyone.\n\nIt's beautiful. It's lonely. It's forever.",
+                location: "🌌 Everywhere and Nowhere",
+                ending: true,
+                achievement: "TRANSCENDENT ONE",
+                endingText: "✨ ENDING: You became something beyond human, beyond hero. You united the galaxy through sacrifice of self. Every species benefits from your choice. You exist in all minds, feeling all feelings, knowing all thoughts. You saved everyone by giving up everything. The universe will never forget Ben Tennyson.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            humble_wisdom_ending: {
+                text: "'That kind of power... even with good intentions, it's too much control over free will,' you say. 'Every species should choose unity, not have it forced.'\n\nAzmuth actually smiles. 'You continue to surprise me. You're right. Forced unity isn't true unity at all.'\n\nHe dismantles the Unitrix. 'Perhaps the universe isn't ready. Or perhaps true unity must be earned, not given.'\n\nYou return to Earth, continuing as Ben 10. You plant seeds of unity through your actions, not through force. Slowly, the galaxy changes.",
+                location: "🌍 Earth",
+                ending: true,
+                achievement: "WISE BEYOND YEARS",
+                endingText: "🧠 ENDING: You recognized that even benevolent control is still control. You chose the harder path—inspiring unity through example rather than imposing it through power. It takes generations, but true lasting peace begins with free choice. You remain Ben 10, and through your adventures, you show the universe what unity can look like. Wisdom over power. Always.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            ultimate_secret_ending: {
+                text: "'What if we don't force unity... what if we teach it?' you suggest. 'Use the Omnitrix's transformation ability to create an academy. Where people from any species can learn to understand each other.'\n\nAzmuth's face lights up. 'An academy of transformation and empathy... brilliant!'\n\nTogether with Vilgax's resources, the Plumbers' organization, Gwen's magic, and Azmuth's technology, you create something new. The Omnitrix Academy.\n\nYoung beings from across the galaxy come to learn understanding through transformation.",
+                location: "🛸 Omnitrix Academy - Founded",
+                choices: [
+                    { text: "See the academy's impact", next: 'academy_success' }
+                ]
+            },
+
+            academy_success: {
+                text: "Years pass. The academy grows. Graduates spread across the galaxy, teaching empathy, resolving conflicts, building bridges.\n\nYou're no longer the only one with an Omnitrix. Now there are hundreds of wielders, all trained in wisdom and responsibility.\n\n'You found the answer,' Azmuth says. 'Not forced unity. Not singular heroism. But education, empathy, and earned understanding.'\n\nThe galaxy transforms, slowly but surely, into something better.\n\nBut you sense something. A hidden test. You ask Azmuth: 'Is there a final challenge?'",
+                location: "🛸 Omnitrix Academy - 10 Years Later",
+                choices: [
+                    { text: "Accept the final challenge", next: 'final_secret_challenge' }
+                ]
+            },
+
+            final_secret_challenge: {
+                text: "Azmuth reveals the ultimate secret: 'The Omnitrix has one final form. One final transformation. Not into an alien species... but into pure potential. The ability to become whatever the universe needs most at any moment.'\n\n'But accessing it requires giving up your identity completely. You'd become pure purpose. No more Ben Tennyson. Just... the Answer.'\n\nGwen grabs your hand. 'Ben, you've done enough. You don't have to—'\n\n'But I can,' you say quietly. This is the choice only you can make.",
+                location: "🛸 Azmuth's Laboratory - Final Chamber",
+                choices: [
+                    { text: "Become pure purpose - the Answer", next: 'true_ultimate_ending' },
+                    { text: "Stay as Ben, let the universe grow on its own", next: 'perfect_ending' }
+                ]
+            },
+
+            true_ultimate_ending: {
+                text: "You transform one final time. Your body dissolves into pure green energy. You're no longer Ben. You're everywhere the universe needs you.\n\nWhen a planet faces extinction, you're there as whatever can save it. When species are on the brink of war, you're there as the mediator. When hope dies, you're there to reignite it.\n\nYou are the Omnitrix's final evolution. Not a wielder. Not a hero. The living embodiment of potential and hope.\n\nBen Tennyson is gone. But he's also everywhere. Forever.",
+                location: "🌌 Beyond Space and Time",
+                ending: true,
+                achievement: "THE ANSWER",
+                endingText: "🌟 SECRET ENDING: You discovered the Omnitrix's ultimate purpose and accepted it fully. Ben Tennyson ceased to exist as an individual, but became something far greater—pure potential given form. Whenever anyone in the universe needs hope, needs help, needs a hero—you're there. Not as Ben. As the Answer. The ultimate sacrifice. The ultimate heroism. The ultimate ending.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            perfect_ending: {
+                text: "'No,' you say firmly. 'I've learned that the universe doesn't need a savior who gives up their identity. It needs people—beings—who choose to be better every day.'\n\nYou keep your identity. You keep being Ben. You continue running the academy, training new heroes, making the universe better one choice at a time.\n\n'That,' Azmuth says with pride, 'is the wisest choice yet. True heroism isn't sacrifice of self. It's improvement of self while helping others.'\n\nYou've found balance. Power and humility. Strength and wisdom. Identity and purpose.",
+                location: "🌍 Earth - Home",
+                ending: true,
+                achievement: "PERFECT BALANCE",
+                endingText: "⚖️ TRUE ENDING: You realized that heroism doesn't require martyrdom. You kept your identity, your relationships, your humanity—while still changing the universe for the better. The academy thrives. The galaxy heals. And Ben Tennyson lives, loves, and continues being the hero the universe needs. Not by losing yourself, but by being yourself. The perfect ending.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_power_fight: {
+                text: "You transform into Way Big, your most powerful form. The battle is apocalyptic—two giants exchanging blows that shake the Earth.\n\nBut Vilgax has fought beings like Way Big before. He knows the weaknesses. He adapts. You're losing.\n\nYour timeout happens. You're small again. Vilgax towers over you.\n\n'You relied on power alone,' he says. 'Predictable.'",
+                location: "🏜️ Desert Battlefield",
+                ending: true,
+                achievement: "OVERWHELMING FORCE",
+                endingText: "💀 ENDING: You tried to match Vilgax's strength with pure power. But he's fought across the galaxy for centuries. Raw power without strategy was never going to be enough. He takes the Omnitrix and conquers Earth. You were strong, but strength alone isn't victory.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_smart_fight: {
+                text: "You don't try to overpower Vilgax. Instead, you cycle through aliens strategically.\n\nXLR8 to dodge. Grey Matter to sabotage his armor. Upgrade to hack his weapons. Heatblast to create a perimeter.\n\nVilgax is stronger, but you're smarter. You wear him down, exploit every weakness, turn his own technology against him.\n\nFinally, he falls. Defeated not by power, but by intelligence and adaptability.",
+                location: "🏜️ Desert Battlefield",
+                choices: [
+                    { text: "Decide Vilgax's fate", next: 'vilgax_fate_choice' }
+                ]
+            },
+
+            vilgax_fate_choice: {
+                text: "Vilgax lies defeated. The Plumbers arrive to take him into custody.\n\n'What do we do with him?' they ask you. 'Prison? Exile? Execution?'\n\nYou're only a kid, but somehow, this choice falls to you. The fate of the galaxy's most dangerous warlord.",
+                location: "🏜️ Desert Battlefield",
+                choices: [
+                    { text: "Imprison him securely", next: 'vilgax_imprisoned' },
+                    { text: "Offer rehabilitation", next: 'vilgax_creative_end' },
+                    { text: "Let the Plumbers decide", next: 'defer_choice' }
+                ]
+            },
+
+            vilgax_imprisoned: {
+                text: "Vilgax is locked in the Null Void, an inescapable prison dimension. He can't threaten anyone anymore.\n\nYou continue as Ben 10. Over the years, you face other threats, grow stronger, wiser. The Omnitrix becomes a symbol of hope across the galaxy.\n\nOn quiet nights, you sometimes wonder if Vilgax is still in there, waiting. But Earth is safe. That's what matters.",
+                location: "🌍 Earth - Safe",
+                ending: true,
+                achievement: "JUSTICE SERVED",
+                endingText: "⚖️ ENDING: You defeated Vilgax and ensured he could never harm anyone again. Earth thrives under your protection. You become a legendary hero, feared by villains, beloved by civilians. You made the practical choice. Sometimes that's what heroism requires. You saved the world, and kept it saved.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            defer_choice: {
+                text: "You realize you're just a kid. This decision is too big for you alone.\n\n'The Plumbers should decide,' you say. 'Based on law, precedent, and justice. Not based on one person's feelings.'\n\nThe Plumbers appreciate your wisdom. They hold a proper trial. Vilgax is imprisoned, but with possibility of eventual rehabilitation.\n\nYou continue your adventures, knowing you made a mature, responsible choice.",
+                location: "🛸 Plumber Base",
+                ending: true,
+                achievement: "WISE BEYOND YEARS",
+                endingText: "🧠 ENDING: You recognized the limits of your authority and deferred to proper justice. This maturity serves you well. You grow into one of the greatest Plumber agents ever, known not just for power but for wisdom. You prove that being a hero isn't about making every decision yourself—it's about knowing when to trust others.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            master_control_attempt: {
+                text: "You try to unlock the Master Control—the Omnitrix's full power. No timeouts, instant transformations, unlimited potential.\n\nBut you don't know how. You fumble with the dial. Vilgax uses the distraction to attack!\n\nHe grabs you. The Omnitrix is within his grasp. In desperation, you slam the dial.\n\nRandom transformation. You're... Wildmutt? Not ideal for this fight.",
+                location: "🏜️ Desert Battlefield",
+                ending: true,
+                achievement: "RECKLESS ROOKIE",
+                endingText: "💀 ENDING: You tried to access power you weren't ready for, at the worst possible moment. Vilgax exploits your confusion, defeats you, and takes the Omnitrix. Earth falls. The lesson: Master the basics before reaching for the ultimate. Ambition without preparation leads to failure.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_negotiation: {
+                text: "'Wait,' you say. 'Before we fight... why do you want the Omnitrix so badly?'\n\nVilgax actually pauses. 'To rule the galaxy.'\n\n'But why? What do you get from ruling? What's the endgame?'\n\nFor the first time, Vilgax seems uncertain. 'I... it's what I do. What I've always done.'\n\n'But does it make you happy?' you press. 'Has conquest ever actually satisfied you?'",
+                location: "🛸 Vilgax's Ship - Command Deck",
+                choices: [
+                    { text: "Continue reasoning with him", next: 'vilgax_philosophy' }
+                ]
+            },
+
+            vilgax_philosophy: {
+                text: "Vilgax is quiet for a long moment. 'No,' he finally admits. 'Every world I conquer leaves me empty. Every victory feels hollow. I thought the Omnitrix would be different. That ultimate power would finally be enough.'\n\n'It won't be,' you say quietly. 'I have it, and I'm still just... me. Power doesn't fill emptiness. Purpose does.'\n\nVilgax stares at you. This child is breaking through centuries of conditioning.",
+                location: "🛸 Vilgax's Ship - Command Deck",
+                choices: [
+                    { text: "Offer him a new purpose", next: 'vilgax_redemption_offer' }
+                ]
+            },
+
+            vilgax_redemption_offer: {
+                text: "'Help me instead,' you offer. 'Use your knowledge to protect instead of conquer. Prove that even the galaxy's greatest villain can change.'\n\nVilgax looks at his hands—hands that have destroyed so much. 'You would trust me? After everything?'\n\n'I'm giving you the chance to trust yourself,' you reply. 'To be something more than what you've been programmed to be.'",
+                location: "🛸 Vilgax's Ship - Command Deck",
+                choices: [
+                    { text: "See his choice", next: 'vilgax_redemption' }
+                ]
+            },
+
+            vilgax_confrontation_solo: {
+                text: "You face Vilgax alone. No backup. Just you and the Omnitrix against the galaxy's most feared warlord.\n\nThe battle is brutal. You cycle through every alien, using everything you've learned. But Vilgax is relentless, experienced, and furious.\n\n'You're skilled,' he admits, grabbing you mid-transformation. 'But skill isn't enough against experience.'\n\nYour timeout happens. You're vulnerable. This is it.",
+                location: "🏙️ City Ruins",
+                ending: true,
+                achievement: "BRAVE BUT FOOLISH",
+                endingText: "💀 ENDING: Your courage was incredible, but you weren't ready to face Vilgax alone. Sometimes bravery isn't enough. Sometimes you need help. He takes the Omnitrix and conquers Earth. Your sacrifice meant something, but victory requires wisdom along with courage.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            desperate_alliance: {
+                text: "You broadcast a call for help to everyone—Plumbers, governments, even criminals whose planets Vilgax has threatened.\n\nThey come. An alliance of Earth and alien forces, united against a common threat.\n\n'You brought together enemies,' Vilgax observes as his ship is surrounded. 'Impressive. But not enough.'\n\nThe battle is chaotic. You coordinate the alliance while fighting Vilgax directly. It's overwhelming, messy, but somehow... working.",
+                location: "🌍 Earth Orbit - Final Battle",
+                choices: [
+                    { text: "Lead the final push", next: 'alliance_victory' }
+                ]
+            },
+
+            alliance_victory: {
+                text: "With everyone working together, you defeat Vilgax's forces. He's alone, cornered, defeated by unity he never understood.\n\n'You won through cooperation,' he says bitterly. 'The one strategy I never mastered.'\n\nThe alliance holds. You've proven that together, even the impossible can be overcome.\n\nYou become a symbol of unity. Ben 10, the hero who taught the universe to work together.",
+                location: "🌍 Earth - Victory",
+                ending: true,
+                achievement: "UNITY'S CHAMPION",
+                endingText: "🤝 ENDING: You defeated Vilgax not through individual power, but through unity. The alliance you forged becomes permanent—a coalition of worlds working together. You continue as Ben 10, but now you're more than a hero. You're a diplomat, a bridge between worlds. You proved that together, anything is possible.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            vilgax_confrontation_plumbers_weak: {
+                text: "The Plumbers aren't ready, but you attack anyway. Vilgax's forces overwhelm you.\n\nYou fight desperately, but unprepared allies are worse than no allies. They get in each other's way, make tactical errors, fall to Vilgax's drones.\n\n'You brought me victims,' Vilgax says coldly. 'Thank you.'\n\nIt's a massacre. You tried to be brave, but you led good people to their deaths.",
+                location: "🛸 Vilgax's Ship - Slaughter",
+                ending: true,
+                achievement: "COSTLY MISTAKE",
+                endingText: "💀 ENDING: Your impatience cost lives. The Plumbers weren't ready, and you knew it, but you charged ahead anyway. Leadership isn't just about being brave—it's about knowing when your people are ready for battle. You survive, but the guilt follows you forever. Good intentions don't erase bad decisions.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+
+            weakened_vilgax_fight: {
+                text: "You track Vilgax to an abandoned military base. He's weakened, repairing himself, vulnerable.\n\nYou could strike now, end the threat while he's weak. But something about it feels... wrong. Dishonorable.\n\n'Ben,' Grandpa warns. 'This might be our only chance.'\n\n'I know,' you reply. 'But is this who we want to be? Attacking a wounded enemy?'",
+                location: "🏚️ Abandoned Base - Outside",
+                choices: [
+                    { text: "Attack while he's weak", next: 'weakened_vilgax_fight' },
+                    { text: "Wait for him to recover, fight honorably", next: 'honorable_duel' }
+                ]
+            },
+
+            honorable_duel: {
+                text: "You wait. Days pass. Vilgax repairs himself fully. When you finally confront him, he's at full strength.\n\n'You waited,' he says, surprised. 'Why?'\n\n'Because I want to prove I can beat you at your best. Not when you're helpless.'\n\nVilgax actually smiles. 'Then let us fight with honor, Ben Tennyson.'\n\nThe battle is fierce but clean. Two warriors at their peak. And somehow, your honor gives you strength.",
+                location: "🏜️ Desert Arena",
+                choices: [
+                    { text: "Fight with everything you have", next: 'honorable_victory' }
+                ]
+            },
+
+            honorable_victory: {
+                text: "You defeat Vilgax in honest combat. He lies there, beaten but respected.\n\n'You are worthy of the Omnitrix,' he says. 'More worthy than I ever was. That honor... it makes you stronger than mere power ever could.'\n\nHe surrenders willingly. The Plumbers take him, but he goes quietly, with dignity.\n\nYou've won not just a battle, but respect. Even from your worst enemy.",
+                location: "🏜️ Desert Arena - Aftermath",
+                ending: true,
+                achievement: "HONORABLE WARRIOR",
+                endingText: "⚔️ ENDING: You defeated Vilgax through skill and honor. Your victory is clean, earned, respected across the galaxy. You become known not just as Ben 10, but as a warrior of integrity. Even former enemies respect you. You prove that how you win matters as much as winning itself. Honor and strength together create true heroism.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "THE ROAD NOT TAKEN",
+            "WILD CARD",
+            "RECKLESS ROOKIE",
+            "BRAVE BUT FOOLISH",
+            "SWIFT JUSTICE",
+            "ULTIMATE VICTOR",
+            "MERCIFUL HERO",
+            "ULTIMATE SACRIFICE",
+            "WISE BEYOND YEARS",
+            "THE ANSWER"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("MASTER OF THE OMNITRIX")) {
+                    setTimeout(() => {
+                        achievements.push("MASTER OF THE OMNITRIX");
+                        showAchievementPopup("MASTER OF THE OMNITRIX");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "MASTER OF THE OMNITRIX";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("MASTER OF THE OMNITRIX") ? 1 : 0);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "MASTER OF THE OMNITRIX" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
