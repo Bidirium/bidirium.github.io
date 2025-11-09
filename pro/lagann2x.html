@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pierce The Heavens Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a0a 50%, #2a1a0a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #ff6600;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(255, 102, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #ff6600;
+            color: #ff6600;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #ff6600, #ffaa00, #ff0000);
+            border-color: #ffaa00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #ff6600;
+            box-shadow: 0 20px 25px -5px rgba(255, 102, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #ff6600;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .drill-icon {
+            display: inline-block;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #ff6600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #ff6600;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #663300;
+            border-color: #663300;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #ff6600;
+            color: #000;
+            box-shadow: 0 0 15px #ff6600;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 20, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #ff6600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #ff6600;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 20, 0, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #ff6600;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #663300;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #663300, #ff6600, #ffaa00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(100, 50, 0, 0.5);
+            color: #ff6600;
+            border: 1px solid #ff6600;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #ff6600, #ffaa00, #ff0000);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ffaa00;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ff6600;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #ffaa00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #663300;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #ff6600;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #ff6600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #ff6600;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff6600;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #663300;
+        }
+
+        .history-title {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #ff6600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #ff6600;
+        }
+
+        .history-button.current {
+            background-color: #ff6600;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(50, 20, 0, 0.5);
+            color: #ff6600;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(100, 50, 0, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #663300;
+        }
+
+        .history-hint {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #663300;
+        }
+
+        .quest-log-title {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #ff6600;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #663300;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🔥</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="drill-icon">🌀</span>
+                    PIERCE THE HEAVENS
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>🔥</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ YOUR PATH ENDS HERE ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                JOURNEY LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "You're digging in the darkness underground, just like every day of your life. The village chief says the ceiling could collapse, that you should never go deeper.\n\nBut today, your drill hits something. Metal. A face. Something that shouldn't exist down here.\n\nYour friend warns you to leave it alone.",
+                location: "🌑 Underground Village - Jiha",
+                choices: [
+                    { text: "Dig it out completely", next: 'dig_mecha' },
+                    { text: "Report it to the chief", next: 'report_find' },
+                    { text: "Leave it and go back to normal work", next: 'ignore_destiny' }
+                ]
+            },
+            dig_mecha: {
+                text: "You spend hours excavating. It's a face—a mechanical face with a drill-shaped key slot. Your drill fits perfectly.\n\nSuddenly, the ceiling explodes. A massive beast crashes through, and a girl in strange clothes falls with it, fighting the creature.\n\n'Get to cover!' she yells.",
+                location: "🌑 Underground Village - Under Attack",
+                choices: [
+                    { text: "Activate the face-mecha to fight", next: 'first_battle' },
+                    { text: "Help evacuate villagers", next: 'evacuate_route' },
+                    { text: "Hide and wait it out", next: 'coward_path' }
+                ]
+            },
+            report_find: {
+                text: "The village chief is furious. 'I told you never to dig deeper! This could destabilize everything!'\n\nHe orders it buried. That night, the ceiling explodes anyway. The beast attacks. Without the face-mecha, you're defenseless.\n\nYour village is destroyed.",
+                location: "🌑 Underground Village - Ruins",
+                ending: true,
+                achievement: "OBEYED FEAR",
+                endingText: "💀 ENDING: You let fear and authority stop you from discovering your destiny. The attack came regardless, but without the tools to fight back, everything was lost. Sometimes, the rules meant to protect us become our chains.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ignore_destiny: {
+                text: "You walk away from the metal face. Life continues as normal. Digging, eating, sleeping.\n\nWeeks later, the ceiling collapses during a routine dig. The village is buried. You die never knowing what could have been.",
+                location: "🌑 Underground Village",
+                ending: true,
+                achievement: "OBEYED FEAR",
+                endingText: "💀 ENDING: You chose safety over curiosity, comfort over destiny. The collapse happened anyway. You lived your whole life in darkness, never seeing the sky. Some prisons are made of safety and routine.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            coward_path: {
+                text: "You hide while others fight. The girl in strange clothes and an older warrior defeat the beast, but many villagers die in the chaos.\n\nAfter, the survivors look at you with contempt. You hid while they bled.\n\nYou're exiled for cowardice.",
+                location: "🌑 Underground Village - Aftermath",
+                ending: true,
+                achievement: "OBEYED FEAR",
+                endingText: "💀 ENDING: You had the power but lacked the will. The mecha could have saved lives, but you chose self-preservation. You survive, but you're less than alive—a ghost haunted by 'what if.' Courage isn't the absence of fear; it's acting despite it.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            evacuate_route: {
+                text: "You help villagers escape, but the beast is relentless. People are dying. The girl fighting alone can't protect everyone.\n\n'Use the mecha!' she screams at you. 'Stop being useless and FIGHT!'",
+                location: "🌑 Underground Village - Chaos",
+                choices: [
+                    { text: "Get in the face-mecha and fight", next: 'reluctant_hero' },
+                    { text: "Continue evacuating civilians", next: 'sacrifice_route' }
+                ]
+            },
+            reluctant_hero: {
+                text: "You jump into the cockpit. The face-mecha activates. Pure instinct takes over—you're not piloting it, you're BECOMING it.\n\nTogether with the girl's mecha, you destroy the beast. But the village is ruined. The ceiling's broken. For the first time in your life, you see the sky.",
+                location: "🌑 Surface - First Sight",
+                choices: [
+                    { text: "Look up at the stars", next: 'sky_awakening' }
+                ]
+            },
+            sky_awakening: {
+                text: "You stare upward, mesmerized. Stars. Endless sky. Space beyond imagining. Everything you were told was impossible... exists.\n\nThe girl approaches. 'First time seeing the surface? Gets everyone like that.'\n\nShe introduces herself and explains the situation. The surface is ruled by the Spiral King. But there's a rebellion forming.",
+                location: "🌑 Surface - First Night",
+                choices: [
+                    { text: "Join the rebellion", next: 'join_rebellion' },
+                    { text: "Try to help rebuild", next: 'rebuild_attempt' }
+                ]
+            },
+            sacrifice_route: {
+                text: "You continue helping villagers while the girl fights alone. She's skilled but overwhelmed. A claw catches her mecha—she's going down.\n\nYou realize too late: trying to save everyone means saving no one. The village falls.",
+                location: "🌑 Underground Village - Destroyed",
+                ending: true,
+                achievement: "MISPLACED HEROISM",
+                endingText: "💀 ENDING: Your heart was in the right place, but good intentions aren't enough. Leadership means making hard choices—sometimes you must fight to protect. You tried to be everyone's savior and became no one's hero. The strong must fight so the weak can flee.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            first_battle: {
+                text: "You leap into the cockpit. Your drill key turns. The face-mecha roars to life!\n\n'WHO THE HELL DO YOU THINK I AM?!' The words burst from your soul.\n\nYou charge the beast. Pure instinct. Pure will. The drill on your mecha spins faster, brighter. You pierce through the beast's armor. Victory!",
+                location: "🌑 Underground Village - First Victory",
+                choices: [
+                    { text: "Check on the strange girl", next: 'meet_yoko' }
+                ]
+            },
+            meet_yoko: {
+                text: "The girl introduces herself: 'I'm from above ground. That beast was a Beastman—they serve someone called the Spiral King. He rules the surface and hunts humans.'\n\nShe looks at your mecha. 'You're a natural pilot. We could use someone like you.'\n\nThe ceiling is destroyed. You can see the sky. Stars. Freedom.",
+                location: "🌑 Surface - First Night",
+                choices: [
+                    { text: "Join her rebellion", next: 'join_rebellion' },
+                    { text: "Try to rebuild the village", next: 'rebuild_attempt' },
+                    { text: "Ask more about the surface", next: 'learn_surface' }
+                ]
+            },
+            rebuild_attempt: {
+                text: "'Rebuild?' The girl looks at you like you're insane. 'The Spiral King knows you're here now. More Beastmen will come. You can hide underground or fight on the surface. There's no middle ground.'\n\nThat night, another attack confirms her words.",
+                location: "🌑 Underground Village - Under Siege",
+                choices: [
+                    { text: "Fine, we'll fight", next: 'join_rebellion' }
+                ]
+            },
+            learn_surface: {
+                text: "She tells you about the surface world. Endless sky. Open plains. But also the Spiral King's tyranny. Humans forced into villages, hunted if they resist, kept weak and scattered.\n\n'We're building an army to fight back. But we need pilots. People with fighting spirit.' She looks at you. 'You've got it. That thing you yelled during battle—that's the spirit we need.'",
+                location: "🌑 Surface - First Night",
+                choices: [
+                    { text: "I'm in. Let's fight", next: 'join_rebellion' },
+                    { text: "This is too big for me", next: 'retreat_underground' }
+                ]
+            },
+            retreat_underground: {
+                text: "You try to go back underground, to your old life. But the village is destroyed. The survivors scatter. You dig alone in the ruins.\n\nWeeks later, Beastmen find you. Without allies, without your mecha, you're just prey.",
+                location: "🌑 Underground Ruins",
+                ending: true,
+                achievement: "REFUSED THE CALL",
+                endingText: "💀 ENDING: You glimpsed freedom and chose chains. You saw the sky and retreated to darkness. Not everyone is ready to be a hero. Some people, when given wings, choose to stay grounded. You survive, but you never truly live.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            join_rebellion: {
+                text: "You join the surface rebellion. The leader is a man named Kamina—brash, confident, seemingly reckless. He sees your mecha.\n\n'A Gunman! And you can pilot it! Brother, with you, me, and my Gurren, we'll pierce the heavens themselves!'\n\nHis energy is infectious. Terrifying. Inspiring.",
+                location: "⭐ Rebel Camp",
+                choices: [
+                    { text: "Train with Kamina", next: 'kamina_training' },
+                    { text: "Scout enemy positions", next: 'scout_mission' },
+                    { text: "Help fortify the base", next: 'defensive_prep' }
+                ]
+            },
+            defensive_prep: {
+                text: "You spend weeks building defenses. Trenches. Walls. Backup plans. Kamina mocks you: 'Defense is for people who plan to lose!'\n\nBut when the Beastmen attack in force, your preparations save lives. Kamina grudgingly admits: 'Guess having a strategist isn't so bad.'",
+                location: "⭐ Rebel Camp - Fortified",
+                choices: [
+                    { text: "Now let's take the fight to them", next: 'first_offensive_prepared' }
+                ]
+            },
+            scout_mission: {
+                text: "You take your mecha on reconnaissance. You spot a massive Beastman fortress. Four-legged, city-sized, armed to the teeth.\n\nBut you also find its weak point—a thermal exhaust port. One shot, perfectly placed, could trigger a chain reaction.\n\nThis information could win the war. Or get everyone killed trying.",
+                location: "🏔️ Beastman Territory",
+                choices: [
+                    { text: "Report back with intel", next: 'strategic_path' }
+                ]
+            },
+            strategic_path: {
+                text: "You show the intelligence to Kamina. He grins. 'A weak spot! Perfect! We'll hit them tomorrow!'\n\n'Wait,' you say. 'We need a plan. Diversions. Timing. Just charging in will get us killed.'\n\nKamina's smile fades. 'You sound like someone who's already given up.'",
+                location: "⭐ Rebel Camp - War Room",
+                choices: [
+                    { text: "Insist on strategic planning", next: 'strategy_success' },
+                    { text: "Trust Kamina's instincts", next: 'kamina_way' }
+                ]
+            },
+            strategy_success: {
+                text: "You devise a three-pronged attack. Diversions, fallback points, precise timing. Kamina hates it but agrees.\n\nThe battle is textbook. Your planning minimizes casualties. The fortress falls. Victory!\n\nBut Kamina pulls you aside: 'We won, yeah. But wars aren't won by playing it safe. At some point, you'll need to do the impossible. Will you be ready?'",
+                location: "⚡ Captured Fortress",
+                choices: [
+                    { text: "Strategy and spirit can coexist", next: 'balanced_path' }
+                ]
+            },
+            kamina_way: {
+                text: "'NOW you're talking!' Kamina charges in, guns blazing. It's chaos. It's reckless. It's somehow WORKING.\n\nHis sheer audacity throws the enemy off. They can't predict someone this insane. The fortress falls through pure momentum and fighting spirit.\n\nBut casualties are high. Too high.",
+                location: "⚡ Captured Fortress",
+                choices: [
+                    { text: "We need to be smarter next time", next: 'balanced_path' },
+                    { text: "Victory is victory", next: 'reckless_path' }
+                ]
+            },
+            reckless_path: {
+                text: "You embrace Kamina's philosophy completely. Attack after attack, you charge forward with pure fighting spirit. You win battles, but lose soldiers.\n\nOne day, you charge into an obvious trap. Kamina dies protecting you from your own recklessness.\n\nWith his last breath: 'Don't just copy me... find your own way... believe in yourself...'",
+                location: "⚡ Battlefield - Tragedy",
+                ending: true,
+                achievement: "MISPLACED HEROISM",
+                endingText: "💀 ENDING: You learned Kamina's passion but not his wisdom. He was reckless, yes, but he also knew when to retreat, when to adapt. You became a caricature of courage—all attack, no thought. Fighting spirit without wisdom is just violence. True strength requires balance.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            balanced_path: {
+                text: "You find your own style—Kamina's passion tempered with strategy. Planning that leaves room for the impossible. Logic that doesn't crush spirit.\n\nKamina approves: 'Now you're not just copying me. You're becoming YOU. That's what I've been waiting for.'",
+                location: "⚡ Captured Fortress",
+                choices: [
+                    { text: "Prepare for the next phase", next: 'midgame_arc' }
+                ]
+            },
+            kamina_training: {
+                text: "Kamina teaches you his philosophy: 'Don't believe in yourself. Believe in me who believes in you!'\n\nHe's larger than life. Fearless. Under his wing, you start to feel that same fire. That same refusal to accept limits.\n\nBut you also notice—he hides his doubts behind bravado.",
+                location: "⭐ Rebel Camp - Training",
+                choices: [
+                    { text: "Ask about his doubts", next: 'kamina_truth' },
+                    { text: "Just soak up his confidence", next: 'surface_confidence' }
+                ]
+            },
+            kamina_truth: {
+                text: "Late one night, you ask him. He's silent for a long moment. 'You noticed, huh? Yeah, I'm terrified most of the time. But someone's gotta be the guy who acts like we can win. So I decided that's me.'\n\nHe grins. 'But you? You've got real strength. You just don't see it yet.'",
+                location: "⭐ Rebel Camp - Night",
+                choices: [
+                    { text: "Learn to believe in yourself", next: 'self_belief_path' }
+                ]
+            },
+            surface_confidence: {
+                text: "You try to emulate Kamina completely—his bravado, his recklessness, his speeches. But it feels hollow. You're wearing someone else's skin.\n\nKamina notices: 'Stop trying to BE me. The world doesn't need two of me. It needs YOU. Figure out who that is.'",
+                location: "⭐ Rebel Camp",
+                choices: [
+                    { text: "Search for your own identity", next: 'self_belief_path' }
+                ]
+            },
+            self_belief_path: {
+                text: "You stop trying to copy anyone. You combine your analytical mind with newfound courage. Strategic but bold. Thoughtful but decisive.\n\nKamina watches you plan an attack and execute it flawlessly. 'There it is. THAT'S the guy who'll change everything. Not me. You.'",
+                location: "⚡ Battlefield - Evolution",
+                choices: [
+                    { text: "Lead the next major operation", next: 'midgame_arc' }
+                ]
+            },
+            first_offensive_prepared: {
+                text: "Your fortifications hold. Now it's time to attack. Kamina wants to charge their capital immediately. You suggest hitting supply lines first.\n\nThe argument gets heated. The team is watching. This is a leadership moment.",
+                location: "⭐ Rebel Camp - Strategy Debate",
+                choices: [
+                    { text: "Defer to Kamina's leadership", next: 'defer_kamina' },
+                    { text: "Argue for strategic targets", next: 'strategic_argument' },
+                    { text: "Propose a compromise plan", next: 'compromise_path' }
+                ]
+            },
+            defer_kamina: {
+                text: "You let Kamina lead. The assault on the capital is bold, inspiring, and poorly planned. You break through initial defenses but get trapped in the capital city.\n\nKamina fights desperately to get everyone out. He succeeds, but takes a fatal wound. 'I got cocky... You were right... be better than me...'",
+                location: "🏛️ Enemy Capital - Retreat",
+                choices: [
+                    { text: "Kamina's death changes everything", next: 'kamina_death_early' }
+                ]
+            },
+            kamina_death_early: {
+                text: "Kamina is dead. The rebellion is shattered. Without his energy, people lose hope. Some blame you for not speaking up.\n\nYou're left holding together a fractured movement, haunted by 'what if.' You became a follower when you needed to be a leader.",
+                location: "⭐ Rebel Camp - Mourning",
+                ending: true,
+                achievement: "LOST POTENTIAL",
+                endingText: "💔 ENDING: Sometimes loyalty means disagreeing with those we admire. Kamina needed someone to challenge him, not just follow him. You let your hero die for lack of a partner who'd say 'no.' Leadership isn't about deferring—it's about collaboration.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            strategic_argument: {
+                text: "You argue hard. Supply lines. Logistics. Kamina gets frustrated: 'You think too much! Sometimes you gotta just GO FOR IT!'\n\nThe team is divided. Half want Kamina's bold strike. Half want your careful plan. The unity fractures.",
+                location: "⭐ Rebel Camp - Division",
+                choices: [
+                    { text: "Split forces (both plans)", next: 'split_disaster' },
+                    { text: "Find common ground", next: 'compromise_path' }
+                ]
+            },
+            split_disaster: {
+                text: "You split the team. Half attack supply lines. Half assault the capital. Both forces are too weak. Both fail.\n\nKamina's group is wiped out. Your group barely escapes. The rebellion is crippled. Divided, you fall.",
+                location: "⚡ Multiple Battlefields - Defeat",
+                ending: true,
+                achievement: "DIVIDED WE FALL",
+                endingText: "💀 ENDING: 'United we stand, divided we fall.' You learned this the hard way. Compromise doesn't mean splitting the difference—it means finding a third option both sides can support. You chose competition over collaboration. The Spiral King wins.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            compromise_path: {
+                text: "'Wait,' you say. 'What if we hit supply lines WHILE making noise near the capital? Draw them out, cut their logistics, THEN strike when they're weak?'\n\nKamina's eyes light up. 'Now THAT'S what I'm talking about! Strategy AND style!' This is true partnership.",
+                location: "⭐ Rebel Camp - United",
+                choices: [
+                    { text: "Execute the combined plan", next: 'midgame_arc' }
+                ]
+            },
+            midgame_arc: {
+                text: "Your combined operations are devastating. The Spiral King's forces retreat. You capture territory. Free villages. Build an army.\n\nBut intelligence reports something disturbing: The Spiral King hasn't deployed his main forces. He's testing you. Studying you.\n\n'Let him watch,' Kamina says. 'We'll show him something he's never seen before.'",
+                location: "🌍 Liberated Territory",
+                choices: [
+                    { text: "Push toward the capital now", next: 'capital_approach' },
+                    { text: "Consolidate and prepare more", next: 'preparation_phase' },
+                    { text: "Investigate the Spiral King's history", next: 'research_enemy' }
+                ]
+            },
+            preparation_phase: {
+                text: "You spend months preparing. Training. Upgrading mechas. Building infrastructure. Kamina chafes at the delay but trusts you.\n\nWhen you finally march, you're ready. Coordinated. Powerful. United. The Spiral King will face not just rebels, but an army.",
+                location: "🌍 Liberated Territory - Prepared",
+                choices: [
+                    { text: "March on the capital", next: 'capital_approach_prepared' }
+                ]
+            },
+            research_enemy: {
+                text: "You dig into old records. The Spiral King has ruled for 1,000 years. Impossible. Unless... he's not human?\n\nYou find references to 'Spiral Power'—the force that drives evolution, ambition, growth. The Spiral King fears it. That's why he suppresses humanity.\n\nBut why fear progress? What's he protecting against?",
+                location: "📚 Ancient Archives",
+                choices: [
+                    { text: "Share this with everyone", next: 'reveal_truth_early' },
+                    { text: "Investigate further first", next: 'deep_research' }
+                ]
+            },
+            reveal_truth_early: {
+                text: "You reveal what you learned. The Spiral King fears human potential. Some are inspired. Others are confused. 'Why would anyone fear us growing stronger?'\n\nKamina: 'Doesn't matter why. If he fears our power, let's show him he's RIGHT to fear it!'",
+                location: "🌍 Liberated Territory",
+                choices: [
+                    { text: "Use this knowledge to inspire troops", next: 'capital_approach_inspired' }
+                ]
+            },
+            deep_research: {
+                text: "You dig deeper. Ancient texts mention something called the 'Spiral Nemesis'—a theoretical catastrophe caused by unlimited Spiral Power. Entire galaxies consumed.\n\nIs the Spiral King... trying to SAVE the universe by suppressing humanity? But at what cost? Eternal slavery?",
+                location: "📚 Ancient Archives - Deep Section",
+                choices: [
+                    { text: "This changes everything", next: 'philosophical_crisis' },
+                    { text: "We'll find another way", next: 'third_path_seeds' }
+                ]
+            },
+            philosophical_crisis: {
+                text: "You're paralyzed by doubt. If the Spiral King is preventing cosmic catastrophe, are you the villain? Is freedom worth universal destruction?\n\nKamina finds you. 'You think too much. Humans deserve to live free, risks and all. That's not villainy—that's life.'",
+                location: "📚 Ancient Archives",
+                choices: [
+                    { text: "He's right, let's fight", next: 'capital_approach_resolved' },
+                    { text: "We need a third option", next: 'third_path_seeds' }
+                ]
+            },
+            third_path_seeds: {
+                text: "What if there's a way to use Spiral Power WITHOUT causing the Nemesis? Controlled growth? Responsible evolution?\n\n'You're thinking like a leader now,' Kamina says. 'Not just about winning, but about what comes after. THAT'S the guy who'll change the world.'",
+                location: "📚 Ancient Archives",
+                choices: [
+                    { text: "Prepare for a different kind of battle", next: 'capital_approach_enlightened' }
+                ]
+            },
+            capital_approach: {
+                text: "You march on the capital with your full force. The city looms ahead—impossibly large, covered in defensive guns.\n\nKamina stands beside you. 'This is it. The final push. You ready?'\n\nYou nod. Together, you charge.",
+                location: "🏛️ Spiral King's Capital - Outskirts",
+                choices: [
+                    { text: "Full frontal assault", next: 'frontal_assault' },
+                    { text: "Infiltration strategy", next: 'infiltration_route' }
+                ]
+            },
+            capital_approach_prepared: {
+                text: "Your army is ready. Disciplined. Powerful. The capital's defenses are formidable, but you've planned for everything.\n\nKamina grins. 'Alright, tactician. Show me what all that prep time bought us.'",
+                location: "🏛️ Spiral King's Capital - Outskirts",
+                choices: [
+                    { text: "Execute the master plan", next: 'master_plan_execution' }
+                ]
+            },
+            capital_approach_inspired: {
+                text: "Your troops know why they fight now. Not just for freedom, but to prove humanity's right to grow, to evolve, to reach for the stars.\n\nThe Spiral King's defenses are strong, but your people are fighting for their very essence. Their right to exist.",
+                location: "🏛️ Spiral King's Capital - Outskirts",
+                choices: [
+                    { text: "Attack with purpose", next: 'purposeful_assault' }
+                ]
+            },
+            capital_approach_resolved: {
+                text: "You've made peace with the risks. Freedom is worth fighting for, cosmic threats and all. Humanity deserves a chance to find its own way.\n\nKamina sees the resolve in your eyes. 'There's the fire. Now let's show them what we're made of!'",
+                location: "🏛️ Spiral King's Capital - Outskirts",
+                choices: [
+                    { text: "Charge forward", next: 'frontal_assault' }
+                ]
+            },
+            capital_approach_enlightened: {
+                text: "You approach the capital not just to win a war, but to find a new path. One that honors freedom without courting destruction.\n\nThis won't be a simple battle. This will be a negotiation with destiny itself.",
+                location: "🏛️ Spiral King's Capital - Outskirts",
+                choices: [
+                    { text: "Seek audience with the Spiral King", next: 'diplomatic_entry' }
+                ]
+            },
+            frontal_assault: {
+                text: "You charge. The defenses are devastating. Kamina leads from the front, inspiring everyone with his presence.\n\nThen he takes a direct hit. His mecha is crippled. You rush to him. He's fading fast.\n\n'Don't stop... keep going... believe in yourself now... not in me... in YOU...'",
+                location: "🏛️ Capital Defenses - Critical Moment",
+                choices: [
+                    { text: "Stay with Kamina", next: 'kamina_death_scene' },
+                    { text: "Finish the battle, then return", next: 'prioritize_mission' }
+                ]
+            },
+            infiltration_route: {
+                text: "You send Kamina as a distraction while you infiltrate. It works—too well. Kamina draws massive firepower. You get inside, but realize too late: he can't hold that much heat.\n\nBy the time you reach him, he's mortally wounded. 'Got you... inside... that's what matters... now finish it...'",
+                location: "🏛️ Inside Capital - Kamina Dying",
+                choices: [
+                    { text: "Kamina's sacrifice won't be in vain", next: 'kamina_death_scene' }
+                ]
+            },
+            prioritize_mission: {
+                text: "You press forward. Every instinct screams to help Kamina, but he's buying you time. Time you can't waste.\n\nYou break through the defenses. Win the battle. When you return, Kamina is dead, a smile on his face. He believed you'd succeed.",
+                location: "🏛️ Capital Defenses - Victory and Loss",
+                ending: true,
+                achievement: "THE HARD WAY",
+                endingText: "💔 ENDING: You made the tactically correct choice. You won the battle. But you lost your brother, your mentor, your inspiration. You'll always wonder if there was another way. Victory tastes like ashes. Some costs are too high, even in winning.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            master_plan_execution: {
+                text: "Your preparation pays off. Synchronized strikes. Backup plans. Contingencies for contingencies.\n\nYou penetrate the defenses with minimal casualties. Kamina is injured, but survives. 'See? Told you all that prep time would pay off. Good thinking, brother.'",
+                location: "🏛️ Inside the Capital",
+                choices: [
+                    { text: "Find the Spiral King", next: 'throne_room_prepared' }
+                ]
+            },
+            purposeful_assault: {
+                text: "Your troops fight with conviction that transcends fear. They know WHY they fight. The defenses crumble before such determination.\n\nBut the Spiral King himself appears in a massive mecha. Kamina charges him alone to create an opening. He's struck down, but not before giving you the path forward.",
+                location: "🏛️ Capital Center - Kamina Falls",
+                choices: [
+                    { text: "Take up Kamina's fight", next: 'kamina_death_scene' }
+                ]
+            },
+            diplomatic_entry: {
+                text: "You approach under a flag of parley. Surprisingly, the Spiral King agrees to see you. His throne room is massive, cold, empty.\n\nHe looks down at you. 'You wish to negotiate? How quaint. State your terms.'",
+                location: "🏛️ Throne Room - Diplomatic Approach",
+                choices: [
+                    { text: "Challenge his philosophy", next: 'philosophical_battle' },
+                    { text: "Propose coexistence", next: 'coexistence_attempt' },
+                    { text: "This was a trick - attack now", next: 'betrayal_attack' }
+                ]
+            },
+            betrayal_attack: {
+                text: "You attack during parley. It's dishonorable, but effective. The Spiral King isn't prepared.\n\nBut Kamina refuses to help. 'This isn't how we do things, brother. We win fair or not at all.'\n\nYour betrayal splits the team. The rebellion fractures. The Spiral King escapes and rallies his forces. You've lost moral authority.",
+                location: "🏛️ Throne Room - Chaos",
+                ending: true,
+                achievement: "HOLLOW VICTORY",
+                endingText: "💀 ENDING: You won a battle but lost the war. Your betrayal destroyed trust—not just with the enemy, but with your own people. Revolution requires moral high ground. Without it, you're just another tyrant replacing the old one. The Spiral King was right to fear you.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            philosophical_battle: {
+                text: "'You suppress humanity to prevent the Spiral Nemesis,' you say. 'But eternal slavery isn't protection—it's death by another name.'\n\nThe Spiral King's eyes narrow. 'And if your freedom destroys the universe?'\n\n'Then we'll face that together, as a species choosing its own fate. Not cattle kept safe in pens.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Demand he step down", next: 'demand_abdication' },
+                    { text: "Propose a partnership", next: 'partnership_route' }
+                ]
+            },
+            coexistence_attempt: {
+                text: "'What if humans can be free AND responsible? What if we can control our Spiral Power?'\n\nThe Spiral King laughs bitterly. 'I tried that. For centuries. They always push further. It's their nature. YOUR nature.'\n\n'Then help us learn control instead of imposing it!'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Offer to learn from him", next: 'student_approach' },
+                    { text: "Prove you're different", next: 'prove_worth' }
+                ]
+            },
+            student_approach: {
+                text: "'Teach us. About Spiral Power. About the Nemesis. Let humanity make informed choices.'\n\nHe considers this. 'And if they choose destruction anyway?'\n\n'Then that's our right. To fail on our own terms rather than be saved against our will.'",
+                location: "🏛️ Throne Room - Negotiation",
+                choices: [
+                    { text: "Await his judgment", next: 'spiral_king_choice' }
+                ]
+            },
+            prove_worth: {
+                text: "'Fight me,' you say. 'If I can control my Spiral Power in battle—show restraint even when I could go further—will you believe humanity can learn?'\n\nThe Spiral King stands. 'Very well. But know this: I've killed thousands who made similar promises.'",
+                location: "🏛️ Throne Room - Challenge Accepted",
+                choices: [
+                    { text: "Fight with controlled power", next: 'controlled_battle' }
+                ]
+            },
+            controlled_battle: {
+                text: "The battle is intense. The Spiral King is ancient, skilled, powerful. Multiple times, you feel your Spiral Power surging, tempting you to unleash everything.\n\nBut you hold back. You fight smart. Strategic. You win through skill, not overwhelming force.\n\nThe Spiral King yields. 'Impressive. Perhaps... perhaps there is hope after all.'",
+                location: "🏛️ Throne Room - After Combat",
+                choices: [
+                    { text: "Offer an alliance", next: 'alliance_ending' }
+                ]
+            },
+            spiral_king_choice: {
+                text: "The Spiral King is silent for a long moment. 'Your words... remind me of who I once was. Before fear consumed me.'\n\nHe removes his helmet. Beneath is someone ancient, tired, scared. 'I became what I fought against. A tyrant protecting against tyrants.'",
+                location: "🏛️ Throne Room - Truth",
+                choices: [
+                    { text: "Work together for a better way", next: 'alliance_ending' },
+                    { text: "You must still step down", next: 'abdication_ending' }
+                ]
+            },
+            demand_abdication: {
+                text: "'Step down. Let humanity govern itself.'\n\n'And who will stop them from destroying everything? You?'\n\n'If necessary, yes. But through cooperation, not tyranny.'\n\nHe laughs. 'You'll become me eventually. Fear will make you control them too.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "I'll never become you", next: 'reject_comparison' },
+                    { text: "Then help me avoid that fate", next: 'partnership_route' }
+                ]
+            },
+            reject_comparison: {
+                text: "'I'm nothing like you. I trust humanity.'\n\n'I did too, once.' He attacks. The final battle begins. It's brutal, destructive. Your Spiral Power spikes dangerously high.\n\nYou win, but barely. As he dies: 'You'll see... power corrupts... even the well-intentioned...'",
+                location: "🏛️ Throne Room - Pyrrhic Victory",
+                ending: true,
+                achievement: "PYRRHIC VICTORY",
+                endingText: "⚡ ENDING: You won through force. The Spiral King is dead. Humanity is free. But his warning haunts you. Already, you feel yourself making 'temporary' restrictions on dangerous Spiral tech. Becoming a guardian. Becoming him. The cycle continues.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            partnership_route: {
+                text: "'Then let's work together. Your wisdom and caution, humanity's drive and innovation. Balance.'\n\nHe's skeptical but intrigued. 'A council? Limits set by agreement rather than force?'\n\n'Exactly. Governance, not tyranny.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Establish the new order", next: 'alliance_ending' }
+                ]
+            },
+            alliance_ending: {
+                text: "You establish a new system: The Spiral Council. Humans are free to grow, but with guidance from those who've seen the dangers. The Spiral King becomes an advisor, not a ruler.\n\nIt's imperfect. There are conflicts, debates, growing pains. But it's ALIVE. Growing. Evolving responsibly.\n\nKamina (if he survived) grins: 'Not how I'd have done it, but damn, brother. You actually pulled it off.'",
+                location: "🌟 New World - Balanced",
+                ending: true,
+                achievement: "SPIRAL WISDOM",
+                endingText: "🌟 GOOD ENDING: You found the third path—neither tyranny nor chaos, but cooperative evolution. Humanity grows, but wisely. Free, but not reckless. It's messy, imperfect, and beautiful. The best endings aren't clean victories, but sustainable compromises.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            abdication_ending: {
+                text: "The Spiral King abdicates. Power transfers to human governance. He leaves warning texts, knowledge, guidance—but no more control.\n\nYou establish free human cities. Research into safe Spiral technology. Education about risks. Trust in humanity's ability to choose wisely.\n\nYears later, the Spiral King sends a message: 'You've done better than I ever did. Perhaps faith was always stronger than fear.'",
+                location: "🌟 Free World",
+                ending: true,
+                achievement: "TRUE FREEDOM",
+                endingText: "⭐ GOOD ENDING: You achieved what the Spiral King couldn't—trust in humanity. The road ahead isn't certain, but it's yours to walk. Freedom means the right to succeed or fail on your own terms. You've given humanity that chance.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            kamina_death_scene: {
+                text: "You cradle Kamina as he dies. 'Don't... believe in yourself,' he gasps. 'Don't believe in me who believes in you...'\n\nHe grabs your collar weakly. 'Believe in YOURSELF who believes in you. That's... the real... Spiral Power...'\n\nHe's gone. But his words ignite something in you. TRUE power. Not borrowed. Not reflected. YOURS.",
+                location: "🏛️ Capital - Kamina's End",
+                choices: [
+                    { text: "Let the grief fuel you", next: 'rage_path' },
+                    { text: "Honor him by finishing this right", next: 'honor_path' },
+                    { text: "Take time to truly understand his lesson", next: 'understanding_path' }
+                ]
+            },
+            rage_path: {
+                text: "You let rage consume you. Your Spiral Power explodes beyond control. You tear through the capital, destroying everything. The Spiral King falls, but so does half the city.\n\nThousands dead. Victory through devastation. Kamina's lesson twisted into vengeance.",
+                location: "🏛️ Capital - Ruins",
+                ending: true,
+                achievement: "CONSUMED BY POWER",
+                endingText: "💀 ENDING: You became what the Spiral King feared most—Spiral Power without wisdom. Kamina wanted you to believe in yourself, not lose yourself. You won the war but lost yourself. Power without purpose is just destruction.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            honor_path: {
+                text: "You channel your grief into determination. Kamina wouldn't want rage—he'd want you to finish this the right way. Smart. Strong. TRUE to yourself.\n\nYou push forward with controlled power. Every action purposeful. Every decision measured. You reach the throne room ready for what's next.",
+                location: "🏛️ Throne Room Approach",
+                choices: [
+                    { text: "Face the Spiral King", next: 'throne_room_ready' }
+                ]
+            },
+            understanding_path: {
+                text: "You pause. Really think about what Kamina meant. He wasn't telling you to copy him. He was telling you to find YOUR path. YOUR strength. YOUR way of using Spiral Power.\n\nWhat IS your way? Strategic? Balanced? Wise? You meditate on this before proceeding.",
+                location: "🏛️ Capital - Moment of Clarity",
+                choices: [
+                    { text: "Approach with wisdom", next: 'enlightened_approach' }
+                ]
+            },
+            throne_room_ready: {
+                text: "You enter the throne room. The Spiral King awaits. 'So. You've come. Another revolutionary thinking he can change the world.'\n\n'I don't think I can. I KNOW I can. Because I'm not alone anymore. I carry everyone's hopes.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Fight for humanity", next: 'final_battle_standard' },
+                    { text: "Try to reason with him first", next: 'final_reasoning' }
+                ]
+            },
+            throne_room_prepared: {
+                text: "You and Kamina (injured but alive) enter together. The Spiral King regards you both. 'Partners. How quaint. Do you think teamwork will save you from inevitable cosmic law?'\n\nKamina grins through pain. 'Nah. But it'll make kicking your ass a lot more fun.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Fight together", next: 'double_battle' }
+                ]
+            },
+            enlightened_approach: {
+                text: "You enter the throne room differently than any other revolutionary. Not seeking to destroy. Not seeking to conquer. Seeking to UNDERSTAND.\n\n'Spiral King. I've learned about the Nemesis. I understand your fear. But there's another way.'",
+                location: "🏛️ Throne Room - Diplomatic",
+                choices: [
+                    { text: "Propose the balanced future", next: 'philosopher_king_encounter' }
+                ]
+            },
+            final_battle_standard: {
+                text: "The battle is epic. The Spiral King in his massive mecha. You in your evolved Gurren Lagann. Spiral Power clashing against Spiral Power.\n\nYou push harder. Go bigger. Your mecha grows. Evolves. You're approaching dangerous levels of Spiral Power. But you're WINNING.",
+                location: "🏛️ Throne Room - Combat",
+                choices: [
+                    { text: "Push to maximum power!", next: 'maximum_spiral' },
+                    { text: "Win with controlled power", next: 'controlled_victory' }
+                ]
+            },
+            final_reasoning: {
+                text: "'Before we fight, tell me: what if you're wrong? What if humanity CAN handle Spiral Power responsibly?'\n\nHe pauses. 'I've watched civilizations rise and fall for millennia. They always choose power over wisdom.'\n\n'Then let me prove we're different.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Demonstrate controlled power", next: 'demonstration_fight' },
+                    { text: "Words won't convince him - fight", next: 'final_battle_standard' }
+                ]
+            },
+            demonstration_fight: {
+                text: "You engage him, but hold back. Even when you could unleash devastating power, you choose precision. Control. Strategy.\n\nHe's shocked. 'You're... restraining yourself? Even in mortal combat?'\n\n'Kamina taught me to believe in myself. And I believe in humanity's ability to choose wisdom over raw power.'",
+                location: "🏛️ Throne Room - Demonstration",
+                choices: [
+                    { text: "Offer partnership", next: 'alliance_ending' },
+                    { text: "Demand his surrender", next: 'forced_surrender' }
+                ]
+            },
+            forced_surrender: {
+                text: "'Surrender. Your reign of fear ends today.'\n\nHe yields, but with resentment. 'You've won. But time will prove me right. Power corrupts. Even you.'\n\nYou establish human rule, but he was partially right. Without his knowledge as a willing partner, you make mistakes. Costly ones.",
+                location: "🏛️ Throne Room - Forced Peace",
+                ending: true,
+                achievement: "INCOMPLETE VICTORY",
+                endingText: "⚡ ENDING: You won but failed to truly change hearts. The Spiral King lives in exile, bitter. His knowledge lost. Humanity is free but ignorant of crucial dangers. Victory without wisdom leads to new problems. True revolution changes minds, not just regimes.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            double_battle: {
+                text: "You and Kamina fight as one. Your tactical mind and his raw spirit in perfect sync. The Spiral King can't match such perfect partnership.\n\nYou win together. As the Spiral King falls, he says: 'Such teamwork... perhaps I was wrong to rule alone...'\n\nKamina grins: 'Damn right you were. Everything's better with a brother at your side.'",
+                location: "🏛️ Throne Room - Victory",
+                choices: [
+                    { text: "What happens now?", next: 'dual_leadership_ending' }
+                ]
+            },
+            dual_leadership_ending: {
+                text: "You and Kamina establish a new world together. His inspirational leadership, your strategic wisdom. It's not perfect, but it's alive. Growing. Human.\n\nYou create councils, systems, safeguards. Kamina ensures people never lose their fighting spirit. You ensure that spirit is channeled wisely.\n\nYears later, new threats emerge. But humanity is ready—free, wise, and unified.",
+                location: "🌟 New World - Partnership",
+                ending: true,
+                achievement: "BROTHERS IN ARMS",
+                endingText: "⭐⭐ GREAT ENDING: You and Kamina achieved what neither could alone—freedom with wisdom, passion with strategy. True strength comes from complementary partnerships. You didn't just defeat a tyrant; you built something better. Together.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            philosopher_king_encounter: {
+                text: "'I've studied the Spiral Nemesis. I understand the danger. But I also believe there's a path between tyranny and apocalypse. Let me show you.'\n\nThe Spiral King is intrigued. 'And if you fail? If humanity chooses destruction?'\n\n'Then that's our right as a sentient species. But we won't. Not with proper guidance.'",
+                location: "🏛️ Throne Room - Philosophy",
+                choices: [
+                    { text: "Propose the Spiral Council", next: 'council_proposal' },
+                    { text: "Challenge him to test your wisdom", next: 'wisdom_test' }
+                ]
+            },
+            council_proposal: {
+                text: "'A council of humans and ancient beings. Collective wisdom guiding humanity's growth. Freedom with responsibility. Evolution with awareness.'\n\nHe considers. 'You would accept limits? Guidance?'\n\n'Self-imposed limits aren't chains. They're wisdom. We'll choose our own boundaries.'",
+                location: "🏛️ Throne Room",
+                choices: [
+                    { text: "Await his decision", next: 'alliance_ending' }
+                ]
+            },
+            wisdom_test: {
+                text: "'Test me. Give me impossible choices. See if I choose power or wisdom.'\n\nThe Spiral King creates scenarios. Save one person or many? Accept defeat or risk everything? Compromise or stand firm?\n\nYou navigate each with surprising maturity. You're not perfect, but you're thoughtful. Self-aware.",
+                location: "🏛️ Throne Room - Trials",
+                choices: [
+                    { text: "Complete the trials", next: 'trials_passed' }
+                ]
+            },
+            trials_passed: {
+                text: "'Remarkable,' the Spiral King admits. 'You don't just have power. You have wisdom. Rare in revolutionaries.'\n\nHe offers his hand. 'Let us build this new world together. My experience, your vision, humanity's potential.'",
+                location: "🏛️ Throne Room - Alliance",
+                choices: [
+                    { text: "Accept the partnership", next: 'perfect_ending_approach' }
+                ]
+            },
+            maximum_spiral: {
+                text: "You unleash EVERYTHING. Your Spiral Power breaks all limits. The mecha grows to galactic scale. You pierce through dimensions themselves.\n\nYou win. The Spiral King is destroyed. But you've done something dangerous. You've proven his fears correct. Your power is now too great. Unstoppable. Terrifying.",
+                location: "🌌 Beyond Space - God Mode",
+                choices: [
+                    { text: "I can control this power", next: 'power_corrupts' },
+                    { text: "Seal this power away forever", next: 'sacrifice_power' }
+                ]
+            },
+            power_corrupts: {
+                text: "You believe you can handle unlimited power. At first, you use it for good. But gradually, you start making decisions FOR humanity. 'They're not ready.' 'It's for their own good.'\n\nYou become the Spiral King. A benevolent tyrant, but a tyrant nonetheless. The cycle repeats.",
+                location: "🌟 New World - New Tyranny",
+                ending: true,
+                achievement: "BECAME THE TYRANT",
+                endingText: "💀 ENDING: Power corrupts. Absolute power corrupts absolutely. You set out to free humanity and ended up controlling it 'for its own good.' The Spiral King was right about one thing: those who gain ultimate power almost always abuse it. You became what you fought against.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            sacrifice_power: {
+                text: "You seal away your ultimate power. Lock it where no one—including yourself—can access it without unanimous consent of all humanity.\n\n'If humanity needs this power someday, they'll access it together. But I won't be a god ruling from above. I'm just... me.'",
+                location: "🌟 New World - Humble Victory",
+                ending: true,
+                achievement: "SACRIFICED GODHOOD",
+                endingText: "⭐⭐ GREAT ENDING: You achieved ultimate power and gave it up. The hardest thing any being can do. You saved humanity not by ruling them, but by trusting them. True heroism is knowing when NOT to use your power. The Spiral King feared power—you mastered it through restraint.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            controlled_victory: {
+                text: "You win without going to extremes. Your Spiral Power is formidable but controlled. The Spiral King falls, impressed despite himself.\n\n'You wielded great power... with restraint. Perhaps... I was wrong...'\n\nHe dies, but peacefully. Content that maybe, just maybe, humanity deserves its chance.",
+                location: "🏛️ Throne Room - Honorable Victory",
+                choices: [
+                    { text: "Build the new world", next: 'standard_good_ending' }
+                ]
+            },
+            standard_good_ending: {
+                text: "You establish human governance. Free cities. Open research into Spiral Power. Education about its risks and potential.\n\nIt's messy. Democracy always is. But it's ALIVE. Growing. Learning from mistakes. That's what it means to be human.\n\nKamina (if he lived) or his memory guides you. You never forget where you came from.",
+                location: "🌟 New World - Free",
+                ending: true,
+                achievement: "FREED HUMANITY",
+                endingText: "⭐ GOOD ENDING: You achieved the revolution's goal—freedom. Humanity now charts its own course, risks and all. It's not perfect. There will be struggles ahead. But they're OUR struggles. The right to fail is as important as the right to succeed. You gave humanity that choice.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            perfect_ending_approach: {
+                text: "You and the Spiral King work together to create something unprecedented: The Spiral Accord.\n\nHumanity is free to grow, but with ancient wisdom guiding them. Limits exist, but they're chosen democratically. Spiral Power is researched openly, with full knowledge of its dangers.\n\nThis is the third path. Not tyranny. Not chaos. Collaborative evolution.",
+                location: "🌟 Council Chambers - New Era",
+                choices: [
+                    { text: "But one challenge remains...", next: 'final_test' }
+                ]
+            },
+            final_test: {
+                text: "Years later, sensors detect the Anti-Spiral—beings from beyond who oppose ALL Spiral life. They're coming to destroy you for daring to use Spiral Power.\n\nThe Spiral King: 'This is what I feared. This is why I suppressed humanity.'\n\nBut you're ready. You've prepared. United humanity and ancient wisdom. This is the true test.",
+                location: "🌌 Space - Unknown Threat Detected",
+                choices: [
+                    { text: "Face them with unlimited power", next: 'power_ending' },
+                    { text: "Face them with unity and wisdom", next: 'wisdom_ending' },
+                    { text: "Seek a diplomatic solution", next: 'transcendence_path' }
+                ]
+            },
+            power_ending: {
+                text: "You meet the Anti-Spiral with overwhelming force. Your combined Spiral Power—humanity and the Spiral King's forces together—is unstoppable.\n\nYou win through superior strength. But in doing so, you prove the Anti-Spiral's point: Spiral beings inevitably escalate to cosmic war.\n\nPeace, but only through might. The universe watches nervously.",
+                location: "🌌 Space - Aftermath",
+                ending: true,
+                achievement: "ENFORCED PEACE",
+                endingText: "⚡ ENDING: You defeated the Anti-Spiral but proved them partially right. Peace maintained through overwhelming force isn't true peace—it's just delayed conflict. Humanity is safe, but feared. Sometimes winning the battle means losing the moral argument.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            wisdom_ending: {
+                text: "You face the Anti-Spiral not with raw power, but with demonstration. You show them controlled Spiral usage. Responsible growth. Wisdom tempering ambition.\n\nThey're skeptical but impressed. A truce is reached: humanity may use Spiral Power if they prove continued responsibility.\n\n'A probation,' the Spiral King notes. 'But we'll prove ourselves.'",
+                location: "🌌 Space - Diplomatic Victory",
+                ending: true,
+                achievement: "GALACTIC PEACE",
+                endingText: "⭐⭐ GREAT ENDING: You achieved something unprecedented—peace with the Anti-Spiral. Not through conquest, but through demonstrated wisdom. Humanity joins the galactic community not as conquerors but as responsible members. The universe has hope for Spiral beings again.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            transcendence_path: {
+                text: "'What if we're BOTH wrong?' you ask the Anti-Spiral. 'You oppose all Spiral growth. The old Spiral King suppressed it. What if there's a middle path?'\n\nThe Anti-Spiral are beings of pure logic. They consider this. 'Elaborate.'",
+                location: "🌌 Space - First Contact",
+                choices: [
+                    { text: "Propose the Cosmic Accord", next: 'cosmic_proposal' }
+                ]
+            },
+            cosmic_proposal: {
+                text: "'A universal agreement. Spiral beings can grow, but with built-in limitations. Self-imposed. Verified. We'll evolve responsibly or face consequences.'\n\nThe Anti-Spiral debate among themselves. Finally: 'This... has never been proposed before. It might work.'\n\nThe Spiral King is shocked. 'You're negotiating with THEM?'",
+                location: "🌌 Space - Historic Moment",
+                choices: [
+                    { text: "Create the Cosmic Accord", next: 'ultimate_ending' }
+                ]
+            },
+            ultimate_ending: {
+                text: "You broker peace between Spiral and Anti-Spiral. The Cosmic Accord is born: a universal framework for responsible evolution.\n\nHumanity becomes the mediating species—the ones who bridged impossible divides. The Spiral King, once a tyrant, becomes an ambassador. You become a council member representing Earth.\n\nThis is what Kamina wanted. Not just freedom, but a better universe for everyone.\n\nThe Spiral Council: 'This is just the beginning. Now we prove what responsible evolution looks like. Together.'",
+                location: "🌟 Cosmic Council - New Beginning",
+                ending: true,
+                achievement: "PIERCED THE HEAVENS",
+                endingText: "🌟🌟🌟 PERFECT ENDING: You didn't just free humanity—you revolutionized the cosmos. By refusing false choices and finding third paths, you created lasting peace. Kamina's spirit lives on: believe in yourself, challenge the impossible, and create a better world. You PIERCED THE HEAVENS!",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "OBEYED FEAR",
+            "MISPLACED HEROISM",
+            "REFUSED THE CALL",
+            "LOST POTENTIAL",
+            "DIVIDED WE FALL",
+            "HOLLOW VICTORY",
+            "BECAME THE TYRANT",
+            "PYRRHIC VICTORY",
+            "CONSUMED BY POWER",
+            "INCOMPLETE VICTORY",
+            "THE HARD WAY",
+            "ENFORCED PEACE",
+            "BROTHERS IN ARMS",
+            "SACRIFICED GODHOOD",
+            "FREED HUMANITY",
+            "SPIRAL WISDOM",
+            "TRUE FREEDOM",
+            "GALACTIC PEACE",
+            "PIERCED THE HEAVENS"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        function init() {
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                const normalAchievements = allAchievements.filter(a => a !== "SPIRAL LEGEND");
+                if (achievements.length === normalAchievements.length && !achievements.includes("SPIRAL LEGEND")) {
+                    setTimeout(() => {
+                        achievements.push("SPIRAL LEGEND");
+                        showAchievementPopup("SPIRAL LEGEND");
+                        setTimeout(() => {
+                            addSecretEnding();
+                        }, 3000);
+                    }, 3500);
+                }
+            }
+        }
+
+        function addSecretEnding() {
+            if (!scenarios['secret_ending']) {
+                scenarios['ultimate_ending'].choices.push({
+                    text: "Access the Secret Path (SPIRAL LEGEND UNLOCKED)", 
+                    next: 'secret_ending'
+                });
+                
+                scenarios['secret_ending'] = {
+                    text: "With all achievements unlocked, you've proven yourself across every possible timeline. You see ALL paths now—every choice, every consequence.\n\nA voice echoes: 'You've transcended the narrative itself. You understand that true power isn't just piercing one heaven, but understanding all possible heavens.'\n\nKamina's spirit appears: 'You finally get it. It was never about MY path or any single answer. It's about understanding that every person has to find THEIR heaven to pierce.'\n\nYou become something beyond a pilot, beyond a leader—you become a guide for others to find their own impossible dreams.",
+                    location: "∞ Beyond All Timelines",
+                    ending: true,
+                    achievement: "SPIRAL LEGEND",
+                    endingText: "✨🌟✨ SECRET ENDING - SPIRAL LEGEND: You've seen every path, learned every lesson, achieved every outcome. You understand that the journey matters more than any single destination. The real treasure wasn't just freedom, peace, or power—it was the wisdom gained from experiencing all possibilities. You are the Spiral Legend.",
+                    choices: [
+                        { text: "Begin a New Legend", next: 'start' }
+                    ]
+                };
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "SPIRAL LEGEND";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '✨ ULTIMATE ACHIEVEMENT! ✨' : '🔥 ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const normalAchievements = allAchievements.filter(a => a !== "SPIRAL LEGEND");
+            const totalCount = achievements.includes("SPIRAL LEGEND") ? allAchievements.length : normalAchievements.length;
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalCount;
+                document.getElementById('achievementsLeft').textContent = totalCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "SPIRAL LEGEND" ? ' ultimate' : '');
+                    badge.textContent = '🔥 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
