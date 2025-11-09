@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Ending Path Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            color: #38bdf8;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .input-section {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-label {
+            color: #38bdf8;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .input-textarea {
+            width: 100%;
+            min-height: 200px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            resize: vertical;
+        }
+
+        .button {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: #0ea5e9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
+        }
+
+        .results-section {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .results-title {
+            color: #38bdf8;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .search-container {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.25rem;
+            padding: 0.75rem;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .search-input::placeholder {
+            color: #64748b;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: #0f172a;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            border: 1px solid #334155;
+        }
+
+        .view-button {
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-button.active {
+            background: #38bdf8;
+            color: #0f172a;
+            font-weight: bold;
+        }
+
+        .view-button:hover:not(.active) {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+        }
+
+        .ending-card {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ending-card.perfect {
+            border-color: #22c55e;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+        }
+
+        .ending-card.bad {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+        }
+
+        .ending-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .ending-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ending-title.perfect {
+            color: #22c55e;
+        }
+
+        .ending-title.bad {
+            color: #ef4444;
+        }
+
+        .ending-title.neutral {
+            color: #f59e0b;
+        }
+
+        .achievement-badge {
+            background: #eab308;
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .path-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #38bdf8;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .path-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: #cbd5e1;
+        }
+
+        .path-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            background: #38bdf8;
+            color: #0f172a;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-location {
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .arrow {
+            color: #38bdf8;
+            font-size: 1.5rem;
+            margin-left: 2rem;
+        }
+
+        .copy-button {
+            background: #8b5cf6;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-button:hover {
+            background: #7c3aed;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            color: #fca5a5;
+            margin-bottom: 1rem;
+        }
+
+        .example-link {
+            color: #38bdf8;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .example-link:hover {
+            color: #0ea5e9;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.75rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .view-toggle {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🎮 Game Ending Path Finder</h1>
+            <p class="subtitle">Automatically discover all endings and how to reach them</p>
+        </div>
+
+        <div class="input-section">
+            <label class="input-label">
+                📋 Paste Game Data (scenarios object):
+                <span class="example-link" onclick="loadExample()">Load Example</span>
+            </label>
+            <textarea 
+                id="scenariosInput" 
+                class="input-textarea" 
+                placeholder="Paste the scenarios object here, starting with:
+const scenarios = {
+    start: {
+        text: '...',
+        ...
+    },
+    ...
+}"></textarea>
+
+            <label class="input-label">🏆 Paste Achievements Array (optional):</label>
+            <textarea 
+                id="achievementsInput" 
+                class="input-textarea" 
+                style="min-height: 100px;"
+                placeholder="const allAchievements = [
+    'ACHIEVEMENT 1',
+    'ACHIEVEMENT 2',
+    ...
+];"></textarea>
+
+            <button class="button" onclick="analyzeGame()">🔍 Find All Endings</button>
+        </div>
+
+        <div id="errorContainer"></div>
+        <div id="resultsSection" class="results-section"></div>
+    </div>
+
+    <script>
+        // Global state
+        let currentPaths = [];
+        let currentScenarios = {};
+        let currentViewMode = 'all'; // 'all' or 'achievements'
+        let currentSearchTerm = '';
+
+        // Example data loader
+        function loadExample() {
+            const exampleScenarios = `const scenarios = {
+    start: {
+        text: "You're hungry. It's 9pm. Your quest: Decide what to eat.\\n\\nYour fridge is mostly empty. Your willpower is questionable. What do you do?",
+        location: "🏠 Home - Kitchen",
+        choices: [
+            { text: "Check the fridge (brave)", next: 'check_fridge' },
+            { text: "Order delivery", next: 'order_delivery' },
+            { text: "Just eat cereal", next: 'cereal' }
+        ]
+    },
+    check_fridge: {
+        text: "You open the fridge. The light flickers ominously.\\n\\nContents: Half a lemon, mysterious Tupperware from last week, and condiments. So many condiments.",
+        location: "🏠 Home - Kitchen",
+        choices: [
+            { text: "Investigate the Tupperware", next: 'tupperware' },
+            { text: "Give up and order food", next: 'order_delivery' },
+            { text: "Make a condiment sandwich", next: 'condiment_sandwich' }
+        ]
+    },
+    tupperware: {
+        text: "You open the Tupperware. It's... pasta? Maybe? It's achieved sentience and is judging your life choices.\\n\\nThe smell hits you like a freight train.",
+        location: "🏠 Home - Kitchen",
+        choices: [
+            { text: "Throw it away immediately", next: 'throw_away' },
+            { text: "Smell it again (why?)", next: 'smell_again' }
+        ]
+    },
+    smell_again: {
+        text: "You smell it again. Mistake. Big mistake.\\n\\nYour nose may never recover. You've learned nothing.",
+        location: "🏠 Home - Kitchen",
+        ending: true,
+        achievement: "REGRET SNIFFER",
+        endingText: "💀 ENDING: You spend the next hour airing out your kitchen.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    },
+    throw_away: {
+        text: "You dispose of the biohazard. Your fridge is now 40% emptier but 100% safer.\\n\\nYou're still hungry though.",
+        location: "🏠 Home - Kitchen",
+        choices: [
+            { text: "Order delivery", next: 'order_delivery' },
+            { text: "Eat cereal", next: 'cereal' }
+        ]
+    },
+    condiment_sandwich: {
+        text: "You create an abomination: two slices of bread, ketchup, mustard, mayo, and... is that relish?",
+        location: "🏠 Home - Kitchen",
+        ending: true,
+        achievement: "CONDIMENT CHEF",
+        endingText: "💀 ENDING: You eat the condiment sandwich.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    },
+    order_delivery: {
+        text: "You open your delivery app. 47 restaurants. Infinite possibilities.",
+        location: "🏠 Home - On couch",
+        choices: [
+            { text: "Order pizza (classic)", next: 'pizza' },
+            { text: "Try something new", next: 'something_new' },
+            { text: "Keep scrolling (dangerous)", next: 'scroll_forever' }
+        ]
+    },
+    pizza: {
+        text: "You order pizza. The estimated time: 45 minutes.",
+        location: "🏠 Home - Pizza victory",
+        ending: true,
+        achievement: "PIZZA CHAMPION",
+        endingText: "✨ PERFECT ENDING: You eat pizza and watch TV.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    },
+    something_new: {
+        text: "You order from a restaurant you've never tried.",
+        location: "🏠 Home - Experimental dinner",
+        ending: true,
+        achievement: "CULINARY ADVENTURER",
+        endingText: "💀 ENDING: The food is edible but confusing.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    },
+    scroll_forever: {
+        text: "You scroll. And scroll. And scroll.",
+        location: "🏠 Home - Decision paralysis",
+        ending: true,
+        achievement: "INFINITE SCROLLER",
+        endingText: "💀 ENDING: You give up and eat cereal.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    },
+    cereal: {
+        text: "You pour cereal. The box is almost empty.",
+        location: "🏠 Home - Kitchen",
+        choices: [
+            { text: "Eat it anyway", next: 'eat_cereal' },
+            { text: "Add more cereal from another box", next: 'cereal_mix' }
+        ]
+    },
+    eat_cereal: {
+        text: "You eat the cereal dust soup.",
+        location: "🏠 Home - Kitchen table",
+        ending: true,
+        achievement: "EFFICIENCY EXPERT",
+        endingText: "✨ ENDING: You finished dinner in 3 minutes.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    },
+    cereal_mix: {
+        text: "You combine two types of cereal.",
+        location: "🏠 Home - Kitchen table",
+        ending: true,
+        achievement: "CEREAL SCIENTIST",
+        endingText: "✨ PERFECT ENDING: Your cereal combination is delicious.",
+        choices: [
+            { text: "Start Over", next: 'start' }
+        ]
+    }
+};`;
+
+            const exampleAchievements = `const allAchievements = [
+    "REGRET SNIFFER",
+    "CONDIMENT CHEF",
+    "PIZZA CHAMPION",
+    "CULINARY ADVENTURER",
+    "INFINITE SCROLLER",
+    "EFFICIENCY EXPERT",
+    "CEREAL SCIENTIST"
+];`;
+
+            document.getElementById('scenariosInput').value = exampleScenarios;
+            document.getElementById('achievementsInput').value = exampleAchievements;
+        }
+
+        // Parse JavaScript object from string
+        function parseJavaScriptObject(text) {
+            try {
+                const cleanText = text.trim();
+                let objectText;
+                
+                if (cleanText.includes('const') || cleanText.includes('let') || cleanText.includes('var')) {
+                    const match = cleanText.match(/=\s*(\{[\s\S]*\}|\[[\s\S]*\])\s*;?\s*$/);
+                    if (match) {
+                        objectText = match[1];
+                    } else {
+                        throw new Error('Could not parse object');
+                    }
+                } else {
+                    objectText = cleanText;
+                }
+
+                const func = new Function('return ' + objectText);
+                return func();
+            } catch (e) {
+                throw new Error('Failed to parse: ' + e.message);
+            }
+        }
+
+        // Main analysis function
+        function analyzeGame() {
+            const errorContainer = document.getElementById('errorContainer');
+            const resultsSection = document.getElementById('resultsSection');
+            errorContainer.innerHTML = '';
+            resultsSection.style.display = 'none';
+
+            try {
+                const scenariosText = document.getElementById('scenariosInput').value;
+                const achievementsText = document.getElementById('achievementsInput').value;
+
+                if (!scenariosText.trim()) {
+                    throw new Error('Please paste the scenarios object');
+                }
+
+                const scenarios = parseJavaScriptObject(scenariosText);
+                
+                if (!scenarios || typeof scenarios !== 'object') {
+                    throw new Error('Could not parse scenarios object. Make sure it\'s valid JavaScript.');
+                }
+
+                let allAchievements = [];
+                if (achievementsText.trim()) {
+                    try {
+                        allAchievements = parseJavaScriptObject(achievementsText);
+                        if (!Array.isArray(allAchievements)) {
+                            allAchievements = [];
+                        }
+                    } catch (e) {
+                        allAchievements = [];
+                    }
+                }
+
+                const paths = findAllPaths(scenarios);
+                
+                if (paths.length === 0) {
+                    throw new Error('No endings found in the game data');
+                }
+
+                displayResults(paths, scenarios, allAchievements);
+
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Find all paths to endings using BFS
+        function findAllPaths(scenarios) {
+            const paths = [];
+            const queue = [{ state: 'start', path: ['start'], choices: [] }];
+            const visited = new Set();
+
+            while (queue.length > 0) {
+                const { state, path, choices } = queue.shift();
+                const scenario = scenarios[state];
+
+                if (!scenario) continue;
+
+                if (scenario.ending) {
+                    paths.push({
+                        endState: state,
+                        path: path,
+                        choices: choices,
+                        achievement: scenario.achievement || null,
+                        endingText: scenario.endingText || '',
+                        type: determineEndingType(scenario.endingText)
+                    });
+                    continue;
+                }
+
+                if (scenario.choices) {
+                    scenario.choices.forEach(choice => {
+                        const nextState = choice.next;
+                        const pathKey = path.join('->') + '->' + nextState;
+                        
+                        if (!visited.has(pathKey) && nextState !== 'start') {
+                            visited.add(pathKey);
+                            queue.push({
+                                state: nextState,
+                                path: [...path, nextState],
+                                choices: [...choices, choice.text]
+                            });
+                        }
+                    });
+                }
+            }
+
+            return paths;
+        }
+
+        // Determine ending type from text
+        function determineEndingType(endingText) {
+            if (!endingText) return 'neutral';
+            if (endingText.includes('PERFECT ENDING') || endingText.includes('✨')) return 'perfect';
+            if (endingText.includes('💀') || endingText.includes('BAD')) return 'bad';
+            return 'neutral';
+        }
+
+        // Display results
+        function displayResults(paths, scenarios, achievements) {
+            currentPaths = paths;
+            currentScenarios = scenarios;
+            currentSearchTerm = '';
+            
+            const resultsSection = document.getElementById('resultsSection');
+            
+            const totalEndings = paths.length;
+            const uniqueAchievements = new Set(paths.filter(p => p.achievement).map(p => p.achievement)).size;
+            const perfectEndings = paths.filter(p => p.type === 'perfect').length;
+            const badEndings = paths.filter(p => p.type === 'bad').length;
+
+            let html = `
+                <div class="results-title">📊 Analysis Results</div>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-number">${totalEndings}</div>
+                        <div class="stat-label">Total Paths</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${uniqueAchievements}</div>
+                        <div class="stat-label">Unique Achievements</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${perfectEndings}</div>
+                        <div class="stat-label">Perfect Endings</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${badEndings}</div>
+                        <div class="stat-label">Bad Endings</div>
+                    </div>
+                </div>
+
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="🔍 Search endings by achievement name or path..."
+                        oninput="handleSearch(this.value)"
+                    >
+                    <div class="view-toggle">
+                        <button class="view-button ${currentViewMode === 'all' ? 'active' : ''}" onclick="setViewMode('all')">
+                            All Paths
+                        </button>
+                        <button class="view-button ${currentViewMode === 'achievements' ? 'active' : ''}" onclick="setViewMode('achievements')">
+                            By Achievement
+                        </button>
+                    </div>
+                </div>
+                <div id="endingsContainer"></div>
+            `;
+
+            resultsSection.innerHTML = html;
+            renderPaths();
+            resultsSection.style.display = 'block';
+        }
+
+        // Handle search input
+        function handleSearch(searchTerm) {
+            currentSearchTerm = searchTerm;
+            renderPaths();
+        }
+
+        // Set view mode
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            const buttons = document.querySelectorAll('.view-button');
+            buttons.forEach(btn => {
+                if (btn.textContent.includes('All Paths') && mode === 'all') {
+                    btn.classList.add('active');
+                } else if (btn.textContent.includes('By Achievement') && mode === 'achievements') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            renderPaths();
+        }
+
+        // Render paths based on current view mode and search
+        function renderPaths() {
+            const container = document.getElementById('endingsContainer');
+            if (!container) return;
+
+            let filteredPaths = currentPaths;
+            if (currentSearchTerm) {
+                const searchLower = currentSearchTerm.toLowerCase();
+                filteredPaths = currentPaths.filter(path => {
+                    const achievement = (path.achievement || '').toLowerCase();
+                    const choices = path.choices.join(' ').toLowerCase();
+                    return achievement.includes(searchLower) || choices.includes(searchLower);
+                });
+            }
+
+            let pathsHtml = '';
+
+            if (currentViewMode === 'achievements') {
+                const achievementMap = new Map();
+                filteredPaths.forEach(path => {
+                    const achievement = path.achievement || 'NO ACHIEVEMENT';
+                    if (!achievementMap.has(achievement)) {
+                        achievementMap.set(achievement, path);
+                    }
+                });
+
+                const sortedAchievements = Array.from(achievementMap.entries()).sort((a, b) => {
+                    const [achA, pathA] = a;
+                    const [achB, pathB] = b;
+                    if (pathA.type === 'perfect' && pathB.type !== 'perfect') return -1;
+                    if (pathA.type !== 'perfect' && pathB.type === 'perfect') return 1;
+                    return achA.localeCompare(achB);
+                });
+
+                sortedAchievements.forEach(([achievement, path]) => {
+                    pathsHtml += renderEndingCard(path);
+                });
+
+            } else {
+                filteredPaths.sort((a, b) => {
+                    if (a.type === 'perfect' && b.type !== 'perfect') return -1;
+                    if (a.type !== 'perfect' && b.type === 'perfect') return 1;
+                    return 0;
+                });
+
+                filteredPaths.forEach(path => {
+                    pathsHtml += renderEndingCard(path);
+                });
+            }
+
+            if (filteredPaths.length === 0) {
+                pathsHtml = '<div class="no-results">No endings match your search.</div>';
+            }
+
+            container.innerHTML = pathsHtml;
+        }
+
+        // Render a single ending card
+        function renderEndingCard(path) {
+            const achievement = path.achievement || 'UNKNOWN';
+            const emoji = path.type === 'perfect' ? '✨' : path.type === 'bad' ? '💀' : '⚠️';
+            const cardClass = path.type === 'perfect' ? 'perfect' : path.type === 'bad' ? 'bad' : '';
+            const titleClass = path.type;
+            
+            let html = `
+                <div class="ending-card ${cardClass}">
+                    <div class="ending-header">
+                        <div class="ending-title ${titleClass}">
+                            ${emoji} ${escapeHtml(achievement)}
+                        </div>
+                        ${path.achievement ? '<span class="achievement-badge">🏆 ACHIEVEMENT</span>' : ''}
+                    </div>
+                    
+                    <div class="path-container">
+                        <div class="path-step">
+                            <div class="step-number">1</div>
+                            <div class="step-text">
+                                START
+                                <div class="step-location">${escapeHtml(currentScenarios.start?.location || '')}</div>
+                            </div>
+                        </div>
+            `;
+
+            path.choices.forEach((choice, i) => {
+                const stepState = path.path[i + 1];
+                const stepScenario = currentScenarios[stepState];
+                const location = stepScenario ? stepScenario.location : '';
+                
+                html += `
+                    <div class="arrow">↓</div>
+                    <div class="path-step">
+                        <div class="step-number">${i + 2}</div>
+                        <div class="step-text">
+                            ${escapeHtml(choice)}
+                            ${location ? `<div class="step-location">${escapeHtml(location)}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            const copyText = `ENDING: ${achievement}\nPath: START → ${path.choices.join(' → ')}`;
+
+            html += `
+                    </div>
+                    <button class="copy-button" onclick='copyPath(\`${copyText.replace(/`/g, '\\`').replace(/\n/g, '\\n')}\`)'>
+                        📋 Copy Path
+                    </button>
+                </div>
+            `;
+
+            return html;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Copy path to clipboard
+        function copyPath(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Path copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy. Please copy manually.');
+            });
+        }
+
+        // Show error
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>❌ Error:</strong> ${escapeHtml(message)}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
