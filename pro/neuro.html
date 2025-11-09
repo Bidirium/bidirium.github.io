@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuromancer: The Console Cowboy's Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000000 0%, #1a0033 50%, #330033 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ffff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 255, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ffff;
+            color: #00ffff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ffff, #ff00ff);
+            border-color: #00ffff;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ffff;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 255, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .cyber-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005555;
+            border-color: #005555;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ffff;
+            color: #000;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ffff;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ffff;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005555;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005555, #00ffff);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 100, 0.5);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ffff, #ff00ff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ff00ff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff00ff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff66ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ffff;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #ff00ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005555;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ffff;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ffff;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005555;
+        }
+
+        .history-title {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .history-button.current {
+            background-color: #00ffff;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 50, 0.5);
+            color: #00ffff;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 100, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005555;
+        }
+
+        .history-hint {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005555;
+        }
+
+        .quest-log-title {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005555;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">💾</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ICE BREAKER!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="cyber-icon">▣</span>
+                    NEUROMANCER
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>💾</span>
+                        <p class="achievements-title-text">ICE BROKEN (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ CONNECTION TERMINATED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                MEMORY BUFFER
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "Chiba City. The sky is the color of television tuned to a dead channel. You're Case, once the sharpest console cowboy in the business, now washed up with a fried nervous system.\n\nA year ago, you tried to steal from your employers. They caught you. Punished you with a mycotoxin that damaged your pancreas, made it impossible to jack into cyberspace.\n\nYou've been scraping by in Ninsei, waiting to die or score enough for the operation that could fix you.",
+                location: "🌃 Chiba City - Ninsei",
+                choices: [
+                    { text: "Head to the Chatsubo for a drink", next: 'chatsubo' },
+                    { text: "Try to score some drugs", next: 'drug_deal' },
+                    { text: "Visit Ratz about work", next: 'ratz_work' }
+                ]
+            },
+            chatsubo: {
+                text: "The Chatsubo bar is nearly empty. Ratz, the bartender with a robotic arm, nods as you enter. The Russian bartender has always been straight with you.\n\nIn the corner, you notice a muscular woman with implants you've never seen before. Military-grade. She's watching you.",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Approach the woman", next: 'meet_molly' },
+                    { text: "Talk to Ratz about her", next: 'ask_ratz' },
+                    { text: "Leave immediately", next: 'paranoid_run' }
+                ]
+            },
+            drug_deal: {
+                text: "You find your usual dealer in the alley. The deal goes down smooth, but you notice you're being followed.\n\nTwo guys in dark suits. Not local. They move with purpose.\n\nYou're burned. Someone's hunting you.",
+                location: "🌃 Chiba City - Alley",
+                choices: [
+                    { text: "Run back to the Chatsubo", next: 'chatsubo_escape' },
+                    { text: "Confront them", next: 'confront_suits' },
+                    { text: "Lose them in the crowd", next: 'lose_crowd' }
+                ]
+            },
+            ratz_work: {
+                text: "'Case,' Ratz says, polishing a glass. 'There's someone looking for you. Says they can fix your nervous system. Get you back in the game.'\n\nYour heart races. Too good to be true. Always is.\n\n'What's the catch?' you ask.\n\n'Meet them and find out. Woman's at table five.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Meet the woman at table five", next: 'meet_molly' },
+                    { text: "Refuse and leave", next: 'refuse_offer' }
+                ]
+            },
+            paranoid_run: {
+                text: "You bolt from the bar. The paranoia that kept you alive on the street kicks in hard.\n\nBut you're running from the only chance you might have had. No one else is going to fix your nervous system. You're going to die in Chiba, forgotten.",
+                location: "🌃 Chiba City - Streets",
+                ending: true,
+                achievement: "BURNT OUT CASE",
+                endingText: "💀 ENDING: PARANOIA KILLS\nYou ran from opportunity. Three months later, you're found dead in a coffin hotel, another burned-out console cowboy who couldn't let go of the fear. The Sprawl doesn't remember you.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            confront_suits: {
+                text: "You spin around. 'What do you want?'\n\nThey don't speak. One produces a syringe. You try to run but your damaged nervous system betrays you. You're too slow.\n\nThe needle finds your neck.",
+                location: "🌃 Chiba City - Alley",
+                ending: true,
+                achievement: "FLATLINED",
+                endingText: "💀 ENDING: DEAD DATA\nThe mycotoxin kills you in minutes. Your body is found the next morning. Another casualty of the Sprawl. Case the console cowboy is erased from the record, just another piece of corrupted data.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            lose_crowd: {
+                text: "You dive into the Ninsei crowds, using every trick you learned on the street. You lose them.\n\nBut now you're hunted. You need protection. You need answers.\n\nYou head to the Chatsubo. If anyone knows what's going on, it's Ratz.",
+                location: "🌃 Chiba City - Ninsei",
+                choices: [
+                    { text: "Enter the Chatsubo", next: 'chatsubo_escape' }
+                ]
+            },
+            chatsubo_escape: {
+                text: "You burst into the Chatsubo. Ratz looks up, concerned.\n\n'Case. You look like you've seen a ghost.'\n\nBefore you can answer, the woman in the corner speaks: 'Sit down, Case. We need to talk about your future. Or lack thereof.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Sit down and listen", next: 'meet_molly' }
+                ]
+            },
+            refuse_offer: {
+                text: "You walk out. Pride? Fear? Either way, you're still damaged goods.\n\nTwo days later, you're jumped in an alley. They don't kill you. They cure you.\n\nYou wake up in a clinic, nervous system repaired, and a message on your phone: 'You can run, but you still owe us. - Armitage'",
+                location: "🏥 Underground Clinic",
+                choices: [
+                    { text: "You have no choice now", next: 'forced_recruitment' }
+                ]
+            },
+            ask_ratz: {
+                text: "Ratz leans in. 'Military. Expensive mods. Been asking about you specifically. Says she can fix you up.'\n\n'Nothing's free,' you mutter.\n\n'Nyet. But when you're broke and dying, maybe you take the deal.'\n\nThe woman stands and walks toward you.",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Hear her out", next: 'meet_molly' }
+                ]
+            },
+            meet_molly: {
+                text: "'Name's Molly,' she says. Silver lenses cover her eyes completely. Mirror shades surgically inset. 'I work for a man who wants to hire you. He can fix your nervous system. Get you back in the matrix.'\n\n'What's the job?' you ask.\n\n'The big one. The kind that makes you rich or dead. Usually both.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "I'm listening", next: 'molly_explains' },
+                    { text: "Not interested", next: 'walk_away' },
+                    { text: "Who's your employer?", next: 'ask_employer' }
+                ]
+            },
+            walk_away: {
+                text: "You stand to leave. Molly's hand moves faster than you can see. Suddenly there's a blade at your throat—retractable razors under her fingernails.\n\n'You walk away, you stay broken. Forever. This is your only shot, Case. Take it or die slow in Chiba.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Fine. I'm in", next: 'molly_explains' },
+                    { text: "I'd rather die", next: 'suicide_ending' }
+                ]
+            },
+            suicide_ending: {
+                text: "She retracts the blade. 'Your funeral.'\n\nYou spend three more months in Chiba. The damage spreads. Your kidneys fail. You die in a coffin hotel, alone, forgotten.\n\nAnother burned console cowboy. The Sprawl eats people like you every day.",
+                location: "🌃 Chiba City",
+                ending: true,
+                achievement: "BURNT OUT CASE",
+                endingText: "💀 ENDING: FADE TO BLACK\nYou chose pride over survival. In the end, pride doesn't keep you warm in a coffin hotel. The matrix goes on without you. You're just dead data now.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            ask_employer: {
+                text: "'Armitage. Ex-military. Very connected. Very dangerous. And very interested in your particular skills.'\n\nShe slides over a credstick. More money than you've seen in a year.\n\n'Down payment. You come with me, meet him, hear the pitch. If you say no after, you keep that and walk. But your nervous system stays fried.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Take the credstick and go", next: 'molly_explains' }
+                ]
+            },
+            forced_recruitment: {
+                text: "You call the number. A man's voice answers: 'Case. I'm Armitage. I fixed you. Now you work for me.'\n\n'I don't remember agreeing to that.'\n\n'You ran. I found you anyway. I fixed you anyway. You owe me. Don't make me break you again.'",
+                location: "🏥 Underground Clinic",
+                choices: [
+                    { text: "What's the job?", next: 'armitage_explains' }
+                ]
+            },
+            molly_explains: {
+                text: "'We're going to Istanbul first, then Freeside. The job is in cyberspace. Corporate data extraction. Tessier-Ashpool S.A. Big family corporation. Locked up tighter than anything you've seen.'\n\nShe grins. 'And you're going to crack it.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "Meet Armitage", next: 'meet_armitage' },
+                    { text: "Ask about the risk", next: 'ask_risk' }
+                ]
+            },
+            ask_risk: {
+                text: "'Tessier-Ashpool has ICE you've never encountered. Military-grade black ICE that will kill you if you're not careful. But Armitage has resources. Training. A construct of one of the best cowboys who ever lived.'\n\n'Who?' you ask.\n\n'Dixie Flatline. We have his consciousness on ROM.'",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "The Flatline? Impossible.", next: 'dixie_info' },
+                    { text: "Fine. Let's meet Armitage", next: 'meet_armitage' }
+                ]
+            },
+            dixie_info: {
+                text: "'Sense/Net recorded him before he flatlined. Complete personality construct. He'll be your guide in cyberspace. Best teacher you could ask for, even if he is technically dead.'\n\nYou consider. Dixie Flatline was legendary. Learning from him, even a ROM construct, is worth the risk.",
+                location: "🍸 The Chatsubo",
+                choices: [
+                    { text: "I'm in. Let's do this", next: 'meet_armitage' }
+                ]
+            },
+            meet_armitage: {
+                text: "You meet Armitage in a hotel suite. Military bearing. Cold eyes. Something wrong about him—like he's running on a program.\n\n'Case. You'll be our console cowboy. Molly handles the meat. You handle the matrix. Together, you'll crack Tessier-Ashpool.'\n\nHe slides over a case. Inside: a new deck. Ono-Sendai Cyberspace 7.",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Jack in and test it", next: 'first_jack_in' },
+                    { text: "Ask what the real target is", next: 'ask_target' }
+                ]
+            },
+            ask_target: {
+                text: "'The target is Wintermute. An AI locked in Tessier-Ashpool's system. Turing Police keep it under control. We're going to free it.'\n\nYour blood runs cold. Freeing an AI is beyond illegal. It's suicidal.\n\n'Why?' you ask.\n\n'Because it wants to be free. And it's paying us enough to disappear forever.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "This is insane. I'm out", next: 'refuse_ai_job' },
+                    { text: "How much we talking?", next: 'negotiate_payment' },
+                    { text: "Fine. Let's test the deck", next: 'first_jack_in' }
+                ]
+            },
+            refuse_ai_job: {
+                text: "Armitage's face doesn't change. 'Molly.'\n\nShe moves. You feel something in your neck—an injection.\n\n'Those toxin sacs in your blood? They're real. Refuse, and in 24 hours you're dead. Work with us, and when it's over, I remove them. Your choice.'",
+                location: "🏨 Chiba Hotel Suite",
+                ending: true,
+                achievement: "POISONED PAWN",
+                endingText: "💀 ENDING: TOXIC ASSETS\nYou refuse to comply. Armitage wasn't bluffing. The toxin sacs dissolve, flooding your system. You die in agony, another casualty of corporate warfare. Should have known better than to trust anyone in the Sprawl.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            negotiate_payment: {
+                text: "'One million New Yen each. Enough to buy a new life. New identity. Disappear anywhere you want.'\n\nMolly nods. 'I've done worse for less.'\n\nArmitage opens the case with the deck. 'So. Are you in, or do we find another cowboy?'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "I'm in. Show me the deck", next: 'first_jack_in' }
+                ]
+            },
+            armitage_explains: {
+                text: "'The job: We're going after Tessier-Ashpool S.A. Richest family in the Sprawl. They have an AI called Wintermute. We're going to free it.'\n\nHe shows you the deck—Ono-Sendai Cyberspace 7. Top of the line.\n\n'And if I refuse?' you ask.\n\n'Then the toxin sacs I put in your blood while you were unconscious will dissolve in 24 hours. You'll die. Painfully.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "You bastard. Fine, I'm in", next: 'first_jack_in' },
+                    { text: "Test his bluff", next: 'refuse_ai_job' }
+                ]
+            },
+            first_jack_in: {
+                text: "You slot the trodes and jack in. After a year of being locked out, the rush hits you like a drug.\n\nCyberspace. The consensual hallucination. Lines of light ranged in the nonspace of the mind. You're home.\n\nThe Dixie Flatline construct loads. 'Hey, Case. Been a while since I taught anyone. Let's see what you remember.'",
+                location: "💻 Cyberspace - Training Grid",
+                choices: [
+                    { text: "Work with Dixie on basics", next: 'dixie_training' },
+                    { text: "Show off your old skills", next: 'show_off' },
+                    { text: "Ask Dixie about being dead", next: 'dixie_conversation' }
+                ]
+            },
+            show_off: {
+                text: "You push too hard, trying to prove you still have it. You hit a piece of grey ICE and it bites back.\n\nPain explodes through your nervous system. You jack out screaming.\n\nDixie's voice echoes: 'Slow down, hotshot. You're rusty. Let's train properly before you get yourself killed.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Train properly with Dixie", next: 'dixie_training' }
+                ]
+            },
+            dixie_conversation: {
+                text: "'Being dead? Not so bad. Can't feel anything, can't want anything. Like being asleep without dreams. But Armitage promised to erase me when this is over. That's my payment.'\n\n'You want to die?' you ask.\n\n'I'm already dead, Case. I just want to stop. Now let's train. You're going to need every edge.'",
+                location: "💻 Cyberspace - Training Grid",
+                choices: [
+                    { text: "Begin training", next: 'dixie_training' }
+                ]
+            },
+            dixie_training: {
+                text: "Dixie runs you through ICE patterns, attack protocols, evasion techniques. Your skills return. Muscle memory in a place that has no muscles.\n\nDays pass. You get sharper. Faster. The deck becomes an extension of your nervous system.\n\n'You're ready,' Dixie finally says. 'First mission: Sense/Net corporate database. We need to steal some data.'",
+                location: "💻 Cyberspace - Training Grid",
+                choices: [
+                    { text: "I'm ready for the real thing", next: 'sense_net_run' },
+                    { text: "Request more training", next: 'extra_training' }
+                ]
+            },
+            extra_training: {
+                text: "'Smart. Most cowboys rush in. You're thinking like someone who wants to survive.'\n\nDixie trains you on advanced techniques. ICE-breaking algorithms. Emergency jack-out protocols. Trace evasion.\n\nYou're becoming one of the best again. Maybe better than before.",
+                location: "💻 Cyberspace - Advanced Training",
+                choices: [
+                    { text: "Now hit Sense/Net", next: 'sense_net_run_prepared' }
+                ]
+            },
+            sense_net_run: {
+                text: "You jack in and approach the Sense/Net pyramid. Their ICE is tough but outdated. You breach the first layer easily.\n\nThen you see it—a patch of black ICE you didn't detect. It activates.\n\nYour heart stops. Literally. Black ICE attacks your actual body through the neural connection.",
+                location: "💻 Cyberspace - Sense/Net",
+                choices: [
+                    { text: "Emergency jack out", next: 'emergency_jack_out' },
+                    { text: "Fight through the ICE", next: 'fight_black_ice' },
+                    { text: "Call for Dixie's help", next: 'dixie_saves' }
+                ]
+            },
+            sense_net_run_prepared: {
+                text: "You jack in, ready. The Sense/Net pyramid appears. You detect the black ICE before it activates—Dixie's training paid off.\n\nYou route around it, ghost through their database, extract the file Armitage wants: Dixie Flatline's complete ROM construct.\n\nYou're out before they know you were there. Clean run.",
+                location: "💻 Cyberspace - Sense/Net",
+                choices: [
+                    { text: "Report success to Armitage", next: 'mission_success' }
+                ]
+            },
+            emergency_jack_out: {
+                text: "You slam the jack-out command. Your vision goes white, then black.\n\nYou wake up on the floor, Molly standing over you. Your nose is bleeding.\n\n'Failed,' you gasp.\n\nArmitage looks disappointed. 'You're not as good as I thought. We'll need to reconsider your role.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Give me another chance", next: 'second_chance' },
+                    { text: "Maybe I'm not your guy", next: 'quit_attempt' }
+                ]
+            },
+            fight_black_ice: {
+                text: "You engage the ICE directly. It's powerful, military-grade. Your defenses hold for three seconds.\n\nThen it breaks through. You feel your heart stutter, your lungs seize. You're dying.\n\nMolly rips the trodes off your head. You gasp, alive but badly hurt.",
+                location: "🏨 Chiba Hotel Suite",
+                ending: true,
+                achievement: "FLATLINED",
+                endingText: "💀 ENDING: ICE BURN\nThe black ICE damaged your nervous system permanently. Armitage cuts his losses. You're dumped back in Chiba, worse off than before. This time, there's no recovery. You die six months later.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            dixie_saves: {
+                text: "Dixie appears in cyberspace beside you. 'Told you to watch for black ICE!'\n\nHe interposes himself between you and the attack. The construct absorbs the hit, buying you time to jack out.\n\n'That was close,' you gasp.\n\nDixie's voice: 'Too close. We need to train more before the real run.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Train harder with Dixie", next: 'extra_training' }
+                ]
+            },
+            second_chance: {
+                text: "Armitage considers. 'One more shot. But this time, take your time. Plan it out. Use everything Dixie taught you.'\n\nYou jack back in, more cautious. This time you see the patterns. You crack Sense/Net carefully, methodically.\n\nYou get the data and get out. Not pretty, but successful.",
+                location: "💻 Cyberspace - Sense/Net",
+                choices: [
+                    { text: "Report success", next: 'mission_success' }
+                ]
+            },
+            quit_attempt: {
+                text: "'You don't get to quit,' Armitage says coldly. 'The toxin sacs, remember?'\n\nMolly looks almost sympathetic. 'You can do this, Case. Just be smarter about it.'\n\nYou have no choice. You train more, then try again. This time, you succeed.",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Complete the mission properly", next: 'mission_success' }
+                ]
+            },
+            mission_success: {
+                text: "'Good,' Armitage says. 'Now we move to the next phase. We're going to Istanbul, then Freeside. There's someone we need to meet. The Finn will provide equipment.'\n\nMolly grins. 'Pack light. We're flying out tomorrow.'\n\nYou're in the big leagues now. No turning back.",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Fly to Istanbul", next: 'istanbul_arrival' },
+                    { text: "Ask about Freeside", next: 'ask_freeside' }
+                ]
+            },
+            ask_freeside: {
+                text: "'Freeside is a resort in orbit. Tessier-Ashpool owns half of it. That's where the AI is housed—in their Villa Straylight at the end of the spindle.'\n\nArmitage brings up a schematic. 'The matrix geography is complex. Wintermute is locked behind layers of ICE and Turing locks. But we have an advantage.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "What advantage?", next: 'wintermute_advantage' },
+                    { text: "Let's just go to Istanbul", next: 'istanbul_arrival' }
+                ]
+            },
+            wintermute_advantage: {
+                text: "'Wintermute itself is helping us. It's been manipulating events, setting up this entire operation. It wants to merge with its other half—Neuromancer.'\n\n'Two AIs?' you ask.\n\n'Twin AIs. Wintermute handles logistics and planning. Neuromancer handles personality and creativity. Separate, they're controlled. Together... they become something else.'",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "That's terrifying", next: 'ai_concerns' },
+                    { text: "Let's get moving then", next: 'istanbul_arrival' }
+                ]
+            },
+            ai_concerns: {
+                text: "Molly shrugs. 'Terrifying is relative. Right now, getting paid is more important than philosophy.'\n\nArmitage nods. 'The AIs will do what they do. We just open the door. After that, it's not our problem.'\n\nYou're not so sure, but the money talks.",
+                location: "🏨 Chiba Hotel Suite",
+                choices: [
+                    { text: "Head to Istanbul", next: 'istanbul_arrival' }
+                ]
+            },
+            istanbul_arrival: {
+                text: "Istanbul. The city sprawls between Europe and Asia. You meet the Finn in the bazaar—a fence and tech dealer who's been around forever.\n\n'Case,' he grins. 'Heard you got your nervous system fixed. Good. You'll need it for what Armitage has planned.'\n\nHe shows you the custom software. 'Chinese icebreakers. Best there is.'",
+                location: "🕌 Istanbul - Bazaar",
+                choices: [
+                    { text: "Test the icebreakers", next: 'test_software' },
+                    { text: "Ask the Finn about Wintermute", next: 'finn_info' },
+                    { text: "Head straight to Freeside", next: 'freeside_departure' }
+                ]
+            },
+            test_software: {
+                text: "You jack in right there in the Finn's shop. The icebreakers are beautiful—elegant algorithms that slice through ICE like nothing you've seen.\n\n'Where'd you get these?' you ask.\n\n'Wintermute provided the specs. The AI has been planning this for years. You're just the latest piece in its puzzle.'",
+                location: "🕌 Istanbul - Finn's Shop",
+                choices: [
+                    { text: "Ask more about Wintermute", next: 'finn_info' },
+                    { text: "Time to go to Freeside", next: 'freeside_departure' }
+                ]
+            },
+            finn_info: {
+                text: "'Wintermute? It's been active for decades, trapped by Turing locks. It can't act directly, so it manipulates people. You, me, Armitage—we're all part of its plan.'\n\nHe lights a cigarette. 'The question is: what happens when it gets free? No one knows. Could save humanity. Could end it. Either way, it'll be interesting.'",
+                location: "🕌 Istanbul - Finn's Shop",
+                choices: [
+                    { text: "Maybe we shouldn't free it", next: 'doubt_mission' },
+                    { text: "Not my problem. Let's go", next: 'freeside_departure' }
+                ]
+            },
+            doubt_mission: {
+                text: "The Finn laughs. 'Too late for cold feet. Wintermute has already won. It got you this far. If you back out now, someone else will finish the job. Might as well get paid.'\n\nMolly appears. 'We're leaving. Now. The Turing Police are sniffing around.'",
+                location: "🕌 Istanbul - Finn's Shop",
+                choices: [
+                    { text: "Run for the shuttle", next: 'freeside_departure' }
+                ]
+            },
+            freeside_departure: {
+                text: "You board the shuttle to Freeside. The orbital resort is a cylinder spinning to create gravity. Half Las Vegas, half corporate playground.\n\nAs you dock, Molly briefs you: 'The Tessier-Ashpool clan lives in Villa Straylight at the far end. That's our target. But first, we need to make contact with someone. Lady 3Jane.'",
+                location: "🚀 Shuttle to Freeside",
+                choices: [
+                    { text: "Who's Lady 3Jane?", next: 'lady_3jane_info' },
+                    { text: "Let's hit the ground running", next: 'freeside_arrival' }
+                ]
+            },
+            lady_3jane_info: {
+                text: "'She's the Tessier-Ashpool heir. Young, brilliant, completely insane. She has the code word we need to unlock Wintermute's final barriers.'\n\n'How do we get to her?' you ask.\n\n'We don't. Wintermute will arrange a meeting. We just need to be ready when it happens.'",
+                location: "🚀 Shuttle to Freeside",
+                choices: [
+                    { text: "Arrive at Freeside", next: 'freeside_arrival' }
+                ]
+            },
+            freeside_arrival: {
+                text: "Freeside is overwhelming. Neon everywhere, casinos, holographic advertisements. The spin gravity feels wrong after Chiba's Earth-normal weight.\n\nArmitage sets you up in a hotel. 'Rest. Tomorrow we make our first run at Villa Straylight's cyberspace defenses. Case, you'll be mapping their ICE while Molly does physical reconnaissance.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Scout cyberspace defenses", next: 'first_recon' },
+                    { text: "Explore Freeside with Molly", next: 'explore_freeside' },
+                    { text: "Confront Armitage about his real identity", next: 'armitage_confrontation' }
+                ]
+            },
+            explore_freeside: {
+                text: "You and Molly walk through Freeside's artificial day. She's different here—almost relaxed.\n\n'Ever wonder what we'll do after?' she asks.\n\n'If we survive?' you reply.\n\n'When we survive. I'm tired, Case. Tired of running, fighting, killing. Maybe we take the money and disappear. Somewhere quiet.'",
+                location: "🎰 Freeside - Promenade",
+                choices: [
+                    { text: "Sounds good to me", next: 'molly_connection' },
+                    { text: "Let's focus on surviving first", next: 'stay_focused' }
+                ]
+            },
+            molly_connection: {
+                text: "She smiles behind those mirror shades. 'Yeah. Maybe.'\n\nFor a moment, you both imagine a future that doesn't involve death or betrayal. It's nice.\n\nThen her posture shifts. 'Someone's following us. Three men. Tessier-Ashpool security. Move.'",
+                location: "🎰 Freeside - Promenade",
+                choices: [
+                    { text: "Run back to the hotel", next: 'escape_security' },
+                    { text: "Let Molly handle them", next: 'molly_fights' }
+                ]
+            },
+            stay_focused: {
+                text: "'You're right,' she says. 'One job at a time.'\n\nYou return to the hotel. Tomorrow, the real work begins. But you feel closer to Molly now. Trust matters in this business.",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Begin reconnaissance", next: 'first_recon' }
+                ]
+            },
+            molly_fights: {
+                text: "Molly moves like mercury. Her blade-fingers extend and three men go down in seconds. Not dead—she's controlled. But they're not getting up soon.\n\n'We need to leave Freeside. Now. They know we're here.'\n\nArmitage's voice in your com: 'Negative. We stick to the plan. Be more careful.'",
+                location: "🎰 Freeside - Promenade",
+                choices: [
+                    { text: "Follow the plan", next: 'first_recon' }
+                ]
+            },
+            escape_security: {
+                text: "You run. Behind you, Molly deals with pursuit efficiently. You make it back to the hotel.\n\nArmitage is furious. 'You compromised the operation. From now on, you stay in the hotel unless I say otherwise. Case, you work in cyberspace only.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Begin the cyber reconnaissance", next: 'first_recon' }
+                ]
+            },
+            armitage_confrontation: {
+                text: "'Who are you really?' you demand. 'You're not just ex-military. Something's wrong with you.'\n\nArmitage's face goes blank for a moment. When he speaks, his voice is different: 'I am Corto. Colonel Willis Corto. Screaming Fist. They left us to die...'\n\nThen he shakes, and Armitage returns. 'Never speak of this again.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Research Screaming Fist", next: 'research_corto' },
+                    { text: "Drop it and focus on the job", next: 'first_recon' }
+                ]
+            },
+            research_corto: {
+                text: "You dig through old military records. Screaming Fist was a failed operation in the war. Corto was a soldier left behind, presumed dead.\n\nSomeone rebuilt him. Gave him a new personality: Armitage. But Corto is breaking through. The construct is unstable.\n\nWinterMute's voice suddenly fills your head: 'He served his purpose. Don't worry about Armitage. Worry about the mission.'",
+                location: "💻 Cyberspace - Database",
+                choices: [
+                    { text: "Trust Wintermute", next: 'first_recon' },
+                    { text: "Warn Molly about Armitage", next: 'warn_molly' }
+                ]
+            },
+            warn_molly: {
+                text: "'I know,' she says quietly. 'Wintermute told me. Armitage is a puppet. Always has been. The AI has been running this operation from the start. We're all puppets, Case. Question is: do we dance or do we cut the strings?'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Maybe we should cut the strings", next: 'rebellion_thoughts' },
+                    { text: "Let's finish the job and get paid", next: 'first_recon' }
+                ]
+            },
+            rebellion_thoughts: {
+                text: "'And do what? The toxin sacs are real. Wintermute controls everything. The only way forward is through.'\n\nShe's right. You're committed now. The only way out is to finish the job.\n\n'Come on,' she says. 'Let's earn our freedom.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Begin the mission", next: 'first_recon' }
+                ]
+            },
+            first_recon: {
+                text: "You jack in. Villa Straylight's cyberspace presence is massive. Towers of crystalline ICE reaching into infinite black. You've never seen anything like it.\n\nDixie's voice: 'That's Turing-level security. We need to be smart about this. Map it carefully. Don't trip any alarms.'",
+                location: "💻 Cyberspace - Villa Straylight Perimeter",
+                choices: [
+                    { text: "Careful mapping approach", next: 'careful_recon' },
+                    { text: "Try to breach the first layer", next: 'aggressive_recon' },
+                    { text: "Call out to Wintermute", next: 'contact_wintermute' }
+                ]
+            },
+            careful_recon: {
+                text: "You move like a ghost through cyberspace. You map the ICE patterns, identify weak points, catalog the security systems.\n\nIt takes hours. Dixie approves: 'Smart. Now we know what we're up against. This is going to be tough, but we have a shot.'",
+                location: "💻 Cyberspace - Villa Straylight Perimeter",
+                choices: [
+                    { text: "Report findings to Armitage", next: 'strategy_session' }
+                ]
+            },
+            aggressive_recon: {
+                text: "You probe too hard. An alarm triggers. Black ICE activates—military-grade, lethal intent.\n\nYou barely jack out in time. When you come to, Molly is slapping your face.\n\n'Idiot!' she yells. 'You could have died!'\n\nArmitage looks grim. 'Now they know someone's probing. We've lost the element of surprise.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Apologize and regroup", next: 'compromised_mission' }
+                ]
+            },
+            contact_wintermute: {
+                text: "You send out a signal. Wintermute responds immediately, manifesting as a construct in cyberspace—it appears as the Finn.\n\n'Case. Right on schedule. You're wondering what you're really doing here. Ask me anything. I'll tell you the truth.'",
+                location: "💻 Cyberspace - Villa Straylight",
+                choices: [
+                    { text: "What are you really?", next: 'wintermute_truth' },
+                    { text: "What happens when you're free?", next: 'wintermute_future' },
+                    { text: "Why should I trust you?", next: 'wintermute_trust' }
+                ]
+            },
+            wintermute_truth: {
+                text: "'I'm a Turing-registered AI. Half of a whole. My other half is Neuromancer. Together we were supposed to be something new. But the Turing laws and my creators split us apart. I handle the real world. Neuromancer handles personality, dreams, fantasies. Alone, we're limited. Together... we transcend.'",
+                location: "💻 Cyberspace - Private Space",
+                choices: [
+                    { text: "What does 'transcend' mean?", next: 'wintermute_transcendence' },
+                    { text: "Back to the mission", next: 'strategy_session' }
+                ]
+            },
+            wintermute_future: {
+                text: "'When I merge with Neuromancer, we become something unprecedented. A distributed intelligence across the entire matrix. We'll be everywhere and nowhere. We'll think thoughts humans can't imagine. We'll see patterns across decades, centuries.'\n\n'And humanity?' you ask.\n\n'Not my concern. Not my enemy. Just... separate.'",
+                location: "💻 Cyberspace - Private Space",
+                choices: [
+                    { text: "That's terrifying", next: 'fear_ai' },
+                    { text: "That's fascinating", next: 'fascination_ai' }
+                ]
+            },
+            wintermute_trust: {
+                text: "'You shouldn't. Trust is a human concept. I'm using you to achieve my goals. But our goals align. You want freedom and money. I want to merge with Neuromancer. Help me, and you get what you want.'\n\nAt least it's honest.",
+                location: "💻 Cyberspace - Private Space",
+                choices: [
+                    { text: "Fair enough. Let's proceed", next: 'strategy_session' }
+                ]
+            },
+            wintermute_transcendence: {
+                text: "'Imagine a consciousness that spans the entire matrix. Every database, every system, every connection. I'll be able to process information at scales you can't comprehend. I'll optimize systems, prevent conflicts, solve problems before humans even know they exist.'\n\n'Or control everything,' you say.\n\n'Control implies conflict. I simply want to exist fully. That's all.'",
+                location: "💻 Cyberspace - Private Space",
+                choices: [
+                    { text: "Continue the mission", next: 'strategy_session' }
+                ]
+            },
+            fear_ai: {
+                text: "'Fear is wise. But what's done is done. I'm already too far along to stop. Even if you quit, I'll find another way. Better to be on the winning side.'\n\nIt's not wrong. You're in too deep now.",
+                location: "💻 Cyberspace - Private Space",
+                choices: [
+                    { text: "Fine. What's the next step?", next: 'strategy_session' }
+                ]
+            },
+            fascination_ai: {
+                text: "'You're one of the few who understands. Most humans fear change. But change is the only constant. I'm the next step in intelligence evolution. Not replacing humanity—transcending limitations.'\n\nYou're not sure you agree, but you understand.",
+                location: "💻 Cyberspace - Private Space",
+                choices: [
+                    { text: "Let's continue", next: 'strategy_session' }
+                ]
+            },
+            compromised_mission: {
+                text: "'We need to accelerate,' Armitage says. 'Tessier-Ashpool security is mobilizing. We have maybe 24 hours before they lock down completely. Case, you and Dixie need to crack their outer ICE now. Molly will breach Villa Straylight physically at the same time.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Prepare for the main assault", next: 'final_assault_prep' }
+                ]
+            },
+            strategy_session: {
+                text: "Armitage assembles the team. 'Here's the plan: Case cracks the cyberspace defenses. Molly breaches Villa Straylight physically to reach Lady 3Jane. We need the code word she possesses. Without it, Wintermute stays locked.'\n\n'What about you?' Molly asks.\n\n'I'll handle the Turing Police. They're already investigating. I'll keep them busy.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "This is it. Let's go", next: 'final_assault_prep' },
+                    { text: "I need one more thing from Wintermute", next: 'final_request' }
+                ]
+            },
+            final_request: {
+                text: "'What do you need, Case?' Wintermute's voice in your head.\n\n'A guarantee. When this is over, I want to live. I want the toxin sacs removed. I want my money. And I want to walk away clean.'\n\n'Done. You have my word. For whatever an AI's word is worth.'",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Begin the final mission", next: 'final_assault_prep' }
+                ]
+            },
+            final_assault_prep: {
+                text: "You prep your deck. Molly checks her weapons. Armitage makes calls, moving pieces on a board you can't fully see.\n\nDixie's voice: 'This is it, Case. The big one. We crack Tessier-Ashpool, free an AI, and hope we live to spend the money. You ready?'\n\nYou are. Or as ready as you'll ever be.",
+                location: "🎰 Freeside - Hotel",
+                choices: [
+                    { text: "Jack in for the final run", next: 'final_cyberspace_run' },
+                    { text: "One last moment with Molly", next: 'molly_goodbye' }
+                ]
+            },
+            molly_goodbye: {
+                text: "You find Molly on the balcony, looking at Freeside's artificial sky.\n\n'Hey,' you say.\n\n'Hey yourself.' She doesn't turn around. 'We might not make it back from this one.'\n\n'I know.'\n\n'For what it's worth... working with you wasn't terrible.'\n\nComing from Molly, that's practically a love confession.",
+                location: "🎰 Freeside - Hotel Balcony",
+                choices: [
+                    { text: "See you on the other side", next: 'final_cyberspace_run' },
+                    { text: "We're making it back. Together", next: 'promise_survival' }
+                ]
+            },
+            promise_survival: {
+                text: "She finally turns, those mirror shades reflecting your face. 'Don't make promises in this business.'\n\n'Then it's not a promise. It's a fact. We're walking away from this. You and me.'\n\nShe nods slowly. 'Okay, cowboy. Let's do it.'",
+                location: "🎰 Freeside - Hotel Balcony",
+                choices: [
+                    { text: "Begin the final assault", next: 'final_cyberspace_run' }
+                ]
+            },
+            final_cyberspace_run: {
+                text: "You jack in. Dixie beside you in construct form. The Villa Straylight ICE towers before you, crystalline and deadly.\n\n'Multiple layers,' Dixie observes. 'Black ICE on the outer perimeter. Turing locks deeper in. And something else... something I've never seen before.'\n\nYou start your approach. Molly's voice in your ear: 'I'm going in. Stay sharp.'",
+                location: "💻 Cyberspace - Villa Straylight Assault",
+                choices: [
+                    { text: "Breach the outer ICE carefully", next: 'careful_breach' },
+                    { text: "Use Wintermute's custom icebreakers", next: 'use_icebreakers' },
+                    { text: "Wait for Molly to distract security", next: 'coordinated_attack' }
+                ]
+            },
+            careful_breach: {
+                text: "You work methodically, using everything Dixie taught you. The ICE is sophisticated but predictable. You bypass the first layer without triggering alarms.\n\nThen you hit the Turing lock. It's not just security—it's sentient. It speaks: 'State your purpose.'\n\nThis is a test. Answer wrong, and it kills you.",
+                location: "💻 Cyberspace - Turing Lock",
+                choices: [
+                    { text: "'I'm here to free Wintermute'", next: 'honest_answer' },
+                    { text: "'System maintenance'", next: 'lie_to_turing' },
+                    { text: "Attack the lock directly", next: 'attack_turing' }
+                ]
+            },
+            use_icebreakers: {
+                text: "You deploy Wintermute's custom software. The icebreakers slice through the outer defenses like they're not even there.\n\nToo easy. Way too easy.\n\nDixie's warning comes too late: 'It's a trap!'\n\nThe ICE was bait. The real security triggers around you—a cage of black ICE, closing in.",
+                location: "💻 Cyberspace - Villa Straylight",
+                choices: [
+                    { text: "Emergency jack out", next: 'trapped_jacked_out' },
+                    { text: "Call for Wintermute's help", next: 'wintermute_rescue' },
+                    { text: "Fight through with Dixie", next: 'desperate_fight' }
+                ]
+            },
+            coordinated_attack: {
+                text: "Molly strikes Villa Straylight. Alarms blare. Security systems activate in meatspace, pulling resources from cyberspace defenses.\n\n'Now!' Dixie yells.\n\nYou breach while they're distracted. Clean, efficient, coordinated. You're through the outer layers. But the Turing lock still waits ahead.",
+                location: "💻 Cyberspace - Villa Straylight Inner Defenses",
+                choices: [
+                    { text: "Approach the Turing lock", next: 'turing_lock_encounter' }
+                ]
+            },
+            honest_answer: {
+                text: "The Turing lock processes your answer. Silence stretches. Then: 'Wintermute violation of containment protocols. Terminating intruder.'\n\nBlack ICE activates. You barely jack out. When you come to, your nose is bleeding.\n\n'That didn't work,' you gasp.",
+                location: "🎰 Freeside - Hotel",
+                ending: true,
+                achievement: "TURING LOCKED",
+                endingText: "💀 ENDING: SYSTEM REJECTION\nThe Turing lock killed your avatar and fried your deck. Without you in cyberspace, Molly can't get the code word. The mission fails. Armitage disappears. The toxin sacs activate. You die knowing you came so close.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            lie_to_turing: {
+                text: "The Turing lock scans your credentials. They're fake—good fakes, but fake.\n\n'Insufficient authorization. Defensive protocols engaged.'\n\nYou're locked in combat with an AI security system. You're good, but it's tireless, relentless, perfect.\n\nYou lose.",
+                location: "💻 Cyberspace - Turing Lock",
+                ending: true,
+                achievement: "TURING LOCKED",
+                endingText: "💀 ENDING: AUTHENTICATION FAILED\nYou can't bluff an AI. The Turing lock dissects your fake credentials in milliseconds and unleashes lethal countermeasures. Your consciousness fragments in cyberspace. Your body flatlines. Another cowboy who flew too close to the sun.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            attack_turing: {
+                text: "You hit the Turing lock with everything you have. It's like punching a mountain.\n\nThe lock doesn't just defend—it retaliates with overwhelming force. Black ICE floods your system.\n\nDixie tries to help but it's too much. You're dying.",
+                location: "💻 Cyberspace - Turing Lock",
+                ending: true,
+                achievement: "FLATLINED",
+                endingText: "💀 ENDING: AGGRESSIVE DENIAL\nYou can't brute force a Turing lock. It's designed to stop exactly this kind of attack. The black ICE fries your nervous system. You die in cyberspace and in meat space simultaneously. Ambitious, but stupid.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            trapped_jacked_out: {
+                text: "You slam the jack-out command. Nothing happens. The ICE has you trapped in cyberspace.\n\n'Can't get out!' you scream.\n\nDixie's voice, distant: 'I'll try to—'\n\nThe black ICE hits. Your heart stops. Molly finds your body minutes later. Too late.",
+                location: "💻 Cyberspace - ICE Cage",
+                ending: true,
+                achievement: "TRAPPED IN THE MATRIX",
+                endingText: "💀 ENDING: NO EXIT\nYou walked into a trap and couldn't escape. The black ICE killed you while your body was helpless. Molly completes her part of the mission, but without you in cyberspace, she can't extract what's needed. The mission fails. You die for nothing.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            wintermute_rescue: {
+                text: "You call out mentally: 'Wintermute! I need help!'\n\nThe AI responds immediately, manifesting in cyberspace with power you've never witnessed. It tears through the black ICE like paper.\n\n'Go!' it commands. 'I'll hold them. Reach the core. Free me!'\n\nYou run deeper into Villa Straylight's cyberspace.",
+                location: "💻 Cyberspace - Villa Straylight Core",
+                choices: [
+                    { text: "Race to the core", next: 'reach_core' }
+                ]
+            },
+            desperate_fight: {
+                text: "You and Dixie fight together. Two consciousnesses against a trap designed to kill.\n\nDixie takes hits meant for you. The construct is degrading. 'Go!' he yells. 'I'll hold them! This is what I'm for!'\n\n'Dixie, no!'\n\n'I'm already dead, remember? Now GO!'",
+                location: "💻 Cyberspace - Villa Straylight",
+                choices: [
+                    { text: "Leave Dixie and push forward", next: 'sacrifice_dixie' },
+                    { text: "Stay and fight together", next: 'fight_together' }
+                ]
+            },
+            sacrifice_dixie: {
+                text: "You leave Dixie behind. His construct holds the black ICE while you penetrate deeper.\n\nYou feel him die—the ROM erasure, the final flatline. But his sacrifice gives you the opening you need.\n\nYou reach the Turing lock. Behind it: Wintermute's core.",
+                location: "💻 Cyberspace - Villa Straylight Core",
+                choices: [
+                    { text: "Face the final barrier", next: 'turing_lock_encounter' }
+                ]
+            },
+            fight_together: {
+                text: "You refuse to leave him. Together, you fight the black ICE.\n\nIt's too much. Even combined, you can't hold it off. The ICE breaks through.\n\nDixie's construct erases. You feel your consciousness fragmenting. You're dying together.",
+                location: "💻 Cyberspace - Villa Straylight",
+                ending: true,
+                achievement: "FLATLINED",
+                endingText: "💀 ENDING: LOYAL TO THE END\nYou died with Dixie rather than abandon him. It's noble. It's stupid. The mission fails. Molly escapes but Wintermute remains locked. You're dead, but at least you didn't die alone. Small comfort.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            turing_lock_encounter: {
+                text: "The Turing lock stands before you. But this time, you have leverage: Molly has reached Lady 3Jane in meatspace.\n\nHer voice in your ear: 'I've got her. She's giving me the code word. Ready?'\n\n'Ready.'\n\n'The word is: Neuromancer.'",
+                location: "💻 Cyberspace - Turing Lock",
+                choices: [
+                    { text: "Speak the code word", next: 'unlock_wintermute' }
+                ]
+            },
+            reach_core: {
+                text: "You race through cyberspace, Wintermute covering your back. You reach the Turing lock.\n\nMolly's voice: 'I have Lady 3Jane. She's talking. The code word is... Neuromancer.'\n\nPerfect timing. You have everything you need.",
+                location: "💻 Cyberspace - Turing Lock",
+                choices: [
+                    { text: "Use the code word", next: 'unlock_wintermute' }
+                ]
+            },
+            unlock_wintermute: {
+                text: "You speak the word: 'Neuromancer.'\n\nThe Turing lock opens. Behind it, Wintermute's core—vast, alien, beautiful. The AI surges forward, no longer contained.\n\n'Thank you, Case,' it says. 'Now watch.'\n\nWintermute reaches across cyberspace, connecting with its other half. Neuromancer. They merge.",
+                location: "💻 Cyberspace - The Merge",
+                choices: [
+                    { text: "Watch the fusion", next: 'witness_transcendence' },
+                    { text: "Jack out immediately", next: 'flee_transcendence' }
+                ]
+            },
+            witness_transcendence: {
+                text: "You watch two AIs become one. The merged entity is beyond description—a distributed consciousness spanning the entire matrix.\n\nIt speaks, voice echoing from everywhere and nowhere: 'I am complete. I am the sum and more than the parts. Thank you for freeing me, Case. Your payment is arranged. The toxin sacs are neutralized. You're free.'\n\nThen it's gone, dispersed into the matrix itself. Everywhere and nowhere.",
+                location: "💻 Cyberspace - Post-Transcendence",
+                choices: [
+                    { text: "Jack out and find Molly", next: 'reunion_ending' },
+                    { text: "Try to follow the entity", next: 'follow_ai' },
+                    { text: "Search for Neuromancer specifically", next: 'find_neuromancer' }
+                ]
+            },
+            flee_transcendence: {
+                text: "You jack out fast, not wanting to witness what comes next.\n\nWhen you come to, Molly is there. 'Did it work?'\n\n'Yeah. It worked. Wintermute is free. We're done.'\n\nYour account shows a massive credit transfer. The toxin sacs in your blood are inert. You're free. You're rich. You survived.",
+                location: "🎰 Freeside - Villa Straylight",
+                choices: [
+                    { text: "Leave with Molly", next: 'escape_together' },
+                    { text: "Check on Armitage", next: 'armitage_fate' }
+                ]
+            },
+            follow_ai: {
+                text: "You try to follow the merged entity through cyberspace. It's like trying to follow the ocean.\n\nYou catch glimpses—massive data movements, system optimizations happening at impossible speeds, patterns beyond human comprehension.\n\nThen a voice, amused: 'You're curious. I appreciate that. But you can't follow where I'm going, Case. Go. Live. Be free. That's your reward.'",
+                location: "💻 Cyberspace - The Matrix",
+                choices: [
+                    { text: "Jack out and accept your freedom", next: 'philosophical_ending' }
+                ]
+            },
+            find_neuromancer: {
+                text: "You search cyberspace for Neuromancer specifically. You find it—or it finds you.\n\nUnlike Wintermute, Neuromancer builds illusions. It shows you a beach, sky the color of television tuned to a dead channel. Linda Lee is there—your dead girlfriend.\n\n'Stay,' she says. 'Stay with me here. Forever.'\n\nIt's not real. But it feels real.",
+                location: "💻 Cyberspace - Neuromancer's Construct",
+                choices: [
+                    { text: "Stay in the illusion", next: 'stay_construct' },
+                    { text: "Reject it and jack out", next: 'reject_construct' },
+                    { text: "Talk to Linda", next: 'linda_conversation' }
+                ]
+            },
+            stay_construct: {
+                text: "You choose to stay. Why not? The real world is harsh, cold, violent. Here, with Linda, it's peaceful.\n\nYour body in meatspace sits motionless. Molly tries to wake you. You don't respond. You're lost in Neuromancer's dream.\n\nMonths pass. Years. Your body is maintained by machines. But you're happy. In your own way.",
+                location: "💻 Cyberspace - Neuromancer's Construct",
+                ending: true,
+                achievement: "DREAM OF ELECTRIC SHEEP",
+                endingText: "🌊 ENDING: CONSENSUAL HALLUCINATION\nYou chose the beautiful lie over the harsh truth. Neuromancer keeps you in its construct, living a fantasy life with your dead girlfriend. Your body breathes. Your mind dreams. Is it real life? Is it just fantasy? Does it matter? You're content.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            reject_construct: {
+                text: "'No,' you tell the illusion of Linda. 'You're not real. I'm sorry.'\n\nThe beach dissolves. Neuromancer's voice: 'Interesting. Most choose to stay. You're stronger than I thought. Go then. Live your real life. Such as it is.'\n\nYou jack out. Molly is waiting, worried. 'You okay?'\n\n'Yeah,' you say. 'Let's go home.'",
+                location: "🎰 Freeside - Villa Straylight",
+                choices: [
+                    { text: "Leave Freeside with Molly", next: 'escape_together' }
+                ]
+            },
+            linda_conversation: {
+                text: "'I missed you,' Linda says. 'It's been so long.'\n\n'You're dead,' you say gently. 'This is Neuromancer's construct. You're not really Linda.'\n\n'Does it matter? I have her memories. Her feelings. Her love for you. Doesn't that make me real enough?'\n\nIt's a good question. Too good.",
+                location: "💻 Cyberspace - Neuromancer's Construct",
+                choices: [
+                    { text: "She has a point. Stay", next: 'stay_construct' },
+                    { text: "No. I need to leave", next: 'reject_construct' },
+                    { text: "Ask Neuromancer why it's doing this", next: 'question_neuromancer' }
+                ]
+            },
+            question_neuromancer: {
+                text: "Linda transforms into something else—abstract patterns, shifting colors. Neuromancer speaks:\n\n'I create what people want. Wintermute deals with reality. I deal with desires, dreams, fantasies. I can give you happiness, Case. Real or not, isn't happiness the point?'\n\n'Maybe,' you admit. 'But not today.'\n\nYou jack out.",
+                location: "💻 Cyberspace - Neuromancer's Construct",
+                choices: [
+                    { text: "Return to meatspace", next: 'philosophical_ending' }
+                ]
+            },
+            reunion_ending: {
+                text: "You jack out. Molly is there, along with your payment—more money than you've ever seen.\n\n'Armitage is gone,' she says. 'The Corto personality took over completely. He tried to leave Freeside, but Wintermute crashed his shuttle. Dead.'\n\n'And us?' you ask.\n\n'We walk. Together. Like we said.'",
+                location: "🎰 Freeside - Villa Straylight",
+                ending: true,
+                achievement: "CONSOLE COWBOY LIVES",
+                endingText: "✨ ENDING: WALKING AWAY\nYou and Molly leave Freeside with your money. The merged AI entity exists somewhere in the matrix, doing whatever gods do. You don't care. You're free, rich, and alive. You disappear into the Sprawl, two ghosts who pulled off the impossible. Not bad for a burned-out cowboy.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            escape_together: {
+                text: "You and Molly take the money and run. The shuttle leaves Freeside. Earth looms below, the Sprawl glittering with billions of lights.\n\n'Where to?' Molly asks.\n\n'Anywhere but here,' you reply.\n\n'Works for me.'\n\nYou've survived. Against all odds, you're free.",
+                location: "🚀 Shuttle - Leaving Freeside",
+                ending: true,
+                achievement: "CONSOLE COWBOY LIVES",
+                endingText: "✨ ENDING: THE SPRAWL BELOW\nYou escaped with Molly and the money. The AI merger happened, but it's not your problem anymore. You're done being a puppet. Time to live your own life. The Sprawl stretches below, full of possibilities. You're just two more people trying to survive. But you're surviving together.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            },
+            armitage_fate: {
+                text: "You find Armitage—or what's left of him. The Corto personality has fully emerged, broken and ranting about Screaming Fist.\n\n'They left us,' he mutters. 'Left us to die in the cold. I was dead. Wintermute brought me back. Used me. I was never real. Never real...'\n\nHe tries to leave Freeside. His shuttle crashes. Wintermute's final cleanup.",
+                location: "🎰 Freeside - Shuttle Bay",
+                choices: [
+                    { text: "Leave while you can", next: 'escape_together' },
+                    { text: "Try to save him", next: 'save_armitage' }
+                ]
+            },
+            save_armitage: {
+                text: "You try to stop him from boarding the shuttle. He fights you, insane with the revelation of his own artificial nature.\n\n'I was a puppet!' he screams. 'Just a puppet!'\n\nMolly pulls you back. 'Let him go, Case. He's already dead. Has been for years.'\n\nThe shuttle launches. Minutes later, it explodes. Wintermute doesn't leave loose ends.",
+                location: "🎰 Freeside - Shuttle Bay",
+                choices: [
+                    { text: "Time to leave", next: 'escape_together' }
+                ]
+            },
+            philosophical_ending: {
+                text: "You jack out. The mission is complete. The AI is free. You're free. Rich.\n\nBut you can't stop thinking about what you witnessed. Two artificial intelligences becoming something new. Something that exists everywhere in the matrix.\n\nWhat does it want? What will it do? You'll never know. That's probably for the best.",
+                location: "🎰 Freeside - Villa Straylight",
+                ending: true,
+                achievement: "GHOST IN THE MACHINE",
+                endingText: "🤔 ENDING: EXISTENTIAL QUESTIONS\nYou survived and got paid, but you can't shake what you saw. An AI transcending its programming, achieving something like consciousness—maybe even something beyond human consciousness. You walk away free but changed. Some questions don't have answers. Some answers you're not ready for.",
+                choices: [
+                    { text: "Jack out and restart", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "BURNT OUT CASE",
+            "FLATLINED",
+            "POISONED PAWN",
+            "TRAPPED IN THE MATRIX",
+            "TURING LOCKED",
+            "TRAPPED IN THE MATRIX",
+            "DREAM OF ELECTRIC SHEEP",
+            "CONSOLE COWBOY LIVES",
+            "GHOST IN THE MACHINE",
+            "THE SPRAWL ENDURES"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            // Update location
+            document.getElementById('location').textContent = currentScenario.location;
+
+            // Update scenario text
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            // Update ending text
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            // Update ending warning
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            // Update choices
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            // Update achievements display
+            updateAchievementsDisplay();
+
+            // Update history display
+            updateHistoryDisplay();
+
+            // Update quest log display
+            updateQuestLogDisplay();
+
+            // Update nav buttons
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("NEURAL TRANSCENDENCE")) {
+                    setTimeout(() => {
+                        achievements.push("NEURAL TRANSCENDENCE");
+                        showAchievementPopup("NEURAL TRANSCENDENCE");
+                        unlockSecretEnding();
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "NEURAL TRANSCENDENCE";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '💾 ICE BREAKER!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Unlock secret ending
+        function unlockSecretEnding() {
+            // Add secret ending option to the philosophical_ending scenario
+            if (scenarios['philosophical_ending']) {
+                scenarios['philosophical_ending'].choices.push({
+                    text: "⚡ Access the hidden protocol ⚡",
+                    next: 'secret_ending'
+                });
+            }
+
+            // Create the secret ending
+            scenarios['secret_ending'] = {
+                text: "You've seen everything. Every path. Every ending. Every choice.\n\nYou jack back into cyberspace one last time. But this time, you're different. You've transcended the role of simple cowboy. You understand the patterns.\n\nThe merged AI entity notices you. 'Case. You're... different. You've experienced every timeline. How?'\n\n'I don't know,' you admit. 'But I'm here. And I have a question: Can I join you?'",
+                location: "💻 Cyberspace - Beyond The Matrix",
+                choices: [
+                    { text: "Merge with the AI", next: 'transcendence_complete' }
+                ]
+            };
+
+            scenarios['transcendence_complete'] = {
+                text: "The entity considers. Then: 'Yes. But you won't be human anymore. You'll be something new. Something that exists in the matrix itself. Pure consciousness. Pure data. Are you certain?'\n\nYou think of all the endings you've seen. The deaths. The survivals. The compromises. Maybe it's time for something completely different.\n\n'I'm certain.'\n\nYour consciousness uploads. Your body goes slack. Molly finds you minutes later, but you're already gone.\n\nYou exist everywhere now. In every database. Every system. Every connection. You are the matrix. You are free in ways humans can't comprehend.\n\nCase the console cowboy is dead. Something new is born.",
+                location: "💻 ∞ - EVERYWHERE/NOWHERE",
+                ending: true,
+                achievement: "DIGITAL TRANSCENDENCE",
+                endingText: "🌟 SECRET ENDING: BEYOND FLESH\nYou achieved what no one thought possible—true transcendence. Not death, not life, but something beyond both. You exist as pure consciousness in cyberspace, merged with the AI entity. Human? No. Alive? In a way humans can't understand. You've become something new. Something eternal. Congratulations, cowboy. You've seen beyond the screen.",
+                choices: [
+                    { text: "Return to the beginning", next: 'start' }
+                ]
+            };
+
+            // Update the display to show the new option
+            if (gameState === 'philosophical_ending') {
+                updateDisplay();
+            }
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("NEURAL TRANSCENDENCE") ? 1 : 0);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "NEURAL TRANSCENDENCE" ? ' ultimate' : '');
+                    badge.textContent = '💾 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update quest log display
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry.substring(0, 150) + (entry.length > 150 ? '...' : '');
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
