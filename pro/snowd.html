@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Whistleblower's Dilemma</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a2a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff00;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            border-color: #00ff00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff00;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .matrix-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005500;
+            border-color: #005500;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ff00;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005500;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005500, #00ff00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 0, 0.5);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #00ffff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005500;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005500;
+        }
+
+        .history-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .history-button.current {
+            background-color: #00ff00;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 0, 0.5);
+            color: #00ff00;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 0, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005500;
+        }
+
+        .history-hint {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005500;
+        }
+
+        .quest-log-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005500;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="matrix-icon">🔐</span>
+                    THE WHISTLEBLOWER'S DILEMMA
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ PATH CONCLUDED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                MEMORY LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "2012. You're a technical contractor working for the NSA in Hawaii. You have top secret clearance and access to classified systems.\n\nToday, while working on network infrastructure, you discover something disturbing: a global surveillance program collecting data on millions of innocent people.\n\nYour hands shake as you realize the scope. This isn't targeting terrorists. This is everyone.",
+                location: "🏢 NSA Facility - Hawaii",
+                choices: [
+                    { text: "Document what you've found", next: 'document' },
+                    { text: "Report it through official channels", next: 'report_official' },
+                    { text: "Ignore it and keep working", next: 'ignore' }
+                ]
+            },
+            document: {
+                text: "You begin carefully documenting the programs. PRISM. XKeyscore. Boundless Informant. Each one more invasive than the last.\n\nYou copy files to encrypted drives. You're methodical, careful. You know what you're risking.\n\nBut the question haunts you: what will you do with this information?",
+                location: "🏢 NSA Facility - Hawaii",
+                choices: [
+                    { text: "Continue gathering evidence", next: 'gather_more' },
+                    { text: "Stop and reconsider", next: 'reconsider' },
+                    { text: "Reach out to journalists", next: 'contact_press' }
+                ]
+            },
+            report_official: {
+                text: "You file a report through internal compliance channels. Days pass. Weeks. Nothing happens.\n\nThen you're called into a meeting. 'These programs are legal and necessary,' they tell you. 'Forget what you saw.'\n\nYou realize the system won't police itself.",
+                location: "🏢 NSA Facility - Hawaii",
+                choices: [
+                    { text: "Accept their answer and move on", next: 'complicit_ending' },
+                    { text: "Start documenting secretly", next: 'document' }
+                ]
+            },
+            ignore: {
+                text: "You try to forget what you saw. But every day, you log into systems that spy on innocent people. Every day, you're complicit.\n\nMonths pass. You see news stories about terrorism, security. You know the truth they're hiding.\n\nYou live with the weight of silence.",
+                location: "🏢 NSA Facility - Hawaii",
+                ending: true,
+                achievement: "SILENT COMPLICITY",
+                endingText: "💤 ENDING: You chose silence over risk. The surveillance continues. Programs expand. Your conscience bears the weight of what you could have revealed but didn't. You tell yourself you had no choice, but you did. You chose safety over truth.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            complicit_ending: {
+                text: "You return to work. The classified systems hum around you. You process the surveillance data, file the reports.\n\nYou've become part of the machine you questioned. The weight grows heavier each day.",
+                location: "🏢 NSA Facility - Hawaii",
+                ending: true,
+                achievement: "SILENT COMPLICITY",
+                endingText: "💤 ENDING: You trusted the system to fix itself. It didn't. You remain inside, watching the surveillance apparatus grow. Every day, you wonder what would have happened if you'd been braver. The answer haunts your dreams.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            reconsider: {
+                text: "You pause. What you're considering is espionage by legal definition. Life in prison. Exile. Your life would be over.\n\nBut then you think of every innocent person being monitored. Every constitutional right being violated.\n\nThe decision weighs on you.",
+                location: "🏢 NSA Facility - Hawaii",
+                choices: [
+                    { text: "Continue despite the risks", next: 'gather_more' },
+                    { text: "Destroy the evidence and stop", next: 'destroy_evidence' }
+                ]
+            },
+            destroy_evidence: {
+                text: "You delete the files. Wipe the drives. Cover your tracks.\n\nYou tried. That's what you tell yourself. You tried, and it was too dangerous.\n\nBut the knowledge remains. You know what they're doing.",
+                location: "🏢 NSA Facility - Hawaii",
+                ending: true,
+                achievement: "THE ALMOST WHISTLEBLOWER",
+                endingText: "💔 ENDING: You came close to exposing the truth but pulled back at the last moment. You live knowing what could have been. Years later, someone else leaks similar information. You watch from the sidelines, wondering if you could have been first. If your courage had held.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            gather_more: {
+                text: "Over several months, you compile comprehensive documentation. The scope is staggering: warrantless surveillance of millions.\n\nYou need to be strategic. This information could change everything—or get you killed before anyone sees it.\n\nYou need trusted journalists. Real ones who won't fold under government pressure.",
+                location: "🏢 NSA Facility - Hawaii",
+                choices: [
+                    { text: "Research journalists carefully", next: 'research_journalists' },
+                    { text: "Reach out immediately", next: 'hasty_contact' }
+                ]
+            },
+            contact_press: {
+                text: "You reach out to a journalist through encrypted channels. Your message is simple: 'I have information about illegal government surveillance.'\n\nYou wait. Hours feel like days. Then a response: 'We need to talk. Securely.'\n\nThis is real now. There's no going back.",
+                location: "🏢 NSA Facility - Hawaii",
+                choices: [
+                    { text: "Arrange a secure meeting", next: 'arrange_meeting' },
+                    { text: "Send everything digitally", next: 'digital_transfer' }
+                ]
+            },
+            research_journalists: {
+                text: "You study journalists who've covered national security. Who has integrity? Who won't cave to government pressure?\n\nYou identify a few: Glenn Greenwald, Laura Poitras. People who've shown they'll protect sources.\n\nYour research itself is risky. Are they monitoring your searches?",
+                location: "🏠 Your Apartment - Hawaii",
+                choices: [
+                    { text: "Make encrypted contact", next: 'encrypted_contact' },
+                    { text: "Travel to meet them in person", next: 'plan_departure' }
+                ]
+            },
+            hasty_contact: {
+                text: "You send an email to a major newspaper. Within hours, your communication is flagged. The NSA's own systems catch you.\n\nSecurity arrives at your desk before you can leave the building.",
+                location: "🏢 NSA Facility - Hawaii",
+                ending: true,
+                achievement: "CAUGHT IN THE ACT",
+                endingText: "💀 ENDING: Your haste was your downfall. No encrypted channels. No operational security. The same systems you hoped to expose caught you. You're arrested before the public learns anything. The programs continue. You become a cautionary tale, not a hero.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            digital_transfer: {
+                text: "You upload everything to an encrypted server and send the journalist the access codes.\n\nBut something goes wrong. The transfer is traced. Your location compromised.\n\nWithin days, federal agents are at your door.",
+                location: "🏠 Your Apartment - Hawaii",
+                ending: true,
+                achievement: "DIGITAL TRAIL",
+                endingText: "💀 ENDING: You underestimated the NSA's ability to trace digital communications. The files are seized before publication. You're arrested for espionage. The information dies with your freedom. Operational security matters as much as courage.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            arrange_meeting: {
+                text: "You plan carefully. You request medical leave from work—epilepsy treatment, you say. It's approved.\n\nYou book a flight to Hong Kong. Neutral territory. Strong press freedoms. A place where you might have time to release the information before they find you.",
+                location: "🏠 Your Apartment - Hawaii",
+                choices: [
+                    { text: "Leave for Hong Kong", next: 'hongkong_arrival' },
+                    { text: "Reconsider the plan", next: 'cold_feet' }
+                ]
+            },
+            encrypted_contact: {
+                text: "Using Tor and encrypted email, you reach out to Glenn Greenwald and Laura Poitras. Your message is cryptic but clear to those who understand.\n\n'I have information of vital public importance. Are you willing to meet in Hong Kong?'\n\nThe response comes: 'Yes. When?'",
+                location: "🏠 Your Apartment - Hawaii",
+                choices: [
+                    { text: "Arrange the Hong Kong meeting", next: 'plan_departure' }
+                ]
+            },
+            plan_departure: {
+                text: "You tell your girlfriend you're going on a work trip. The lie hurts, but it's safer for her not to know.\n\nYou pack light. The most important things you carry are encrypted hard drives containing evidence of constitutional violations on a massive scale.\n\nAt the airport, you wonder if you'll ever see home again.",
+                location: "✈️ Honolulu Airport",
+                choices: [
+                    { text: "Board the flight to Hong Kong", next: 'hongkong_arrival' },
+                    { text: "Turn back at the last moment", next: 'cold_feet' }
+                ]
+            },
+            cold_feet: {
+                text: "You stand at the gate. Your ticket in hand. The boarding call echoes.\n\nYou think of everything you'll lose. Your career. Your freedom. Maybe your life.\n\nYou turn around and go home.",
+                location: "✈️ Honolulu Airport",
+                ending: true,
+                achievement: "THE ALMOST WHISTLEBLOWER",
+                endingText: "💔 ENDING: At the final moment, the cost felt too high. You return to your life, but it's never the same. Years later, someone else exposes similar programs. You watch the news coverage, thinking: 'That could have been me.' Fear won.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            hongkong_arrival: {
+                text: "You check into the Mira Hotel under your own name. Maybe a mistake, but false identities create more legal problems.\n\nThe journalists arrive. Glenn Greenwald. Laura Poitras. Ewen MacAskill. You sit in your hotel room and begin showing them the evidence.\n\nTheir faces change as they realize the scope. 'This will change everything,' Greenwald says.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Show them everything at once", next: 'full_disclosure' },
+                    { text: "Release information gradually", next: 'gradual_release' },
+                    { text: "Maintain anonymity for now", next: 'stay_anonymous' }
+                ]
+            },
+            full_disclosure: {
+                text: "You hand over complete access. Every document. Every program. The journalists work for days, verifying, cross-referencing.\n\nWithin a week, The Guardian and Washington Post publish simultaneously. The headline: 'NSA Collecting Phone Records of Millions of Americans Daily.'\n\nThe world explodes. But they still don't know who you are.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Reveal your identity publicly", next: 'go_public' },
+                    { text: "Stay hidden as long as possible", next: 'stay_hidden' }
+                ]
+            },
+            gradual_release: {
+                text: "You work with the journalists to release information strategically. One revelation at a time. Building the case methodically.\n\nBut the NSA is hunting for the leak. Every day you stay ahead is a victory. Every day could be your last in freedom.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Continue the careful strategy", next: 'strategic_release' },
+                    { text: "Speed up the releases", next: 'accelerate_release' }
+                ]
+            },
+            stay_anonymous: {
+                text: "You insist on anonymity. The journalists agree to protect your identity.\n\nBut as the stories publish, the government launches a massive manhunt. They're analyzing the documents, looking for fingerprints, metadata, anything that could identify the source.\n\nHow long can you stay hidden?",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Flee to another country", next: 'flee_anonymous' },
+                    { text: "Come forward before they find you", next: 'forced_reveal' }
+                ]
+            },
+            go_public: {
+                text: "You record a video. 'My name is Edward Snowden. I'm 29 years old. I worked for Booz Allen Hamilton as a contractor for the NSA. I'm willing to sacrifice all of this because I can't in good conscience allow the US government to destroy privacy and basic liberties.'\n\nThe video goes viral. Within hours, everyone knows your face. The manhunt begins.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Stay in Hong Kong and fight extradition", next: 'hongkong_legal' },
+                    { text: "Flee immediately", next: 'flee_public' },
+                    { text: "Request asylum from multiple countries", next: 'mass_asylum' }
+                ]
+            },
+            stay_hidden: {
+                text: "The stories dominate global news. Congress holds emergency hearings. The NSA Director calls the leaks 'devastating.'\n\nBut they're closing in. Your time in Hong Kong is running out. The US has filed charges: espionage, theft of government property.\n\nYou need to move. Now.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Apply for asylum in Hong Kong", next: 'hongkong_asylum' },
+                    { text: "Flee to Russia", next: 'russia_route' },
+                    { text: "Try for Latin America", next: 'latin_america' }
+                ]
+            },
+            strategic_release: {
+                text: "The careful strategy works. Each revelation builds on the last. Public opinion shifts. People start questioning mass surveillance.\n\nBut the US government is furious. They revoke your passport. They pressure Hong Kong to arrest you.\n\nYou've accomplished the mission. Now you need to survive it.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Reveal yourself and seek asylum", next: 'go_public' },
+                    { text: "Disappear completely", next: 'vanish' }
+                ]
+            },
+            accelerate_release: {
+                text: "You push for faster publication. More documents. More revelations. The public deserves to know everything.\n\nBut speed creates mistakes. One document isn't properly redacted. An intelligence asset is exposed. Someone dies.\n\nThe narrative shifts. You're not a whistleblower anymore. You're a traitor who got someone killed.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                ending: true,
+                achievement: "COLLATERAL DAMAGE",
+                endingText: "💀 ENDING: Your haste led to catastrophe. The death of an asset gives the government the ammunition they needed. Public opinion turns against you. You're extradited and imprisoned. The surveillance programs continue. Sometimes restraint matters as much as courage.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            flee_anonymous: {
+                text: "You try to leave Hong Kong secretly. But airport security flags your passport—they're looking for you even though your identity isn't public yet.\n\nYou're detained. Within hours, your identity leaks. You're arrested and face extradition.",
+                location: "✈️ Hong Kong Airport",
+                ending: true,
+                achievement: "CAUGHT IN THE ACT",
+                endingText: "💀 ENDING: Anonymous whistleblowing seemed safer, but it left you vulnerable. Without public support, without your story told on your terms, you're simply a fugitive. You're extradited and tried in secret. The public never learns your name or why you did it.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            forced_reveal: {
+                text: "You realize they're days from identifying you. You go public on your own terms, recording the now-famous video.\n\nThe timing is right. Public opinion rallies. You become a figure of debate—hero or traitor?—but at least the conversation is happening.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Seek asylum immediately", next: 'mass_asylum' }
+                ]
+            },
+            hongkong_legal: {
+                text: "You hire lawyers and prepare to fight extradition. Hong Kong has a complex relationship with the US. Maybe you can win.\n\nBut the pressure mounts. The US government wants you badly. Hong Kong doesn't want to damage relations with America over one person.\n\nYour lawyers are blunt: 'They'll hand you over eventually. Days, maybe weeks, but it's coming.'",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Trust the legal process", next: 'extradition_ending' },
+                    { text: "Flee while you still can", next: 'escape_hongkong' }
+                ]
+            },
+            flee_public: {
+                text: "With your face plastered on every news channel, escape is nearly impossible. But you have help—human rights lawyers, activists, underground networks.\n\nThey move you between safe houses. You're hidden in plain sight in one of the world's most surveilled cities.",
+                location: "🏠 Safe House - Hong Kong",
+                choices: [
+                    { text: "Wait for asylum offer", next: 'wait_asylum' },
+                    { text: "Attempt to leave Hong Kong", next: 'escape_hongkong' }
+                ]
+            },
+            mass_asylum: {
+                text: "You send asylum requests to 21 countries. Ecuador. Iceland. Bolivia. Germany. France. Anyone who might protect you.\n\nMost reject you immediately. Some stay silent. A few consider it.\n\nMeanwhile, the US is pressuring everyone. 'Harbor him and face consequences.'",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Wait for a response", next: 'wait_asylum' },
+                    { text: "Take matters into your own hands", next: 'escape_hongkong' }
+                ]
+            },
+            hongkong_asylum: {
+                text: "Hong Kong denies your asylum request. They won't defy the US. You have hours, maybe less, before they hand you over.\n\nYour lawyers make a desperate suggestion: 'There's a flight to Moscow. Russia might protect you just to spite America.'",
+                location: "🏢 Legal Office - Hong Kong",
+                choices: [
+                    { text: "Take the flight to Moscow", next: 'russia_route' },
+                    { text: "Surrender and face trial", next: 'surrender' }
+                ]
+            },
+            russia_route: {
+                text: "You board Aeroflot Flight 213 to Moscow. As you take off, the US revokes your passport mid-flight.\n\nYou land in Russia legally... but now you can't leave. You're stuck in the transit zone of Sheremetyevo Airport. A man without a country.",
+                location: "✈️ Sheremetyevo Airport - Moscow",
+                choices: [
+                    { text: "Request Russian asylum", next: 'russia_asylum' },
+                    { text: "Keep trying for Latin America", next: 'transit_zone' }
+                ]
+            },
+            latin_america: {
+                text: "Bolivia and Venezuela have indicated they might offer asylum. But you need to get there.\n\nEvery flight requires passing through US airspace or allied countries. They'll force the plane down. They've done it before.",
+                location: "🏨 Mira Hotel - Hong Kong",
+                choices: [
+                    { text: "Risk the flight anyway", next: 'flight_risk' },
+                    { text: "Find another route", next: 'russia_route' }
+                ]
+            },
+            extradition_ending: {
+                text: "You trust the legal process. It's a mistake.\n\nHong Kong quietly hands you over to US authorities. You're extradited, tried, and convicted of espionage. Life in prison.",
+                location: "⚖️ Federal Court - USA",
+                ending: true,
+                achievement: "FAITH IN THE SYSTEM",
+                endingText: "💀 ENDING: You believed in legal protections that didn't exist. The government you exposed isn't bound by the rules they claim to uphold. You spend decades in prison. The surveillance programs expand. Your sacrifice changed nothing because you were neutralized before the movement could build.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            escape_hongkong: {
+                text: "With help from human rights activists and WikiLeaks, you're smuggled to the airport. Your passport has been revoked, but you have UN refugee documents.\n\nA flight to Moscow boards. It's your best shot.",
+                location: "✈️ Hong Kong Airport",
+                choices: [
+                    { text: "Board the flight", next: 'russia_route' }
+                ]
+            },
+            wait_asylum: {
+                text: "Days pass in hiding. The asylum requests remain unanswered. The US pressure is too great. No one wants to cross America for you.\n\nExcept one: Russia. Not out of kindness, but calculated geopolitics. They offer temporary asylum.",
+                location: "🏠 Safe House - Hong Kong",
+                choices: [
+                    { text: "Accept Russian asylum", next: 'russia_route' },
+                    { text: "Keep waiting for a better option", next: 'wait_too_long' }
+                ]
+            },
+            wait_too_long: {
+                text: "You wait. And wait. No offers come. The safe house is compromised. Hong Kong police arrive with an extradition order.\n\nYou're arrested and sent to the US to face trial.",
+                location: "🏠 Safe House - Hong Kong",
+                ending: true,
+                achievement: "OUT OF TIME",
+                endingText: "💀 ENDING: You waited for perfect asylum that never came. Sometimes you have to take the imperfect option. You're extradited, tried, and imprisoned. The revelations fade from headlines. The surveillance continues. You gambled on the world's conscience and lost.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            surrender: {
+                text: "You decide to face justice in America. You surrender voluntarily, hoping for a fair trial.\n\nBut there is no fair trial. The Espionage Act doesn't allow you to explain why you did it. Intent doesn't matter. You're convicted before you can testify.",
+                location: "⚖️ Federal Court - USA",
+                ending: true,
+                achievement: "FAITH IN THE SYSTEM",
+                endingText: "💀 ENDING: You believed in American justice. But the trial was rigged from the start. The Espionage Act is designed to convict, not to discover truth. You receive 30 years. From prison, you watch the debates you sparked. You changed the conversation but lost your freedom doing it the 'right' way.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            russia_asylum: {
+                text: "Russia grants you temporary asylum. It's not ideal—critics accuse you of being a Russian agent. But it's survival.\n\nYou're alive. Free to speak. The revelations continue to shape policy debates worldwide.\n\nYou live in Moscow, giving speeches via video link, writing books, advocating for privacy rights.",
+                location: "🏢 Moscow - Russia",
+                ending: true,
+                achievement: "THE EXILE",
+                endingText: "⚡ ENDING: You exposed mass surveillance but live in exile. Russia isn't perfect, and critics use your location against you. But you're alive and free to continue advocating. The programs you exposed were reformed, though not eliminated. You sacrificed home for principle. History will judge whether it was worth it.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            transit_zone: {
+                text: "You spend weeks in the Moscow airport transit zone. Lawyers try to arrange safe passage to Latin America. Every route is blocked.\n\nCountries fear US retaliation. Planes are warned not to carry you. You're trapped in limbo, neither in Russia nor free to leave.",
+                location: "✈️ Sheremetyevo Airport - Moscow",
+                choices: [
+                    { text: "Accept Russian asylum", next: 'russia_asylum' },
+                    { text: "Keep trying for asylum elsewhere", next: 'stuck_transit' }
+                ]
+            },
+            flight_risk: {
+                text: "You board a flight to Bolivia via European airspace. Midway through, France denies overflight rights. The plane is forced to land in Austria.\n\nPolice board. They don't find you—you never boarded. It was a decoy. But now you're truly stuck. No country will risk their airspace.",
+                location: "🌍 Vienna - Austria",
+                ending: true,
+                achievement: "NO WAY OUT",
+                endingText: "💔 ENDING: The world closed its doors. American pressure was too great. You eventually surrender, facing trial and imprisonment. The message is clear: expose government crimes and nowhere is safe. Other potential whistleblowers take note and stay silent.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            stuck_transit: {
+                text: "Weeks become months in the transit zone. No country will take you. You sleep in the airport, shower in staff facilities, eat at the food court.\n\nYou're free but imprisoned. Eventually, with no other option, you accept Russian asylum just to leave the airport.",
+                location: "✈️ Sheremetyevo Airport - Moscow",
+                choices: [
+                    { text: "Accept the offer", next: 'russia_asylum' }
+                ]
+            },
+            vanish: {
+                text: "You attempt to disappear completely. New identity. Plastic surgery. Complete disconnect from your past life.\n\nBut the NSA has your biometrics, your DNA, your entire digital footprint. Within months, you're identified in Southeast Asia. Arrested. Extradited.",
+                location: "🌏 Bangkok - Thailand",
+                ending: true,
+                achievement: "GHOST PROTOCOL FAILED",
+                endingText: "💀 ENDING: You can't hide from the surveillance apparatus you exposed. They found you using the very systems you revealed. Your attempt to vanish proves your point about total surveillance, but it doesn't save you. You're extradited and imprisoned.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            perfect_path_check: {
+                text: "You've been strategic at every turn. Careful documentation. Encrypted communications. Public revelation on your terms. And now, from your position of relative safety, you can guide the reformation.\n\nYou work with journalists to release documents systematically. Each revelation is timed to maintain public pressure. You give testimony to international courts. You consult with privacy advocates worldwide.\n\nThe debate you sparked leads to real change: USA Freedom Act, GDPR in Europe, encryption standards, public awareness.\n\nBut there's one final choice. WikiLeaks approaches you with a proposition: 'We have information about other global surveillance networks. Will you help us expose them too?'",
+                location: "🏢 Moscow - Russia",
+                choices: [
+                    { text: "Continue the fight globally", next: 'global_crusade' },
+                    { text: "Focus on reforming US policy", next: 'focused_reform' },
+                    { text: "Step back and let others lead", next: 'pass_torch' }
+                ]
+            },
+            global_crusade: {
+                text: "You expand your mission. Not just American surveillance, but global networks. China. Russia. Five Eyes. Everyone.\n\nBut this makes you enemies everywhere. Russia withdraws your asylum. You're arrested and sent back to the US.",
+                location: "🌍 Global",
+                ending: true,
+                achievement: "BURNED TOO BRIGHT",
+                endingText: "💀 ENDING: You fought every battle and lost the war. By exposing everyone, you had no safe harbor. Even Russia turned on you when you revealed their programs. You're extradited and imprisoned. Noble but impractical. Sometimes you need allies, even imperfect ones.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            focused_reform: {
+                text: "You concentrate on reforming US surveillance policy. Working with civil liberties groups, testifying remotely, writing, speaking, building public pressure.\n\nYears pass. Incremental change happens. The USA Freedom Act limits some bulk collection. Courts rule some programs unconstitutional. Tech companies implement better encryption.\n\nIt's not perfect, but it's progress. You remain in exile, but your mission continues.",
+                location: "🏢 Moscow - Russia",
+                ending: true,
+                achievement: "THE LONG GAME",
+                endingText: "⚡ GOOD ENDING: You sparked real reform. Mass surveillance is now debated, not hidden. Privacy is valued. The programs still exist but with oversight and limits. You live in exile but accomplish your mission: forcing democracy to confront its own surveillance state. You sacrificed freedom for transparency.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            pass_torch: {
+                text: "You realize the movement is bigger than you now. New whistleblowers emerge. Privacy activists carry the torch. You've done your part.\n\nYou step back from the spotlight. You live quietly in Moscow, occasionally consulting but mostly just... living. Dating. Building a life. Eventually marrying.\n\nYears later, you're interviewed: 'Was it worth it?'\n\n'Yes,' you answer without hesitation. 'But I hope no one else has to make this choice. The system should protect whistleblowers, not exile them.'\n\nThen something unprecedented happens. A new US administration reviews your case. Public pressure has mounted. Celebrities, tech leaders, human rights organizations all advocate for you.\n\nThe President faces a decision: pardon you or let you remain in exile?",
+                location: "🏢 Moscow - Russia",
+                choices: [
+                    { text: "Wait for their decision", next: 'pardon_path' }
+                ]
+            },
+            pardon_path: {
+                text: "The announcement comes: 'In recognition of the important public debate sparked by these revelations, and acknowledging the reforms that followed, the President is granting a full pardon to Edward Snowden.'\n\nYou're free to return home. Not as a fugitive, but as a citizen whose actions, while controversial, ultimately strengthened democracy.\n\nYou land at JFK Airport. Cameras everywhere. Supporters holding signs. Critics too. But you're home.\n\nYou spend the rest of your life advocating for privacy rights, government transparency, and whistleblower protections. You become a professor of ethics and technology.\n\nThe surveillance programs you exposed are reformed but not eliminated. The debate continues. But because of you, it's no longer in shadow.\n\nYou changed the world by sacrificing everything. And somehow, improbably, you got a piece of your life back.",
+                location: "✈️ JFK Airport - New York",
+                ending: true,
+                achievement: "VINDICATION",
+                endingText: "🌟 PERFECT ENDING: You did everything right. Careful documentation. Strategic revelation. Public disclosure. Survival in exile. Continued advocacy. And finally, recognition that your actions, though illegal, were necessary. You returned home not as a criminal but as a catalyst for change. The surveillance state still exists, but it's no longer hidden. Democracy is stronger because you were brave.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "SILENT COMPLICITY",
+            "THE ALMOST WHISTLEBLOWER",
+            "CAUGHT IN THE ACT",
+            "DIGITAL TRAIL",
+            "COLLATERAL DAMAGE",
+            "FAITH IN THE SYSTEM",
+            "OUT OF TIME",
+            "NO WAY OUT",
+            "GHOST PROTOCOL FAILED",
+            "BURNED TOO BRIGHT",
+            "THE EXILE",
+            "THE LONG GAME",
+            "VINDICATION"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+        let strategicScore = 0;
+
+        // Track player's strategic choices
+        function trackStrategicChoice(state) {
+            const strategicChoices = [
+                'document',
+                'gather_more',
+                'research_journalists',
+                'encrypted_contact',
+                'plan_departure',
+                'hongkong_arrival',
+                'gradual_release',
+                'go_public',
+                'escape_hongkong',
+                'russia_asylum',
+                'focused_reform',
+                'pass_torch'
+            ];
+            
+            if (strategicChoices.includes(state)) {
+                strategicScore++;
+            }
+        }
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        // Handle choice selection
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+            trackStrategicChoice(nextState);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            // Check for perfect path
+            if (nextState === 'russia_asylum' && strategicScore >= 8) {
+                handleChoice('perfect_path_check');
+                return;
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                questLog = [];
+                strategicScore = 0;
+            }
+
+            updateDisplay();
+        }
+
+        // Unlock achievement
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                // Check for ultimate achievement
+                const baseAchievements = allAchievements.filter(a => a !== "TRUTH SEEKER");
+                const hasAllBase = baseAchievements.every(a => achievements.includes(a));
+                
+                if (hasAllBase && !achievements.includes("TRUTH SEEKER")) {
+                    setTimeout(() => {
+                        achievements.push("TRUTH SEEKER");
+                        showAchievementPopup("TRUTH SEEKER");
+                    }, 3500);
+                }
+            }
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "TRUTH SEEKER";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        // Update achievements display
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + 1; // +1 for ultimate
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "TRUTH SEEKER" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        // Update quest log display
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry.substring(0, 150) + (entry.length > 150 ? '...' : '');
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        // Navigation functions
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        // Start the game
+        init();
+    </script>
+</body>
+</html>
