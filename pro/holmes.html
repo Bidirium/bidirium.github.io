@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Consulting Detective Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #f4e4c1;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(218, 165, 32, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #1a1a2e;
+            border-color: #daa520;
+            color: #daa520;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #daa520, #ffd700);
+            border-color: #daa520;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(26, 26, 46, 0.9);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #daa520;
+            box-shadow: 0 20px 25px -5px rgba(218, 165, 32, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #daa520;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .detective-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            border: 2px solid #daa520;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #1a1a2e;
+            color: #daa520;
+        }
+
+        .nav-button:disabled {
+            background-color: #16213e;
+            color: #6b5d3f;
+            border-color: #6b5d3f;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #daa520;
+            color: #000;
+            box-shadow: 0 0 15px #daa520;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(218, 165, 32, 0.2);
+            border-radius: 0.25rem;
+            border: 1px solid #daa520;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #daa520;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #f4e4c1;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(218, 165, 32, 0.15);
+            border-radius: 0.25rem;
+            border: 1px solid #daa520;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1a1a2e;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #6b5d3f;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #b8860b, #daa520);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Georgia', serif;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(218, 165, 32, 0.3);
+            color: #daa520;
+            border: 1px solid #daa520;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #daa520, #ffd700);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ffd700;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(139, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #8b0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6b6b;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #daa520;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #f4e4c1;
+            font-family: 'Georgia', serif;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #6b5d3f;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #1a1a2e;
+            color: #daa520;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #daa520;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #daa520;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #daa520;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(26, 26, 46, 0.9);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #6b5d3f;
+        }
+
+        .history-title {
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            border: 1px solid #daa520;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #1a1a2e;
+            color: #daa520;
+        }
+
+        .history-button.current {
+            background-color: #daa520;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(218, 165, 32, 0.3);
+            color: #daa520;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(218, 165, 32, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #1a1a2e;
+            color: #6b5d3f;
+        }
+
+        .history-hint {
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .case-log-box {
+            background-color: rgba(26, 26, 46, 0.9);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #6b5d3f;
+        }
+
+        .case-log-title {
+            color: #daa520;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .case-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .case-log-entries {
+            color: #f4e4c1;
+            font-family: 'Georgia', serif;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .case-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #6b5d3f;
+            margin-bottom: 0.5rem;
+        }
+
+        .case-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="detective-icon">🔍</span>
+                    THE CONSULTING DETECTIVE
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>🎖️</span>
+                        <p class="achievements-title-text">CASE HONOURS (<span id="achievementCount">0</span>/<span id="totalAchievements">11</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">11</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ CASE CONCLUDED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                INVESTIGATION TIMELINE (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to revisit that moment in the case</p>
+        </div>
+
+        <!-- Case Log -->
+        <div id="caseLogBox" class="case-log-box" style="display: none;">
+            <h3 class="case-log-title">
+                <span>📜</span>
+                CASE NOTES
+            </h3>
+            <div class="case-log-entries" id="caseLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data
+        const scenarios = {
+            start: {
+                text: "London, 1895. You are Dr. John Watson, recently returned from Afghanistan. Your friend Stamford mentions a peculiar fellow seeking a flatmate at 221B Baker Street.\n\n'He's brilliant but odd,' Stamford warns. 'A consulting detective—the only one in the world. Name's Sherlock Holmes.'\n\nYou need lodgings. Your war pension is modest.",
+                location: "🏥 Bart's Hospital, London",
+                choices: [
+                    { text: "Meet this Sherlock Holmes", next: 'meet_holmes' },
+                    { text: "Find lodgings elsewhere", next: 'refuse_holmes' },
+                    { text: "Ask Stamford for more details", next: 'ask_stamford' }
+                ]
+            },
+            refuse_holmes: {
+                text: "You decline politely and find modest rooms in Paddington. Weeks pass uneventfully.\n\nOne morning, you read in The Times about a brilliant detective solving an impossible case at Lauriston Gardens. The detective's name: Sherlock Holmes.\n\nYou wonder what might have been.",
+                location: "🏠 Paddington Lodgings",
+                ending: true,
+                achievement: "THE ROAD NOT TAKEN",
+                endingText: "📖 ENDING: You lived a quiet, ordinary life. You never partnered with Holmes, never witnessed his genius, never chronicled his cases. History unfolded without your participation. Sometimes the greatest adventures are the ones we turn away from.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            ask_stamford: {
+                text: "'Holmes is unlike anyone you'll meet,' Stamford explains. 'He plays the violin at odd hours, conducts chemical experiments, and can deduce your life story from a glance. Brilliant, but exhausting.'\n\n'He's currently investigating something for Scotland Yard. A mysterious death.'",
+                location: "🏥 Bart's Hospital",
+                choices: [
+                    { text: "I'm intrigued. Arrange a meeting", next: 'meet_holmes' },
+                    { text: "He sounds difficult. Find other lodgings", next: 'refuse_holmes' }
+                ]
+            },
+            meet_holmes: {
+                text: "Stamford leads you to a laboratory. A tall, lean man examines a test tube.\n\n'Found a test for bloodstains,' he announces without introduction. 'Revolutionary.'\n\nHe turns, eyes scanning you with unnerving intensity. 'Afghanistan veteran. Army doctor. Wounded in the shoulder—no, the leg. Recent arrival. You need lodgings.'\n\nYour jaw drops. 'How—?'\n\n'Elementary observation,' he smiles.",
+                location: "🔬 Chemical Laboratory",
+                choices: [
+                    { text: "I'm impressed. Discuss the flat", next: 'discuss_flat' },
+                    { text: "How did you deduce all that?", next: 'ask_deduction' },
+                    { text: "This is too strange. Leave", next: 'leave_meeting' }
+                ]
+            },
+            leave_meeting: {
+                text: "You excuse yourself hastily. Holmes merely nods, already absorbed in his experiment.\n\nStamford shrugs. 'Not everyone can handle his peculiarities.'\n\nYou find other lodgings, but the encounter haunts you. You read of Holmes's cases in the papers with mixture of regret and relief.",
+                location: "🚪 Leaving Bart's Hospital",
+                ending: true,
+                achievement: "THE ROAD NOT TAKEN",
+                endingText: "📖 ENDING: Fear of the extraordinary kept you from greatness. You lived a conventional life, always wondering what adventures you missed. Holmes solved his cases without a chronicler. Your memoirs remain unwritten.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            ask_deduction: {
+                text: "'Simple!' Holmes explains enthusiastically. 'Your face is tanned, but not your wrists—foreign sun. Your bearing screams military. You hold your arm stiffly—wounded. Afghanistan is the only recent campaign. The rest follows logically.'\n\nHe extends his hand. 'Sherlock Holmes. Pleased to meet you, Doctor Watson.'",
+                location: "🔬 Chemical Laboratory",
+                choices: [
+                    { text: "Remarkable! Let's discuss the flat", next: 'discuss_flat' }
+                ]
+            },
+            discuss_flat: {
+                text: "Holmes leads you to Baker Street. The rooms are spacious, well-lit, and affordable when split.\n\n'I must warn you,' Holmes says, 'I have irregular habits. Clients at odd hours. I play the violin. I conduct experiments. And I occasionally help Scotland Yard with impossible cases.'\n\nMrs. Hudson, the landlady, awaits your decision.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "I'll take the rooms", next: 'accept_flat' },
+                    { text: "The experiments concern me", next: 'hesitate_flat' }
+                ]
+            },
+            hesitate_flat: {
+                text: "'Understandable,' Holmes nods. 'Most find me... difficult. I seek only someone who can tolerate genius.'\n\nHis words, though arrogant, are stated as simple fact. You sense this man is extraordinary. Tolerating him might prove worthwhile.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "Very well. I'll take the rooms", next: 'accept_flat' },
+                    { text: "No, this won't work", next: 'refuse_flat_final' }
+                ]
+            },
+            refuse_flat_final: {
+                text: "You decline. Holmes seems unsurprised. You find modest lodgings in Kensington.\n\nMonths later, you read of Holmes solving the Lauriston Gardens mystery without you. You feel a pang of regret—you could have been part of history.",
+                location: "🏠 Kensington Lodgings",
+                ending: true,
+                achievement: "THE ROAD NOT TAKEN",
+                endingText: "📖 ENDING: Caution kept you from adventure. You lived quietly while Holmes's fame grew. You never chronicled his cases, never shared his adventures. Your name never appeared in history. Sometimes safety is its own prison.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            accept_flat: {
+                text: "You move in. Days pass pleasantly. Holmes receives odd visitors—a working woman, a shabby man, a young detective from Scotland Yard named Lestrade.\n\nOne morning, Lestrade bursts in. 'Mr. Holmes! We need you. Terrible murder at Lauriston Gardens. Most mysterious thing Scotland Yard has ever seen!'",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "May I accompany you?", next: 'join_case' },
+                    { text: "Stay and let Holmes work", next: 'stay_behind' }
+                ]
+            },
+            stay_behind: {
+                text: "Holmes departs with Lestrade. You remain, reading the papers.\n\nHours later, Holmes returns triumphant. 'Solved it, Watson! Revenge killing—poison pills. Quite ingenious.'\n\nHe explains the case, but you feel you missed something essential by not witnessing his methods firsthand.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "Insist on joining future cases", next: 'future_commitment' },
+                    { text: "Remain an observer", next: 'passive_chronicler' }
+                ]
+            },
+            passive_chronicler: {
+                text: "Months pass. You hear of Holmes's triumphs secondhand—always after the fact, never present. You begin writing chronicles from his accounts, but they lack the immediacy of personal observation.\n\nYour narratives, while interesting, never capture the true drama of detection.",
+                location: "🏠 221B Baker Street - Months Later",
+                ending: true,
+                achievement: "THE DISTANT CHRONICLER",
+                endingText: "📚 ENDING: You became Holmes's biographer, but never his true companion. Your stories documented his genius, but from a distance. You were a writer, not a participant. Your chronicles sold modestly. You always wondered what adventures you missed by staying home.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            future_commitment: {
+                text: "'Excellent, Watson!' Holmes beams. 'I've been hoping you'd take an active interest. Your medical knowledge could prove invaluable. And your Afghan service suggests you can handle danger.'\n\nWeeks later, a letter arrives. A woman in distress requires consultation.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "We must help her", next: 'lady_client' }
+                ]
+            },
+            join_case: {
+                text: "'Capital!' Holmes exclaims. 'Your medical expertise may prove useful. Bring your service revolver, Watson. This may be dangerous.'\n\nYou retrieve your old Army revolver. Together, you and Holmes set out for Lauriston Gardens with Lestrade.",
+                location: "🚶 En Route to Lauriston Gardens",
+                choices: [
+                    { text: "Ask Holmes what he expects to find", next: 'holmes_explains' },
+                    { text: "Remain silent and observe", next: 'observe_holmes' }
+                ]
+            },
+            holmes_explains: {
+                text: "'Lestrade mentioned a body with no marks of violence,' Holmes muses. 'Yet the victim died suddenly. Most curious. I suspect poison, Watson. But the method—that's what intrigues me.'\n\nYou arrive at a derelict house. Inside, a man lies dead, face contorted in agony.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Examine the body as a doctor", next: 'medical_examination' },
+                    { text: "Let Holmes take the lead", next: 'holmes_investigates' }
+                ]
+            },
+            observe_holmes: {
+                text: "You watch Holmes work. At the scene, he examines everything with a magnifying glass—the floor, the walls, the body itself.\n\n'Watson!' he calls. 'Your medical opinion. How did this man die?'\n\nYou examine the corpse. No wounds, but signs of agony.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Poison, I'd say", next: 'correct_diagnosis' },
+                    { text: "Heart failure, perhaps", next: 'wrong_diagnosis' }
+                ]
+            },
+            medical_examination: {
+                text: "You examine the body professionally. No wounds. The contorted expression suggests rapid poisoning. You share your findings with Holmes.\n\n'Excellent, Watson!' he exclaims. 'Now look here—' He points to scuff marks on the floor. 'Two men struggled. One forced the other to choose between two pills. One poison, one harmless. Russian roulette with poison!'",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Brilliant deduction!", next: 'holmes_pleased' },
+                    { text: "But who is the killer?", next: 'ask_killer_identity' }
+                ]
+            },
+            holmes_investigates: {
+                text: "Holmes works with incredible speed. He examines the floor, finding traces of tobacco. The walls reveal scratches. He even tastes a suspicious stain.\n\n'Poison!' he announces. 'The killer forced him to choose between two pills. One deadly, one safe. A gambler's death.'\n\nHis deduction is stunning.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "How can you know all this?", next: 'ask_deduction_method' },
+                    { text: "We must find the killer", next: 'pursue_killer' }
+                ]
+            },
+            correct_diagnosis: {
+                text: "'Precisely!' Holmes nods approvingly. 'You have potential, Watson. Now observe the floor—scuff marks suggesting a struggle. And here—' He shows you pills. 'The killer's method. One poison, one harmless. A deadly game of chance.'\n\nYour medical expertise proved valuable. Holmes seems genuinely pleased to have a competent partner.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "How do we find this killer?", next: 'pursue_killer' },
+                    { text: "This killer is diabolical", next: 'discuss_psychology' }
+                ]
+            },
+            wrong_diagnosis: {
+                text: "'No, no, Watson,' Holmes corrects gently. 'Look at the expression—acute agony. The sudden onset. Classic poisoning. But your medical perspective is still valuable. Don't be discouraged.'\n\nHe explains the pill theory. You feel slightly embarrassed but resolve to observe more carefully.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "I'll observe more carefully next time", next: 'learn_methods' },
+                    { text: "Perhaps I'm not suited for this", next: 'doubt_self' }
+                ]
+            },
+            doubt_self: {
+                text: "'Nonsense!' Holmes declares. 'You're learning. Detection is a science—it requires study. Come, Watson. You have courage, medical knowledge, and the ability to shoot straight. That's more valuable than you know.'\n\nHis confidence in you is reassuring. You resolve to continue.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Thank you. Let's catch this villain", next: 'pursue_killer' }
+                ]
+            },
+            learn_methods: {
+                text: "'That's the spirit!' Holmes claps your shoulder. 'I'll teach you my methods, Watson. Observation, deduction, logical inference. You have the raw materials—I'll help you refine them.'\n\nOver the following days, he explains his techniques. You become a better observer.",
+                location: "🏠 221B Baker Street - Training",
+                choices: [
+                    { text: "Continue learning", next: 'watson_improves' }
+                ]
+            },
+            watson_improves: {
+                text: "Weeks pass. Holmes tutors you in observation and deduction. You learn to notice details—scuff marks on shoes, tobacco ash varieties, the significance of a torn cufflink.\n\nYour skills improve dramatically. When a new case arrives, Holmes declares you ready.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "I'm ready for the next case", next: 'lady_client' }
+                ]
+            },
+            holmes_pleased: {
+                text: "'You grasp it quickly, Watson,' Holmes smiles. 'Most would miss such subtleties. You have the makings of an excellent detective's companion.'\n\nTogether, you follow the clues. Holmes identifies the killer—a cab driver named Jefferson Hope, seeking revenge for a woman he loved.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "We must apprehend him", next: 'catch_hope' }
+                ]
+            },
+            ask_killer_identity: {
+                text: "'Patience, Watson!' Holmes examines footprints, tobacco ash, wheel marks outside. 'The killer is a cab driver. Tall man, square-toed boots. Trichinopoly cigar smoker. I've telegraphed every cab company in London. We'll have him shortly.'\n\nHis confidence is absolute. And justified—within hours, Jefferson Hope is captured.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Watch the capture", next: 'catch_hope' }
+                ]
+            },
+            ask_deduction_method: {
+                text: "'Simple observation!' Holmes explains enthusiastically. 'Look at this tobacco ash—Trichinopoly cigar, Indian manufacture. These footprints—square-toed boots, size ten. The wall scratches—a tall man wrote RACHE in blood. German for revenge.'\n\nEach detail builds the picture. You're learning his methods.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "You're teaching me to see", next: 'learning_observation' },
+                    { text: "Let's find this man", next: 'pursue_killer' }
+                ]
+            },
+            learning_observation: {
+                text: "'Exactly, Watson!' Holmes beams. 'You see, but you don't observe. There's a difference. I'll teach you to truly observe. You could become quite proficient.'\n\nHis mentorship proves invaluable. Over the coming weeks, your skills sharpen considerably.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Thank you. Now let's catch him", next: 'pursue_killer' }
+                ]
+            },
+            pursue_killer: {
+                text: "Holmes telegraphs all cab companies with the killer's description. Hours later, a cab driver named Jefferson Hope arrives at Baker Street—walking directly into Holmes's trap.\n\nHe's arrested, but dies of an aneurysm before trial. Before dying, he confesses: he killed the men who ruined his beloved Lucy Ferrier years ago in America.\n\nRevenge completed, he dies satisfied.",
+                location: "🏠 221B Baker Street - Case Concluded",
+                choices: [
+                    { text: "A tragic tale", next: 'first_case_complete' }
+                ]
+            },
+            discuss_psychology: {
+                text: "'Indeed,' Holmes agrees. 'But driven by love, Watson. He avenged his beloved Lucy. The pills represented fate—the same fate his enemies gave her family. There's a terrible poetry to it.'\n\nDays later, Jefferson Hope is caught. He dies before trial, but confesses all. Holmes's deductions were perfect.",
+                location: "🏚️ Lauriston Gardens Crime Scene",
+                choices: [
+                    { text: "Case concluded", next: 'first_case_complete' }
+                ]
+            },
+            catch_hope: {
+                text: "Jefferson Hope enters Baker Street, summoned by Holmes's telegram. The moment he arrives, police seize him.\n\nBefore trial, he dies of an aneurysm—but not before confessing. He killed in revenge for his beloved Lucy Ferrier, murdered years ago in Utah. The pills represented fate.\n\n'Justice,' Holmes murmurs, 'takes many forms.'",
+                location: "🏠 221B Baker Street - Arrest",
+                choices: [
+                    { text: "Our first case together, complete", next: 'first_case_complete' }
+                ]
+            },
+            first_case_complete: {
+                text: "Lestrade takes credit publicly, but you know the truth. That evening, you write up the case.\n\n'You should publish this, Watson,' Holmes suggests. 'People should know how detection truly works.'\n\n'A Study in Scarlet,' you title it. Your chronicle of Holmes's genius.",
+                location: "🏠 221B Baker Street - Evening",
+                achievement: "THE BIOGRAPHER BEGINS",
+                choices: [
+                    { text: "More cases will come", next: 'between_cases' }
+                ]
+            },
+            between_cases: {
+                text: "Months pass. You settle into partnership with Holmes. You publish 'A Study in Scarlet' to moderate success. Holmes's reputation grows.\n\nOne morning, a distinguished visitor arrives—a beautiful woman in distress. She introduces herself as Miss Mary Morstan.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "Welcome her warmly", next: 'lady_client' }
+                ]
+            },
+            lady_client: {
+                text: "Miss Morstan presents a curious case. Her father vanished ten years ago. Since then, she's received mysterious pearls annually. Now, an anonymous letter summons her to a meeting.\n\nShe's frightened. Holmes agrees to help. You find yourself drawn to this intelligent, brave woman.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "Offer to accompany her to the meeting", next: 'protect_mary' },
+                    { text: "Let Holmes handle this", next: 'holmes_only_case' }
+                ]
+            },
+            holmes_only_case: {
+                text: "'I'll investigate alone,' Holmes decides. You remain at Baker Street while he escorts Miss Morstan to the mysterious meeting.\n\nHours later, he returns with an incredible tale—treasure, murder, a wooden-legged man. He solved it brilliantly, but you missed the entire adventure.\n\nWorse, you never got to know Miss Morstan properly.",
+                location: "🏠 221B Baker Street",
+                ending: true,
+                achievement: "THE DISTANT CHRONICLER",
+                endingText: "📚 ENDING: You chronicled Holmes's cases but rarely participated fully. You remained a biographer, not a true partner. Miss Morstan married another. Your life was comfortable but lacked the deep adventures and love you might have known. You wrote, but never truly lived the stories.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            protect_mary: {
+                text: "'Excellent, Watson,' Holmes nods. 'Your revolver may prove necessary. Miss Morstan, we'll keep you safe.'\n\nThat evening, you three meet a mysterious client at the Lyceum Theatre. He leads you to a house where Thaddeus Sholto reveals an incredible story—stolen treasure, his father's death, a pact broken.\n\nBut his twin brother Bartholomew has been murdered!",
+                location: "🎭 Pondicherry Lodge",
+                choices: [
+                    { text: "Examine the crime scene", next: 'second_murder' },
+                    { text: "Comfort Miss Morstan", next: 'watson_mary_moment' }
+                ]
+            },
+            watson_mary_moment: {
+                text: "While Holmes investigates, you sit with Mary Morstan. She's shaken but composed.\n\n'You're very brave,' you tell her. In her eyes, you see something that makes your heart race. This case is becoming more than professional.\n\nHolmes calls you to examine the body. The case demands your attention.",
+                location: "🎭 Pondicherry Lodge",
+                choices: [
+                    { text: "Focus on the investigation", next: 'second_murder' }
+                ]
+            },
+            second_murder: {
+                text: "Bartholomew Sholto lies dead, a poisoned thorn in his neck. The treasure is gone. Holmes finds footprints—one normal, one wooden leg. And tiny barefoot prints.\n\n'A wooden-legged man and a savage accomplice,' Holmes deduces. 'Probably from the Andaman Islands. We must track them immediately!'\n\nHe brings his dog, Toby, to follow the scent.",
+                location: "🎭 Pondicherry Lodge - Crime Scene",
+                choices: [
+                    { text: "Join the pursuit", next: 'boat_chase' },
+                    { text: "Stay and protect Miss Morstan", next: 'protective_watson' }
+                ]
+            },
+            protective_watson: {
+                text: "You volunteer to remain with Mary while Holmes and police pursue the criminals.\n\n'Watson,' Holmes says quietly, 'you're needed in the pursuit. Your shooting skills specifically. Miss Morstan will be safe with the police here.'\n\nHe's right, but you're torn between duty and affection.",
+                location: "🎭 Pondicherry Lodge",
+                choices: [
+                    { text: "Duty first. Join the pursuit", next: 'boat_chase' },
+                    { text: "I'll stay anyway", next: 'missed_chase' }
+                ]
+            },
+            missed_chase: {
+                text: "You remain. Holmes pursues alone with police. Hours later, he returns triumphant—the criminals caught, the treasure recovered. He solved it brilliantly without you.\n\nMary is grateful for your protection. But you missed the most thrilling part of the adventure. Holmes seems slightly disappointed you weren't there.",
+                location: "🎭 Pondicherry Lodge",
+                choices: [
+                    { text: "At least Mary is safe", next: 'half_hearted_ending' }
+                ]
+            },
+            half_hearted_ending: {
+                text: "The case concludes. The treasure is recovered. Mary inherits nothing—it must be returned. You propose to her, and she accepts. You marry and live comfortably.\n\nBut you sense Holmes's disappointment. Your partnership weakens. You chronicle fewer cases, miss crucial adventures. Your marriage is happy, but you've lost something essential—the thrill of true partnership with a genius.",
+                location: "🏠 Your New Home",
+                ending: true,
+                achievement: "LOVE OVER ADVENTURE",
+                endingText: "💍 ENDING: You chose love and safety over danger and partnership. You married Mary and lived well, but your chronicles grew fewer. Holmes worked increasingly alone. You wondered sometimes if you could have had both—the love and the adventure. Perhaps, with different choices...",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            boat_chase: {
+                text: "You follow Toby's nose through London's streets. The scent leads to the Thames. Holmes discovers the criminals hired a steam launch called the 'Aurora.'\n\n'We'll need a fast boat!' Holmes declares. You secure the police launch. At dawn, you spot the Aurora!\n\nA thrilling chase begins. The wooden-legged man, Jonathan Small, pushes his boat to maximum speed.",
+                location: "🚤 River Thames - Chase",
+                choices: [
+                    { text: "Shoot to disable their boat", next: 'shoot_boat' },
+                    { text: "Shoot the savage with the blowpipe", next: 'shoot_tonga' },
+                    { text: "Wait for Holmes's command", next: 'holmes_commands' }
+                ]
+            },
+            shoot_boat: {
+                text: "You aim carefully at the Aurora's boiler. Your shot goes wide—the boats are moving too fast, the angle wrong.\n\nThe savage, Tonga, fires poisoned darts. One nearly hits Holmes! You must act faster.",
+                location: "🚤 River Thames - Chase",
+                choices: [
+                    { text: "Shoot the savage", next: 'shoot_tonga' }
+                ]
+            },
+            holmes_commands: {
+                text: "'Watson!' Holmes shouts. 'The savage with the blowpipe—he'll kill us all! You must shoot him!'\n\nTonga raises his blowpipe, aiming at Holmes. No time to think.",
+                location: "🚤 River Thames - Chase",
+                choices: [
+                    { text: "Fire immediately", next: 'shoot_tonga' }
+                ]
+            },
+            shoot_tonga: {
+                text: "Your Army training saves you. You fire once. Tonga tumbles backward into the Thames, the poisoned dart falling harmlessly.\n\nJonathan Small, seeing his accomplice dead, surrenders. Holmes captures him. The treasure chest is recovered!\n\n'Excellent shooting, Watson!' Holmes congratulates you. 'You saved our lives.'",
+                location: "🚤 River Thames - Victory",
+                choices: [
+                    { text: "We make a good team", next: 'treasure_recovered' }
+                ]
+            },
+            treasure_recovered: {
+                text: "Back at Baker Street, Small tells his story—a pact with three Sikhs, a stolen treasure, years in Andaman prisons, a deal broken by Major Sholto. Tragic, but criminal.\n\nThe treasure chest opens. Empty! Small threw the jewels in the Thames rather than let them fall into others' hands.\n\nMary inherits nothing. She takes the news with grace.",
+                location: "🏠 221B Baker Street - Case End",
+                choices: [
+                    { text: "Speak privately with Mary", next: 'propose_mary' },
+                    { text: "Focus on celebrating the case's success", next: 'professional_ending' }
+                ]
+            },
+            propose_mary: {
+                text: "Later, you walk Mary home. 'Miss Morstan,' you say, 'I know you've lost the treasure, but... might I hope...'\n\n'The treasure was a burden,' she smiles. 'I'm free of it. And yes, Dr. Watson, you may hope.'\n\nYou propose. She accepts. You're to be married!",
+                location: "🌙 Evening Walk",
+                choices: [
+                    { text: "Share the news with Holmes", next: 'tell_holmes' }
+                ]
+            },
+            tell_holmes: {
+                text: "Holmes congratulates you warmly, but you detect sadness in his eyes.\n\n'You'll leave Baker Street, of course,' he says. 'Married life and detective work rarely mix. I'll miss you, Watson. You've been the one fixed point in a changing age.'\n\nYou promise to chronicle his cases still, to visit often.",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "I'll never abandon our partnership", next: 'balanced_life' },
+                    { text: "Perhaps it's time to settle down", next: 'retire_from_adventure' }
+                ]
+            },
+            retire_from_adventure: {
+                text: "You marry Mary and settle in your own practice. You visit Holmes occasionally, hear of his cases secondhand. Your chronicles continue, but you're no longer there for the dangerous work.\n\nYears pass pleasantly. You have a happy marriage, but miss the thrill of danger. Holmes works increasingly with younger assistants. Your era of partnership fades into memory.",
+                location: "🏥 Your Medical Practice",
+                ending: true,
+                achievement: "LOVE OVER ADVENTURE",
+                endingText: "💍 ENDING: You chose domesticity. Your marriage was happy, your life comfortable. But the great adventures passed you by. Holmes faced his greatest challenges without you. Your chronicles grew sparse. Sometimes, reading of his exploits in the papers, you wondered what might have been.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            balanced_life: {
+                text: "You marry Mary, but maintain your partnership with Holmes. She understands—she saw his genius firsthand.\n\n'Go when he calls,' she tells you. 'I married a man of adventure. I wouldn't have you any other way.'\n\nYears pass. More cases come. You chronicle them all. Then, one day, a letter arrives from Switzerland...",
+                location: "🏠 Your Home - Years Later",
+                choices: [
+                    { text: "Read the urgent letter", next: 'reichenbach_setup' }
+                ]
+            },
+            professional_ending: {
+                text: "You remain professional with Mary. She seems disappointed but accepts it. Weeks later, she moves abroad.\n\nYou and Holmes continue your partnership. Many cases follow. But you often think of what might have been—the love you didn't pursue.\n\nYears later, you hear Mary married another. You feel a pang of regret that never quite fades.",
+                location: "🏠 221B Baker Street",
+                ending: true,
+                achievement: "BACHELOR DETECTIVE",
+                endingText: "🔍 ENDING: You chose detection over love. Your partnership with Holmes flourished. You chronicled his greatest cases, faced incredible dangers. But on quiet evenings, you wondered about the life you didn't choose—the warmth of marriage, children, a different kind of happiness. Professional success, personal regret.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            reichenbach_setup: {
+                text: "Holmes writes urgently from Switzerland. He's tracked Professor Moriarty—the Napoleon of Crime—there. Moriarty controls a vast criminal empire from the shadows.\n\n'Watson, I've cornered him. But he's dangerous beyond measure. If you can come, bring your revolver. If I don't survive this, at least you can tell the world I didn't die in vain.'\n\nMary insists you go. 'He needs you.'",
+                location: "🏠 Your Home",
+                choices: [
+                    { text: "Leave immediately for Switzerland", next: 'to_switzerland' },
+                    { text: "Telegraph Holmes to wait", next: 'delayed_departure' }
+                ]
+            },
+            delayed_departure: {
+                text: "You telegraph Holmes to wait. But Moriarty strikes fast. By the time you arrive in Switzerland, the innkeeper tells you terrible news—Holmes went to Reichenbach Falls alone. Moriarty followed. Neither returned.\n\nYou find Holmes's note on a rock. He faced Moriarty alone. They struggled. Both fell into the abyss.\n\nYou were too late.",
+                location: "🇨🇭 Switzerland - Reichenbach Falls",
+                ending: true,
+                achievement: "TOO LATE",
+                endingText: "💀 ENDING: Your delay cost Holmes his life. He faced the Napoleon of Crime alone and perished. You published his cases as memorials, but guilt haunted you forever. If only you'd come immediately... Your chronicles ended with his death. The world's greatest detective was gone because you hesitated.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            to_switzerland: {
+                text: "You race to Switzerland. Holmes meets you at Meiringen, looking grim.\n\n'Moriarty's men are everywhere,' he warns. 'He's desperate. I've destroyed his organization, but he himself remains. He's deadly, Watson. Perhaps the most dangerous man I've ever faced.'\n\nYou reach the Reichenbach Falls, a terrible torrent plunging into an abyss.",
+                location: "🇨🇭 Reichenbach Falls, Switzerland",
+                choices: [
+                    { text: "Stay close to Holmes", next: 'protect_holmes' },
+                    { text: "Scout ahead for danger", next: 'scout_ahead' }
+                ]
+            },
+            scout_ahead: {
+                text: "You move ahead, scanning for threats. Suddenly, a Swiss boy approaches with an urgent message—a sick English lady needs a doctor back at the hotel.\n\n'It's a trick!' Holmes calls. 'Moriarty's work! Don't go!'\n\nBut what if someone truly needs help?",
+                location: "🇨🇭 Reichenbach Falls",
+                choices: [
+                    { text: "Ignore the message. Stay with Holmes", next: 'ignore_trick' },
+                    { text: "Investigate the message", next: 'fall_for_trick' }
+                ]
+            },
+            fall_for_trick: {
+                text: "Your medical conscience compels you. You return to find the message was false—no sick woman exists.\n\nYou race back to the falls. Too late. The path shows signs of struggle. Holmes's alpenstock leans against a rock. His note beneath:\n\n'My dear Watson, I write these words knowing they may be my last. Moriarty has found me. If I am to die, at least you are safe. S.H.'\n\nBoth men are gone—fallen into the abyss together.",
+                location: "🇨🇭 Reichenbach Falls",
+                ending: true,
+                achievement: "TOO LATE",
+                endingText: "💀 ENDING: Moriarty's trick separated you from Holmes at the crucial moment. The world's greatest detective died fighting the Napoleon of Crime, both falling to their deaths. You published his cases as a memorial, but the guilt never left you. You were his friend, his chronicler, and in the end, you failed to save him.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            ignore_trick: {
+                text: "'Wise, Watson,' Holmes nods. 'Moriarty wants us separated. We stay together.'\n\nMoments later, Professor Moriarty himself appears on the path—a tall, ascetic man with a domed forehead and eyes that burn with intellectual malice.\n\n'Mr. Holmes. Dr. Watson. How tiresome that you both must die.'",
+                location: "🇨🇭 Reichenbach Falls - Confrontation",
+                choices: [
+                    { text: "Draw your revolver immediately", next: 'draw_gun' },
+                    { text: "Let Holmes handle this", next: 'holmes_confronts' }
+                ]
+            },
+            protect_holmes: {
+                text: "You stay close. A Swiss boy approaches with a message—a sick English lady needs a doctor.\n\nHolmes examines the note. 'Moriarty's handwriting! Watson, it's a trap to separate us!'\n\nBefore you can respond, Professor Moriarty himself appears on the path.",
+                location: "🇨🇭 Reichenbach Falls",
+                choices: [
+                    { text: "Draw your weapon", next: 'draw_gun' },
+                    { text: "Stand beside Holmes", next: 'holmes_confronts' }
+                ]
+            },
+            draw_gun: {
+                text: "Your hand moves to your revolver. But Moriarty is faster—he has a pistol already aimed.\n\n'Ah, the faithful Watson,' Moriarty sneers. 'The dog protecting his master. Drop your weapon or I shoot Holmes where he stands.'\n\nYou're in a standoff. Holmes watches carefully.",
+                location: "🇨🇭 Reichenbach Falls - Standoff",
+                choices: [
+                    { text: "Drop the gun", next: 'drop_weapon' },
+                    { text: "Try to shoot Moriarty", next: 'shootout' },
+                    { text: "Wait for Holmes's signal", next: 'holmes_plan' }
+                ]
+            },
+            shootout: {
+                text: "You fire. So does Moriarty. Your bullet strikes his shoulder—his hits Holmes in the chest!\n\nHolmes staggers backward toward the falls. You lunge to catch him, but Moriarty, wounded, grapples with you both. The three of you struggle at the precipice.\n\nYou lose your footing. All three of you plunge into the abyss together.",
+                location: "🇨🇭 Reichenbach Falls",
+                ending: true,
+                achievement: "MORIARTY'S FALL",
+                endingText: "💀 ENDING: Your quick action killed Moriarty but cost Holmes his life—and yours. All three of you perished in the falls. The world lost both its greatest detective and its greatest criminal in one terrible moment. Your chronicles ended unfinished. Your faithfulness led to tragedy.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            drop_weapon: {
+                text: "You drop the revolver. Moriarty smiles cruelly.\n\n'Wise. Now, Mr. Holmes, you and I have business. Watson, run. You're merely an annoyance. The great detective is my true enemy.'\n\nHolmes looks at you meaningfully. Run? Or stay?",
+                location: "🇨🇭 Reichenbach Falls",
+                choices: [
+                    { text: "Never. I stand with Holmes", next: 'loyal_stand' },
+                    { text: "Trust Holmes. Retreat and flank Moriarty", next: 'strategic_retreat' }
+                ]
+            },
+            loyal_stand: {
+                text: "'Touching,' Moriarty sneers. 'Then you die together.'\n\nHe raises his pistol. But Holmes suddenly strikes—knocking the gun away! The three of you struggle at the falls' edge.\n\nYou manage to push Moriarty backward, but he grabs Holmes. Both teeter at the precipice. You grab Holmes's hand, but Moriarty's weight is too much—\n\nAll three of you fall.",
+                location: "🇨🇭 Reichenbach Falls",
+                ending: true,
+                achievement: "MORIARTY'S FALL",
+                endingText: "💀 ENDING: Your loyalty was absolute. You refused to abandon Holmes. In the struggle, all three of you perished. The world lost its greatest detective, but also its most dangerous criminal. Your name went down in history beside Holmes's—the faithful friend who died rather than retreat. Tragic, but noble.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            strategic_retreat: {
+                text: "You back away slowly. Moriarty focuses on Holmes. You circle behind, moving quietly.\n\nMoriarty taunts Holmes. 'You've destroyed my organization. But I'll have satisfaction. En garde!'\n\nThey fight with bare hands, grappling at the precipice. You see your moment—you can tackle Moriarty from behind!",
+                location: "🇨🇭 Reichenbach Falls",
+                choices: [
+                    { text: "Tackle Moriarty", next: 'save_holmes' },
+                    { text: "Retrieve your revolver first", next: 'get_gun' }
+                ]
+            },
+            get_gun: {
+                text: "You move toward your dropped revolver. But Moriarty sees you!\n\n'Watson, no!' Holmes shouts.\n\nMoriarty pushes Holmes toward the edge and lunges for the gun. You both reach it simultaneously. In the struggle, it fires—the bullet strikes Holmes!\n\nHolmes falls backward into the abyss. Moriarty, horrified by the accident, loses balance and follows.",
+                location: "🇨🇭 Reichenbach Falls",
+                ending: true,
+                achievement: "MORIARTY'S FALL",
+                endingText: "💀 ENDING: Your attempt to arm yourself led to tragedy. The accidental shot killed Holmes. Moriarty fell to his death in the chaos. You survived, but your guilt was unbearable. You published Holmes's cases as penance, but never forgave yourself. The gun you meant to use to save your friend killed him instead.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            save_holmes: {
+                text: "You charge! Your tackle hits Moriarty perfectly. He releases Holmes and stumbles backward—straight toward the falls!\n\nHe grasps desperately for purchase. You and Holmes watch as the Napoleon of Crime disappears into the roaring torrent below.\n\nHolmes breathes heavily. 'Watson... you saved my life. Thank you, old friend.'",
+                location: "🇨🇭 Reichenbach Falls - Victory",
+                achievement: "MORIARTY'S FALL",
+                choices: [
+                    { text: "We're partners. Always", next: 'true_partnership' }
+                ]
+            },
+            holmes_plan: {
+                text: "You wait. Holmes subtly nods.\n\n'Moriarty,' Holmes says calmly, 'you forget Watson is a crack shot who served in Afghanistan. He's waiting for my signal. One twitch of your trigger finger, and he shoots.'\n\nIt's a bluff—but Moriarty doesn't know that. He hesitates, uncertain.",
+                location: "🇨🇭 Reichenbach Falls - Standoff",
+                choices: [
+                    { text: "Maintain the bluff", next: 'successful_bluff' },
+                    { text: "Make your move now", next: 'action_move' }
+                ]
+            },
+            successful_bluff: {
+                text: "You stand perfectly still, radiating danger. Moriarty's eyes flick between you and Holmes.\n\nThat momentary distraction is enough. Holmes strikes! He knocks the gun away. They grapple. You rush forward, and together you overpower Moriarty.\n\nHe struggles desperately, then breaks free—but stumbles backward. He falls into the Reichenbach abyss with a terrible scream.",
+                location: "🇨🇭 Reichenbach Falls - Victory",
+                achievement: "MORIARTY'S FALL",
+                choices: [
+                    { text: "We survived together", next: 'true_partnership' }
+                ]
+            },
+            action_move: {
+                text: "You lunge forward. Moriarty swings his pistol toward you—Holmes tackles him!\n\nThe three of you struggle at the precipice. Moriarty's gun goes off, the bullet whizzing past your ear. You wrench it from his grasp and throw it away.\n\nMoriarty, seeing he's beaten, makes a desperate lunge—at Holmes! They both go over the edge!\n\nYou grab Holmes's wrist at the last second. Moriarty falls, screaming, into the abyss below.",
+                location: "🇨🇭 Reichenbach Falls - Rescue",
+                choices: [
+                    { text: "Pull Holmes to safety", next: 'rescue_holmes' }
+                ]
+            },
+            rescue_holmes: {
+                text: "You strain with all your might, your wounded leg screaming in protest. Holmes dangles over the abyss, the roaring waters below.\n\n'Watson!' he gasps. 'If you can't hold me—let go! Save yourself!'\n\n'Never!' you roar, and with a final desperate heave, you pull him to safety.\n\nYou both collapse on solid ground, breathing heavily. Moriarty is gone. The nightmare is over.",
+                location: "🇨🇭 Reichenbach Falls - Victory",
+                achievement: "MORIARTY'S FALL",
+                choices: [
+                    { text: "We're alive. That's what matters", next: 'true_partnership' }
+                ]
+            },
+            holmes_confronts: {
+                text: "'Professor Moriarty,' Holmes says coolly. 'I've dismantled your entire organization. Your criminal empire is finished. Surrender to justice.'\n\n'Never,' Moriarty hisses. 'If I am to fall, you fall with me, Holmes!'\n\nHe lunges! The two men grapple at the precipice. You must act!",
+                location: "🇨🇭 Reichenbach Falls - Fight",
+                choices: [
+                    { text: "Join the fight", next: 'three_way_struggle' },
+                    { text: "Try to separate them", next: 'separate_fighters' }
+                ]
+            },
+            three_way_struggle: {
+                text: "You leap into the fray. The three of you struggle violently at the edge of the falls. Moriarty fights with desperate strength.\n\nYou manage to land a solid punch, stunning him. Holmes breaks free. Together, you force Moriarty backward—\n\nHe loses his footing and plunges into the torrent below, his scream fading into the roar of water.",
+                location: "🇨🇭 Reichenbach Falls - Victory",
+                achievement: "MORIARTY'S FALL",
+                choices: [
+                    { text: "It's finally over", next: 'true_partnership' }
+                ]
+            },
+            separate_fighters: {
+                text: "You try to pull them apart. But Moriarty is fighting for his life, Holmes for justice. They're locked together.\n\nSuddenly, they lose their balance. Both men topple toward the edge!\n\nYou grab Holmes's coat—but Moriarty has him in a death grip. The fabric tears. Holmes reaches for you—\n\nYour fingers touch, then slip. Both men fall into the abyss together.",
+                location: "🇨🇭 Reichenbach Falls",
+                ending: true,
+                achievement: "TOO LATE",
+                endingText: "💀 ENDING: You tried to save Holmes, but Moriarty's grip was too strong. Both fell to their deaths, locked in eternal combat. You published Holmes's cases as memorials. The world mourned its greatest detective. You lived on, haunted by those final moments—your fingers touching Holmes's, then losing him forever.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            true_partnership: {
+                text: "You help Holmes to his feet. 'Moriarty is dead. His organization destroyed. The world is safer, Watson, thanks to you.'\n\n'Thanks to us,' you correct him. 'Partners.'\n\nHe smiles—a rare, genuine smile. 'Indeed. The best partnership I've ever known.'\n\nYou return to London together. More cases await.",
+                location: "🇨🇭 Switzerland - Departure",
+                choices: [
+                    { text: "Return to Baker Street", next: 'final_years_together' }
+                ]
+            },
+            final_years_together: {
+                text: "Years pass. You chronicle case after case—The Hound of the Baskervilles, The Adventure of the Bruce-Partington Plans, The Dying Detective. Your stories make Holmes famous worldwide.\n\nYou remain his partner through it all. Even after Mary's tragic death, Holmes is there for you. Your friendship deepens into something unbreakable.\n\nOne evening, Holmes faces his greatest challenge yet...",
+                location: "🏠 221B Baker Street - Later Years",
+                choices: [
+                    { text: "What challenge?", next: 'final_case_intro' }
+                ]
+            },
+            final_case_intro: {
+                text: "A visitor arrives—a German spy with information about a coming war. He brings a case so complex, so dangerous, that even Holmes seems daunted.\n\n'Watson,' Holmes says seriously, 'this case could change history. Prevent a war that would kill millions. But it requires infiltrating the highest levels of European intelligence. It may be my last case.'",
+                location: "🏠 221B Baker Street",
+                choices: [
+                    { text: "Then we face it together", next: 'final_mission_together' },
+                    { text: "You're too old for this. Let younger men try", next: 'cautious_ending' }
+                ]
+            },
+            cautious_ending: {
+                text: "Holmes looks hurt but nods. 'Perhaps you're right. I'm not a young man anymore.'\n\nHe declines the case. Another detective takes it—and fails. The intelligence isn't stopped. Years later, the Great War begins. Millions die.\n\nHolmes retires to Sussex, keeping bees. You visit sometimes. Both of you wonder: could you have prevented it all?",
+                location: "🌾 Sussex - Holmes's Retirement",
+                ending: true,
+                achievement: "CAUTIOUS TWILIGHT",
+                endingText: "🐝 ENDING: You chose safety in your old age. Holmes retired. The Great War came. Your chronicles ended with smaller cases. You lived quietly, but the weight of what might have been never left you. Sometimes heroism requires one more impossible attempt, no matter the age.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            final_mission_together: {
+                text: "'That's my Watson,' Holmes grins. 'One last impossible case. One final adventure.'\n\nYou infiltrate German intelligence networks. It's dangerous work—you're both elderly now, but your minds remain sharp. Holmes's deductions are still brilliant. Your steadiness still invaluable.\n\nAfter months of work, you obtain the critical intelligence. Britain is warned. Preparations are made.",
+                location: "🇩🇪 Berlin - Undercover",
+                choices: [
+                    { text: "Complete the mission", next: 'mission_success' }
+                ]
+            },
+            mission_success: {
+                text: "You deliver the intelligence to British authorities. The spy network is exposed. While the Great War still comes, Britain is better prepared. Thousands of lives are saved because of your work.\n\nHolmes retires to Sussex. You visit often. On quiet evenings, you reminisce about the old cases—Lauriston Gardens, the Sign of Four, Reichenbach Falls.\n\n'We had quite a run, didn't we, Watson?' Holmes says.",
+                location: "🌾 Sussex - Holmes's Cottage",
+                choices: [
+                    { text: "The greatest partnership in history", next: 'perfect_ending' },
+                    { text: "One more case?", next: 'secret_final_case' }
+                ]
+            },
+            perfect_ending: {
+                text: "'Indeed,' Holmes agrees. 'I could not have done any of it without you, my dear Watson. You were never just my chronicler. You were my friend. My partner. My brother in all but blood.'\n\nYou smile. 'And you, Holmes, made my life an adventure beyond imagining.'\n\nYou published fifty-six short stories and four novels about his cases. Your chronicles immortalized Sherlock Holmes. And through them, your partnership too became immortal.",
+                location: "🌾 Sussex - Final Peace",
+                ending: true,
+                achievement: "THE PERFECT PARTNERSHIP",
+                endingText: "📚 ENDING: You achieved the perfect balance—adventure and friendship, danger and loyalty, brilliance and steadfastness. Your chronicles became classics. Your partnership became legendary. You lived fully, documented faithfully, and changed the world together. When the end came, you both knew you'd lived lives of meaning. The greatest detective and his faithful friend—immortal.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            },
+            secret_final_case: {
+                text: "Holmes's eyes twinkle. 'Funny you should mention that, Watson. I received a curious letter this morning. Quite impossible, really. A locked-room mystery from a manor house in Cornwall. They say it's unsolvable.'\n\n'Nothing is unsolvable,' you say, reaching for your coat.\n\n'Precisely!' Holmes leaps up with surprising energy. 'Mrs. Hudson! Pack our bags! Watson and I are off to Cornwall!'\n\nYou smile. Once more unto the breach.",
+                location: "🌾 Sussex - One More Case",
+                choices: [
+                    { text: "Investigate the impossible case", next: 'secret_case_investigation' }
+                ]
+            },
+            secret_case_investigation: {
+                text: "You arrive at Blackwood Manor. The case is indeed impossible—a man murdered in a locked tower room, no way in or out, no weapon found. The police are baffled.\n\nHolmes examines the scene with the old intensity. You watch, remembering dozens of cases past. His methods haven't changed—only refined with age.\n\n'Watson,' he calls. 'Your medical opinion on the body, if you please.'",
+                location: "🏰 Blackwood Manor, Cornwall",
+                choices: [
+                    { text: "Examine the corpse", next: 'medical_examination_final' },
+                    { text: "Observe the room first", next: 'observe_room' }
+                ]
+            },
+            medical_examination_final: {
+                text: "You examine the body professionally. 'Puncture wound to the neck, Holmes. Possibly a needle or thin blade. Very little bleeding—death was nearly instantaneous.'\n\n'Excellent, Watson! Your skills haven't diminished.' Holmes peers at the window. 'Look here—the windowpane. A tiny hole, recently drilled. And below, on the ground, a blow-dart.'\n\nHis eyes light up with the old fire.",
+                location: "🏰 Blackwood Manor - Tower Room",
+                choices: [
+                    { text: "Someone shot through the window!", next: 'solution_found' }
+                ]
+            },
+            observe_room: {
+                text: "You scan the locked room carefully. Your years of training with Holmes guide your eyes. There—the window. Something's wrong with it.\n\n'Holmes, the window pane. There's a tiny hole.'\n\n'By Jove, Watson! You've spotted it!' Holmes examines it with his lens. 'A blow-dart through the hole, into the victim's neck. The dart fell outside. The room was locked from within after the murder to confuse investigators.'\n\nYou beam with pride. After all these years, you've made a crucial deduction.",
+                location: "🏰 Blackwood Manor - Tower Room",
+                choices: [
+                    { text: "Who had access to blow-darts?", next: 'solution_found' }
+                ]
+            },
+            solution_found: {
+                text: "Holmes questions the household. The victim's nephew—a big game hunter just returned from the Amazon—had blow-darts in his collection. He inherits the estate.\n\nConfronted with the evidence, he confesses. Justice is served.\n\n'Watson,' Holmes says as you depart, 'you've still got it. That was brilliant observation back there.'\n\n'Learned from the best,' you reply.\n\nYou return to Sussex, satisfied. One last case, solved together.",
+                location: "🚂 Train to Sussex",
+                choices: [
+                    { text: "Reflect on your life together", next: 'secret_perfect_ending' }
+                ]
+            },
+            secret_perfect_ending: {
+                text: "That evening, you sit by the fire in Holmes's cottage. He plays his violin—Mendelssohn, your favorite. You work on your notes, documenting this final case.\n\n'Watson,' Holmes says softly, 'thank you. For everything. For every case, every danger, every adventure. For your friendship. You made my life's work possible.'\n\n'And you,' you reply, 'made my life extraordinary. I was just an army doctor. You showed me I could be more.'\n\nYou both sit in comfortable silence. Outside, the Sussex bees hum. Inside, two old friends share perfect peace.\n\nYour story ends here—not in tragedy, but in friendship. Not in failure, but in triumph. You solved cases together from youth to old age. You documented it all. The world knows Holmes's genius because you were there to witness and record it.\n\nAnd history remembers you not as Watson the sidekick, but as Watson the partner. Watson the friend. Watson who was there for every impossible case, every dangerous moment, every brilliant deduction.\n\nSherlock Holmes and Dr. John Watson. The greatest detective partnership the world has ever known. Immortal in your chronicles. Perfect in your friendship.\n\nYour legacy is complete.",
+                location: "🌾 Sussex - Perfect Evening",
+                ending: true,
+                achievement: "THE MASTER CHRONICLER - SECRET ENDING",
+                endingText: "🌟 SECRET PERFECT ENDING: You unlocked the ultimate conclusion. You chose every right path—partnership over isolation, courage over fear, loyalty over caution, curiosity over complacency. You balanced adventure with love, danger with wisdom. You stood by Holmes through every trial. You chronicled his genius while being his true equal. You lived a life of perfect friendship and endless adventure. Your stories became immortal. Your partnership became legend. This is the ending every Watson aspires to—the one where everything you did mattered, where every choice led to greatness. You didn't just witness history. You shaped it. Together.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "THE ROAD NOT TAKEN",
+            "THE BIOGRAPHER BEGINS",
+            "THE DISTANT CHRONICLER",
+            "LOVE OVER ADVENTURE",
+            "BACHELOR DETECTIVE",
+            "TOO LATE",
+            "MORIARTY'S FALL",
+            "CAUTIOUS TWILIGHT",
+            "THE PERFECT PARTNERSHIP",
+            "THE MASTER CHRONICLER - SECRET ENDING"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let caseLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateCaseLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            caseLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                caseLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("THE LEGENDARY DETECTIVE'S COMPANION")) {
+                    setTimeout(() => {
+                        achievements.push("THE LEGENDARY DETECTIVE'S COMPANION");
+                        showAchievementPopup("THE LEGENDARY DETECTIVE'S COMPANION");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "THE LEGENDARY DETECTIVE'S COMPANION";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '🎖️ CASE HONOUR UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + (achievements.includes("THE LEGENDARY DETECTIVE'S COMPANION") ? 0 : 1);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "THE LEGENDARY DETECTIVE'S COMPANION" ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateCaseLogDisplay() {
+            const caseLogBox = document.getElementById('caseLogBox');
+            if (caseLog.length > 0) {
+                caseLogBox.style.display = 'block';
+                const caseLogEntries = document.getElementById('caseLogEntries');
+                caseLogEntries.innerHTML = '';
+                caseLog.forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'case-log-entry';
+                    entryDiv.textContent = entry;
+                    caseLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                caseLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
