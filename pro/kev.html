@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ghost in the Wires</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a3a 50%, #0a0a2a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff00;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            border-color: #00ff00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff00;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .matrix-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005500;
+            border-color: #005500;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ff00;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005500;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005500, #00ff00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 0, 0.5);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #00ffff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005500;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005500;
+        }
+
+        .history-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .history-button.current {
+            background-color: #00ff00;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 0, 0.5);
+            color: #00ff00;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 0, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005500;
+        }
+
+        .history-hint {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005500;
+        }
+
+        .quest-log-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005500;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="matrix-icon">👻</span>
+                    THE GHOST IN THE WIRES
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>⚡</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ STORY CONCLUDED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                MEMORY LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "Los Angeles, 1980s. You're a curious teenager named Kevin, fascinated by magic, lock picking, and the mysterious world of phone systems.\n\nYou've discovered something called 'phone phreaking'—manipulating telephone networks using tones. Your friend shows you a blue box.\n\n'Want to learn how it works?' he asks.",
+                location: "📞 Los Angeles - Your Bedroom",
+                choices: [
+                    { text: "Learn about phone phreaking", next: 'learn_phreaking' },
+                    { text: "Focus on legitimate computer studies", next: 'legitimate_path' },
+                    { text: "Decline and avoid trouble", next: 'avoid_tech' }
+                ]
+            },
+            learn_phreaking: {
+                text: "You learn the art of phone phreaking. The thrill of exploring telephone systems is intoxicating. You're not stealing—you're exploring, learning how systems work.\n\nBut you realize you're crossing ethical lines. Free long-distance calls. Accessing internal phone company systems.\n\nA choice looms: How far will curiosity take you?",
+                location: "📞 Los Angeles - Learning",
+                choices: [
+                    { text: "Push boundaries, learn everything", next: 'deep_dive' },
+                    { text: "Set ethical limits, study responsibly", next: 'ethical_learning' },
+                    { text: "Stop now before consequences", next: 'early_stop' }
+                ]
+            },
+            legitimate_path: {
+                text: "You decide to pursue technology through proper channels. Computer science classes. Programming books. Building legitimate skills.\n\nYou excel quickly. Your natural talent for understanding systems shines through legal work.\n\nYears pass. You become a respected programmer.",
+                location: "🏢 Software Company - Years Later",
+                ending: true,
+                achievement: "THE STRAIGHT PATH",
+                endingText: "💼 ENDING: You built a successful career through legitimate means. You became a skilled programmer and consultant, respected in your field. You never experienced the thrill—or the consequences—of hacking. Sometimes you wonder what might have been, but you sleep well at night.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            avoid_tech: {
+                text: "You step away from technology entirely. Too risky. Too tempting.\n\nYou pursue other interests. Magic. Performance. Normal life.\n\nYears later, you watch the tech boom from the outside, wondering what role you might have played.",
+                location: "🎭 Theater - Years Later",
+                ending: true,
+                achievement: "THE ROAD NOT TAKEN",
+                endingText: "🎭 ENDING: You chose safety over curiosity. You built a different life—perhaps as a magician, performer, or in another field entirely. Technology became someone else's story. You avoided trouble, but also avoided your true calling. A peaceful life, but one filled with 'what ifs.'",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            early_stop: {
+                text: "You recognize the danger and stop. You've learned enough to understand systems, but you pull back before serious trouble.\n\nYou channel your knowledge into security work, helping companies legally.\n\nYour early experiments become cautionary tales you share with students.",
+                location: "🏫 University - Years Later",
+                ending: true,
+                achievement: "WISDOM BEFORE PRIDE",
+                endingText: "🎓 ENDING: You demonstrated rare wisdom—recognizing danger and stopping before it was too late. You became a security educator, using your early knowledge to teach others about system vulnerabilities legally. Your story is one of growth, restraint, and using knowledge responsibly.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ethical_learning: {
+                text: "You set boundaries. Learn, but don't exploit. Understand vulnerabilities, but don't abuse them.\n\nYou document security flaws and try to report them. But in the 1980s, companies don't listen to teenagers.\n\n'We found a security flaw' sounds like 'We broke into your system' to executives.",
+                location: "📞 Los Angeles - Growing Skills",
+                choices: [
+                    { text: "Keep trying to help companies", next: 'helpful_hacker' },
+                    { text: "Give up and exploit what you know", next: 'give_up_ethics' }
+                ]
+            },
+            deep_dive: {
+                text: "You dive deep. Phone systems. Computer networks. You're learning at an incredible rate.\n\nYou discover you can access internal systems at major corporations. Not to steal—to learn. To understand. To master the art.\n\nBut authorities don't see it that way. They see unauthorized access.",
+                location: "💻 Home Computer - Late Night",
+                choices: [
+                    { text: "Continue exploring systems", next: 'continue_exploration' },
+                    { text: "Start being more careful", next: 'cautious_path' }
+                ]
+            },
+            helpful_hacker: {
+                text: "You persist in trying to help. You discover a major security flaw in a phone company's system.\n\nYou document it carefully. Explain the vulnerability. Offer to help fix it.\n\nTheir response: 'How did you find this? This is unauthorized access. We're contacting law enforcement.'",
+                location: "📞 Phone Company - Security Meeting",
+                choices: [
+                    { text: "Explain you were trying to help", next: 'explain_intentions' },
+                    { text: "Lawyer up immediately", next: 'lawyer_early' }
+                ]
+            },
+            give_up_ethics: {
+                text: "Frustrated by companies' responses, you stop trying to help. If they won't listen, why bother with ethics?\n\nYou start using your knowledge for personal benefit. Nothing major—just free calls, access to interesting systems.\n\nBut once you cross that line, it's hard to go back.",
+                location: "💻 Home - Moral Crossroads",
+                choices: [
+                    { text: "Continue down this path", next: 'continue_exploration' },
+                    { text: "Recognize the mistake and stop", next: 'redemption_early' }
+                ]
+            },
+            explain_intentions: {
+                text: "You explain earnestly. You were trying to help. To improve security. To prevent real criminals from exploiting these flaws.\n\nSome in the room believe you. Others don't. The legal system isn't built for 'helpful hackers.'\n\nYou're warned: Stop or face prosecution.",
+                location: "⚖️ Legal Office - Warning",
+                ending: true,
+                achievement: "THE WARNING",
+                endingText: "⚠️ ENDING: You received an official warning and stopped. You channeled your talents into legal security consulting, always remembering how close you came to serious trouble. Your early attempts to help, though misunderstood, shaped security industry attitudes about ethical disclosure—though it took years for that change to occur.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            lawyer_early: {
+                text: "Smart move. Your lawyer negotiates a deal: No prosecution if you stop and never access unauthorized systems again.\n\nYou agree. Your hacking days end before they really begin.\n\nYou go on to work in legitimate security, always remembering the lesson.",
+                location: "⚖️ Lawyer's Office - Deal",
+                ending: true,
+                achievement: "WISDOM BEFORE PRIDE",
+                endingText: "⚖️ ENDING: Getting legal help early saved your future. You built a legitimate career in security consulting, using your knowledge ethically. You became known for finding vulnerabilities legally and responsibly. Your story is one of near-misses and smart decisions.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            redemption_early: {
+                text: "You realize you've strayed from your principles. This isn't who you want to be.\n\nYou stop all unauthorized access. Delete your tools. Focus on legitimate work.\n\nYour early mistakes become private lessons, never shared, never repeated.",
+                location: "💻 Home - New Beginning",
+                ending: true,
+                achievement: "SECOND CHANCES",
+                endingText: "🔄 ENDING: You caught yourself before falling too far. You redirected your talents into legitimate channels and built a successful career. Few ever knew about your brief departure from ethics. You proved people can change course and choose better paths.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            cautious_path: {
+                text: "You become more careful. Use payphones. Create aliases. Learn about operational security.\n\nYou're accessing systems, but leaving no traces. Learning. Exploring. Not stealing data or causing damage.\n\nBut the authorities are getting better at tracking sophisticated intrusions.",
+                location: "📞 Payphone - Downtown",
+                choices: [
+                    { text: "Continue carefully", next: 'advanced_techniques' },
+                    { text: "Take a break, assess risks", next: 'assess_risks' }
+                ]
+            },
+            continue_exploration: {
+                text: "You can't stop. The knowledge is too fascinating. Systems reveal their secrets to you.\n\nYou become known in underground circles. 'The Condor.' A ghost in the system. Accessing networks that should be impossible to breach.\n\nYour social engineering skills become legendary. You can talk anyone into giving you access.",
+                location: "💻 Underground - Building Reputation",
+                choices: [
+                    { text: "Master social engineering", next: 'social_engineering_master' },
+                    { text: "Focus on technical exploits", next: 'technical_master' }
+                ]
+            },
+            assess_risks: {
+                text: "You take a step back. Assess what you're doing. The risks. The consequences.\n\nYou're good—maybe the best—but is that enough? The legal system doesn't care about skill. Only about unauthorized access.\n\nYou consider your options carefully.",
+                location: "🏠 Home - Reflection",
+                choices: [
+                    { text: "Stop hacking entirely", next: 'choose_legitimate' },
+                    { text: "Continue but more carefully", next: 'ultra_careful' },
+                    { text: "Go all in, become the best", next: 'commit_path' }
+                ]
+            },
+            advanced_techniques: {
+                text: "You develop advanced techniques. Spoofing caller ID. Cloning cell phones. Accessing voicemail systems.\n\nYou're not causing damage. Not stealing money. Just exploring. Learning. Proving you can.\n\nBut law enforcement is noticing patterns. They know someone skilled is out there.",
+                location: "📱 Advanced Operations",
+                choices: [
+                    { text: "Keep pushing forward", next: 'social_engineering_master' },
+                    { text: "Recognize you're being noticed", next: 'being_watched' }
+                ]
+            },
+            choose_legitimate: {
+                text: "You make the hard choice. Stop. Walk away. Use your knowledge legitimately.\n\nYou erase your tracks. Delete your tools. Disappear from underground circles.\n\nYou start a security consulting company, using your understanding of vulnerabilities to help companies legally.",
+                location: "🏢 Security Firm - Your Office",
+                ending: true,
+                achievement: "THE STRAIGHT PATH",
+                endingText: "💼 ENDING: You walked away at the peak of your abilities. You channeled your extraordinary talents into legitimate security work, becoming a respected consultant. You proved that the skills that make someone a great hacker also make them a great security expert—when used legally.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ultra_careful: {
+                text: "You become paranoid about security. Every call from a payphone. Every action carefully planned. No patterns. No traces.\n\nYou access systems occasionally, but the thrill diminishes. The paranoia grows.\n\nOne day you realize: Living in fear isn't freedom. You're a prisoner of your own caution.",
+                location: "📞 Payphone - Rainy Night",
+                choices: [
+                    { text: "Accept this is unsustainable", next: 'unsustainable_life' }
+                ]
+            },
+            commit_path: {
+                text: "You commit fully. If you're going to do this, be the best. Push boundaries. Access systems others can't dream of reaching.\n\nYou become legendary. The ghost in the wires. But legends attract attention.\n\nThe FBI opens a file on you.",
+                location: "💻 Underground - Peak Skills",
+                choices: [
+                    { text: "Continue, you're untouchable", next: 'social_engineering_master' },
+                    { text: "Realize the danger", next: 'fbi_awareness' }
+                ]
+            },
+            social_engineering_master: {
+                text: "You perfect social engineering. You can call anyone, anywhere, and convince them you're supposed to have access.\n\nHelpdesk technicians. Security guards. Even executives. Your voice, your confidence, your knowledge—irresistible.\n\nYou access source code from major tech companies. Not to sell—to learn. To understand how the best build systems.\n\nBut the FBI is closing in.",
+                location: "📞 Payphone - Peak Performance",
+                choices: [
+                    { text: "Access one more major target", next: 'final_hack' },
+                    { text: "Sense danger and disappear", next: 'go_fugitive_early' }
+                ]
+            },
+            technical_master: {
+                text: "You focus on technical exploits. Buffer overflows. System vulnerabilities. Network protocols.\n\nYou find flaws others miss. You understand systems at a level few can match.\n\nBut technical excellence leaves more traces than social engineering. Your digital fingerprints are everywhere.",
+                location: "💻 Home Lab - Deep Night",
+                choices: [
+                    { text: "Combine with social engineering", next: 'social_engineering_master' },
+                    { text: "Realize you're leaving traces", next: 'trace_awareness' }
+                ]
+            },
+            being_watched: {
+                text: "You notice signs. Strange clicks on phone lines. People asking questions in your circles. Cars that seem to follow.\n\nThe FBI. They're building a case. You're not paranoid—you're being watched.\n\nDo you run? Fight? Or stop?",
+                location: "🚗 Street - Surveillance",
+                choices: [
+                    { text: "Run and go into hiding", next: 'go_fugitive' },
+                    { text: "Stop all activity immediately", next: 'immediate_stop' },
+                    { text: "Lawyer up and negotiate", next: 'negotiate_early' }
+                ]
+            },
+            fbi_awareness: {
+                text: "You realize the FBI is actively hunting you. This isn't a game anymore. This is federal prosecution. Years in prison.\n\nYou've accessed dozens of systems. Left traces despite your caution. They're building a case.",
+                location: "🏠 Home - Reality Check",
+                choices: [
+                    { text: "Disappear completely", next: 'go_fugitive' },
+                    { text: "Try to negotiate a deal", next: 'negotiate_fbi' },
+                    { text: "Stop and wait for them", next: 'surrender_wait' }
+                ]
+            },
+            unsustainable_life: {
+                text: "You realize this life—constant paranoia, isolation, fear—isn't worth it.\n\nYou carefully extract yourself. Stop all activities. Destroy evidence. Wait.\n\nMonths pass. No knock on the door. Maybe they never had enough to prosecute.",
+                location: "🏠 Home - New Life",
+                ending: true,
+                achievement: "ESCAPED THE NET",
+                endingText: "🕊️ ENDING: You recognized the unsustainable nature of your lifestyle and stopped before being caught. You live with the anxiety that they might come someday, but years pass without incident. You build a quiet life, your past a secret you carry alone. Freedom, but at the cost of constant vigilance.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            final_hack: {
+                text: "One more. You target a major telecommunications company. The challenge is irresistible.\n\nYou execute perfectly. In and out. Clean. You copy source code and technical documentation—treasures of knowledge.\n\nBut this time, they were ready. They traced you. Within days, federal agents knock on your door.",
+                location: "🏠 Home - Morning Raid",
+                choices: [
+                    { text: "Face arrest", next: 'arrested' }
+                ]
+            },
+            go_fugitive_early: {
+                text: "You sense the danger and vanish. New identity. New city. No contact with anyone from your past.\n\nYou live under the radar, but the isolation is crushing. No hacking—too risky. Just surviving.",
+                location: "🏨 Motel - Somewhere Else",
+                choices: [
+                    { text: "Try to build a new life", next: 'fugitive_life' },
+                    { text: "Risk one last job for money", next: 'desperate_hack' }
+                ]
+            },
+            trace_awareness: {
+                text: "You realize your technical approaches leave digital breadcrumbs. You've been too confident.\n\nYou review your activities. Dozens of intrusions. Many could be traced back with enough effort.\n\nThe FBI almost certainly knows who you are. It's just a matter of when they have enough evidence.",
+                location: "💻 Home - Reviewing Logs",
+                choices: [
+                    { text: "Destroy evidence and stop", next: 'destroy_evidence' },
+                    { text: "Run before they arrest you", next: 'go_fugitive' }
+                ]
+            },
+            go_fugitive: {
+                text: "You run. Pack essentials. Cash only. New identity. You disappear into America.\n\nYou're on the run, one of the FBI's most wanted hackers. The 'Most Wanted Hacker' actually.\n\nYears pass. You move constantly. Work odd jobs. No hacking—too risky. But you're free.",
+                location: "🏨 Various Locations - On the Run",
+                choices: [
+                    { text: "Try to negotiate from hiding", next: 'negotiate_fugitive' },
+                    { text: "Keep running indefinitely", next: 'life_on_run' },
+                    { text: "Risk hacking for survival money", next: 'desperate_hack' }
+                ]
+            },
+            immediate_stop: {
+                text: "You stop everything. Delete files. Destroy equipment. Go completely clean.\n\nWeeks pass. Then months. No arrest. Did you stop in time? Or are they still building their case?\n\nThe uncertainty is maddening.",
+                location: "🏠 Home - Waiting",
+                choices: [
+                    { text: "Wait it out patiently", next: 'patient_wait' },
+                    { text: "Consult a lawyer preemptively", next: 'preemptive_lawyer' }
+                ]
+            },
+            negotiate_early: {
+                text: "You hire a lawyer before arrest. 'My client wants to discuss cooperation,' your lawyer tells the FBI.\n\n'He accessed systems unauthorized,' they reply. 'Multiple federal crimes. But... if he helps us understand how he did it, and testifies about security vulnerabilities... maybe we can work something out.'",
+                location: "⚖️ Lawyer's Office - Negotiation",
+                choices: [
+                    { text: "Cooperate fully", next: 'full_cooperation' },
+                    { text: "Negotiate for better terms", next: 'negotiate_harder' }
+                ]
+            },
+            negotiate_fbi: {
+                text: "You reach out through a lawyer. You're willing to cooperate, teach security, help them understand vulnerabilities.\n\nThe FBI is interested but skeptical. 'He's facing serious charges. What can he offer that's worth leniency?'",
+                location: "⚖️ Federal Building - Negotiation",
+                choices: [
+                    { text: "Offer to teach security", next: 'security_teaching' },
+                    { text: "Offer information on others", next: 'turn_informant' }
+                ]
+            },
+            surrender_wait: {
+                text: "You stop all activity and wait for inevitable arrest. When it comes, you don't resist.\n\n'Kevin Mitnick, you're under arrest for computer fraud, wire fraud, and unauthorized access to computer systems.'\n\nYou go quietly. Maybe cooperation will help.",
+                location: "🏠 Home - Arrest",
+                choices: [
+                    { text: "Face the justice system", next: 'arrested' }
+                ]
+            },
+            arrested: {
+                text: "Federal custody. The charges are serious: Multiple counts of computer fraud, wire fraud, unauthorized access.\n\nThe prosecution paints you as a dangerous criminal. 'He could launch nuclear missiles by whistling into a phone,' one prosecutor claims. Absurd, but the media runs with it.\n\nYou need a strategy.",
+                location: "🏛️ Federal Courthouse - Detention",
+                choices: [
+                    { text: "Fight the charges vigorously", next: 'fight_charges' },
+                    { text: "Seek a plea deal", next: 'plea_deal' },
+                    { text: "Cooperate and teach security", next: 'cooperative_arrested' }
+                ]
+            },
+            fugitive_life: {
+                text: "You try to build a life on the run. New identity. Legitimate work. Staying invisible.\n\nBut after years, the FBI finds you. A tip. A mistake. Bad luck.\n\nThey arrest you. 'Kevin Mitnick, you've been running for 2.5 years. It's over.'",
+                location: "🏨 Motel - Final Day",
+                choices: [
+                    { text: "Face justice after running", next: 'arrested_fugitive' }
+                ]
+            },
+            desperate_hack: {
+                text: "Desperate for money, you risk one hack. You think you're careful enough.\n\nYou're not. They're watching for exactly this. The moment you log in, they trace you.\n\nFBI agents arrive within hours. Running made everything worse.",
+                location: "💻 Internet Cafe - Captured",
+                choices: [
+                    { text: "Face enhanced charges", next: 'arrested_fugitive' }
+                ]
+            },
+            destroy_evidence: {
+                text: "You systematically destroy evidence. Hard drives physically destroyed. Documents burned. Equipment dismantled.\n\nYou stop all activities. Go legitimate. Build a normal life.\n\nYears pass. No arrest. Either you destroyed enough, or they're being patient.",
+                location: "🏠 Home - Clean Slate",
+                ending: true,
+                achievement: "ESCAPED THE NET",
+                endingText: "🕊️ ENDING: You stopped in time and covered your tracks well enough. You built a legitimate life, always wondering if someday there will be a knock on the door. But years become decades. You got away with it—and the paranoia that comes with that knowledge.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            negotiate_fugitive: {
+                text: "From hiding, you reach out to negotiate. 'I'll turn myself in if we can reach reasonable terms.'\n\nThe FBI isn't interested. 'Surrender now, or when we catch you, it'll be worse.'\n\nYour leverage is minimal as a fugitive.",
+                location: "📞 Payphone - Secret Location",
+                choices: [
+                    { text: "Surrender on your terms", next: 'surrender_terms' },
+                    { text: "Keep running", next: 'life_on_run' }
+                ]
+            },
+            life_on_run: {
+                text: "You run for years. 2.5 years of looking over your shoulder. Of isolation. Of low-wage jobs and constant fear.\n\nFinally, they catch you. An old associate gave you up.\n\n'Kevin Mitnick, you're under arrest. The running ends today.'",
+                location: "🌆 Raleigh, NC - Captured",
+                choices: [
+                    { text: "Face the consequences", next: 'arrested_fugitive' }
+                ]
+            },
+            patient_wait: {
+                text: "You wait patiently. Months. Then a year. Two years.\n\nNo arrest comes. Maybe you stopped in time. Maybe they didn't have enough evidence. Maybe they're watching you still.\n\nYou build a legitimate life, always wondering.",
+                location: "🏠 Home - Years Later",
+                ending: true,
+                achievement: "ESCAPED THE NET",
+                endingText: "🕊️ ENDING: You stopped in time. Whether luck or judgment, you avoided prosecution. You built a normal life, but the past is always there, a shadow. You wonder: Did they let you go, or did you truly escape? Either way, you're free—sort of.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            preemptive_lawyer: {
+                text: "You consult a lawyer before any charges. 'Have I been charged with anything?' you ask.\n\n'Not yet,' your lawyer investigates. 'But there's an active investigation. We should be proactive.'\n\nYour lawyer negotiates with prosecutors before formal charges.",
+                location: "⚖️ Lawyer's Office - Proactive",
+                choices: [
+                    { text: "Offer to cooperate", next: 'full_cooperation' }
+                ]
+            },
+            full_cooperation: {
+                text: "You cooperate fully. Explain your methods. Teach security professionals. Demonstrate vulnerabilities.\n\nYou plead guilty to reduced charges. Minimal prison time. Probation. Restrictions on computer use.\n\n'Mr. Mitnick has helped us understand and prevent future intrusions,' the prosecutor acknowledges.",
+                location: "⚖️ Courthouse - Sentencing",
+                ending: true,
+                achievement: "REDEMPTION THROUGH COOPERATION",
+                endingText: "⚖️ ENDING: You faced your actions and cooperated fully. Your sentence was lighter because of your cooperation. You served brief prison time and probation, then rebuilt your life as a legitimate security consultant. Your past became your credential—proof you understand both sides of security.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            negotiate_harder: {
+                text: "You negotiate hard. 'My client's information is valuable. Immunity or we walk.'\n\nThe FBI balks. 'We don't give immunity to criminals. Reduced sentence, take it or leave it.'\n\nYour lawyer advises: Take the deal.",
+                location: "⚖️ Negotiation Room",
+                choices: [
+                    { text: "Accept the deal", next: 'full_cooperation' },
+                    { text: "Hold out for better", next: 'negotiations_fail' }
+                ]
+            },
+            security_teaching: {
+                text: "You offer to teach. 'I can help companies understand their vulnerabilities. Train security professionals. Prevent future intrusions.'\n\nThe FBI is skeptical but interested. 'Actions have consequences. But cooperation will be considered.'",
+                location: "⚖️ Federal Building - Offer",
+                choices: [
+                    { text: "Agree to full cooperation", next: 'full_cooperation' }
+                ]
+            },
+            turn_informant: {
+                text: "You offer to inform on others in the hacking community. Names. Methods. Contacts.\n\nBut something feels wrong. These are people who trusted you. Friends, even.\n\nThe FBI is interested. 'Give us names and we'll reduce charges significantly.'",
+                location: "⚖️ Federal Building - Crossroads",
+                choices: [
+                    { text: "Give up names (betray trust)", next: 'informant_path' },
+                    { text: "Refuse to betray others", next: 'refuse_inform' }
+                ]
+            },
+            fight_charges: {
+                text: "You fight vigorously. Challenge evidence. Question methods. Argue about computer law precedents.\n\nBut the evidence is substantial. Multiple intrusions. Documented access. Witness testimony.\n\nThe trial is long and expensive. The prosecution is relentless.",
+                location: "⚖️ Courthouse - Trial",
+                choices: [
+                    { text: "Continue fighting to the end", next: 'trial_conclusion' },
+                    { text: "Seek a plea deal mid-trial", next: 'mid_trial_plea' }
+                ]
+            },
+            plea_deal: {
+                text: "You negotiate a plea deal. Guilty to multiple counts. Recommended sentence: 46 months.\n\nPlus probation. Plus restrictions: No computer access without supervision. No Internet. No cell phones.\n\n'Do you accept these terms?' the judge asks.",
+                location: "⚖️ Courthouse - Plea Hearing",
+                choices: [
+                    { text: "Accept the plea", next: 'accept_plea' }
+                ]
+            },
+            cooperative_arrested: {
+                text: "After arrest, you offer full cooperation. 'I'll teach security. Explain my methods. Help prevent future intrusions.'\n\nThe prosecution is cautiously interested. 'This doesn't erase what he did. But cooperation matters.'\n\nYou work with authorities while awaiting trial.",
+                location: "🏛️ Federal Detention - Cooperation",
+                choices: [
+                    { text: "Continue cooperation", next: 'full_cooperation' }
+                ]
+            },
+            arrested_fugitive: {
+                text: "Arrest after running makes everything worse. Additional charges: Fugitive from justice. The judge is not sympathetic.\n\n'Mr. Mitnick showed complete disregard for authority by fleeing. This demonstrates he's a danger to society.'\n\nYour sentence will be harsh.",
+                location: "⚖️ Courthouse - Enhanced Charges",
+                choices: [
+                    { text: "Face enhanced sentencing", next: 'harsh_sentence' },
+                    { text: "Try to cooperate now", next: 'late_cooperation' }
+                ]
+            },
+            surrender_terms: {
+                text: "You negotiate terms for surrender. Your lawyer brokers a deal: You turn yourself in, they agree to reasonable bail and fair treatment.\n\nYou walk into the federal building voluntarily. Some dignity preserved.",
+                location: "🏛️ Federal Building - Surrender",
+                choices: [
+                    { text: "Proceed with your case", next: 'arrested' }
+                ]
+            },
+            negotiations_fail: {
+                text: "You hold out for better terms. The FBI walks away. 'Fine. We'll build our case the old-fashioned way.'\n\nMonths later, they arrest you with overwhelming evidence. You had leverage. You wasted it.",
+                location: "🏠 Home - Arrest",
+                choices: [
+                    { text: "Face trial without a deal", next: 'fight_charges' }
+                ]
+            },
+            informant_path: {
+                text: "You give names. Contacts. Methods. People who trusted you.\n\nYour sentence is reduced significantly. But the hacking community learns of your betrayal.\n\n'Mitnick turned informant,' they whisper. Your reputation is destroyed.",
+                location: "⚖️ Sentencing - Reduced Time",
+                ending: true,
+                achievement: "THE INFORMANT",
+                endingText: "🐀 ENDING: You betrayed the trust of your community to reduce your sentence. You served minimal prison time, but your reputation was destroyed. After release, you tried to rebuild your life, but the label 'informant' followed you everywhere. You were free, but at the cost of your integrity.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            refuse_inform: {
+                text: "You refuse to betray others. 'I'll take responsibility for my actions, but I won't give up names.'\n\nThe FBI is disappointed. Your sentence won't be reduced as much. But you kept your integrity.\n\n'At least he has some principles,' one agent mutters.",
+                location: "⚖️ Federal Building - Stand",
+                choices: [
+                    { text: "Face sentencing with honor", next: 'honorable_sentence' }
+                ]
+            },
+            trial_conclusion: {
+                text: "The trial concludes. The jury finds you guilty on most counts. The judge is harsh.\n\n'Computer crimes are serious. Mr. Mitnick showed no remorse and fought every step. I sentence him to the maximum: 60 months.'",
+                location: "⚖️ Courthouse - Verdict",
+                choices: [
+                    { text: "Begin serving your sentence", next: 'prison_time' }
+                ]
+            },
+            mid_trial_plea: {
+                text: "Mid-trial, you seek a plea. But now your leverage is gone. The evidence has been presented. The jury has heard it all.\n\n'We'll offer 50 months. Take it or risk the maximum,' the prosecution offers.",
+                location: "⚖️ Courthouse - Mid-Trial",
+                choices: [
+                    { text: "Accept the worse deal", next: 'accept_plea' }
+                ]
+            },
+            accept_plea: {
+                text: "You accept the plea. 46 months in federal prison. Additional time for supervised release.\n\nRestrictions: No computers without approval. No Internet. No phones with advanced features.\n\nYou're labeled: Convicted hacker. Cybercriminal.",
+                location: "🔒 Federal Prison",
+                choices: [
+                    { text: "Serve your time", next: 'prison_time' }
+                ]
+            },
+            harsh_sentence: {
+                text: "The judge throws the book at you. 60 months in prison. Additional time in solitary—they claim you're too dangerous, might 'hack the prison phones.'\n\nThe treatment is harsh. Some say unfairly so. You become a cause célèbre for computer rights.",
+                location: "🔒 Federal Prison - Solitary",
+                choices: [
+                    { text: "Endure your sentence", next: 'hard_time' }
+                ]
+            },
+            late_cooperation: {
+                text: "You try to cooperate after running. 'I'll help now. Teach security. Explain my methods.'\n\nThe judge is unimpressed. 'Too little, too late. You had your chance to cooperate before fleeing.'\n\nYour sentence is reduced slightly, but remains harsh.",
+                location: "⚖️ Sentencing - Limited Credit",
+                choices: [
+                    { text: "Serve significant time", next: 'prison_time' }
+                ]
+            },
+            honorable_sentence: {
+                text: "You're sentenced to 46 months, but you kept your principles. You didn't betray anyone.\n\nIn prison, word spreads: 'Mitnick didn't snitch.' The hacking community respects that.\n\nYou serve your time with dignity.",
+                location: "🔒 Federal Prison",
+                choices: [
+                    { text: "Serve your time honorably", next: 'prison_time' }
+                ]
+            },
+            prison_time: {
+                text: "Prison is difficult. You're kept from computers—the tools of your trade, your passion.\n\nBut you adapt. You read. You plan. You think about what comes next.\n\nMonths turn to years. Finally, release approaches. You've served your time.",
+                location: "🔒 Federal Prison - Years Later",
+                choices: [
+                    { text: "Prepare for release", next: 'release_planning' }
+                ]
+            },
+            hard_time: {
+                text: "Solitary confinement. Restricted communication. Harsh treatment. They treat you like a dangerous terrorist for accessing computer systems.\n\nYour case becomes famous. 'Free Kevin' movements spring up. People debate whether your treatment is just.\n\nYou endure. Years pass slowly.",
+                location: "🔒 Federal Prison - Solitary Confinement",
+                choices: [
+                    { text: "Finally face release", next: 'hard_release' }
+                ]
+            },
+            release_planning: {
+                text: "You're released after serving 46 months. Probation restrictions: No computers without supervision. No Internet. Supervised release.\n\nBut you're free. The world has changed. The Internet boom happened while you were inside.\n\nWhat now?",
+                location: "🏙️ Los Angeles - Freedom",
+                choices: [
+                    { text: "Start a legitimate security company", next: 'security_company' },
+                    { text: "Write a book about your experiences", next: 'write_book' },
+                    { text: "Struggle to find your place", next: 'struggle_post_release' }
+                ]
+            },
+            hard_release: {
+                text: "After harsh treatment and solitary, you're finally released. Your case drew attention to unfair treatment of hackers.\n\nYou're damaged by the experience, but determined. You'll rebuild, and you'll prove your knowledge has value.",
+                location: "🏙️ Los Angeles - Hard Freedom",
+                choices: [
+                    { text: "Channel anger into success", next: 'determined_success' },
+                    { text: "Write about the injustice", next: 'write_book_justice' }
+                ]
+            },
+            security_company: {
+                text: "You start Mitnick Security Consulting. Finally legal. Using your knowledge of how systems are compromised to help companies defend themselves.\n\nCompanies are skeptical at first. 'Should we hire a convicted hacker?'\n\nBut your knowledge is unique. You think like an attacker because you were one.",
+                location: "🏢 Your Security Firm",
+                choices: [
+                    { text: "Build your reputation steadily", next: 'reputation_building' },
+                    { text: "Prove your value dramatically", next: 'dramatic_proof' }
+                ]
+            },
+            write_book: {
+                text: "You write 'The Art of Deception' about social engineering. Then 'Ghost in the Wires,' your autobiography.\n\nThe books become bestsellers. You're invited to speak at conferences. Your past—once a source of shame—becomes your credential.\n\n'Who better to teach security than someone who broke it?' people say.",
+                location: "📚 Book Tour - Success",
+                choices: [
+                    { text: "Become a security educator", next: 'educator_path' }
+                ]
+            },
+            struggle_post_release: {
+                text: "Life after prison is hard. The restrictions are burdensome. Companies won't hire you. Your skills are outdated.\n\nYou struggle to find your place in a world that moved on without you.\n\nBut slowly, opportunities emerge for those willing to give a second chance.",
+                location: "🏠 Small Apartment - Rebuilding",
+                choices: [
+                    { text: "Persist and rebuild slowly", next: 'slow_rebuild' }
+                ]
+            },
+            determined_success: {
+                text: "Your harsh treatment fuels determination. You'll prove they were wrong about you. You'll show that hackers can reform and contribute.\n\nYou start speaking about prison reform, hacker rights, and fair treatment. And you build a security consulting empire.",
+                location: "🎤 Conference Stage",
+                choices: [
+                    { text: "Build your empire", next: 'empire_building' }
+                ]
+            },
+            write_book_justice: {
+                text: "You write about the injustice of your treatment. Solitary confinement for a hacker. Restrictions beyond reason.\n\nYour book sparks debate about cyber-crime punishment. Are hackers dangerous criminals or misguided geniuses?\n\nYou become an advocate for fair treatment.",
+                location: "📚 Publishing Success - Advocacy",
+                choices: [
+                    { text: "Combine advocacy with business", next: 'advocate_entrepreneur' }
+                ]
+            },
+            reputation_building: {
+                text: "Slowly, steadily, you build your reputation. Client by client. Presentation by presentation.\n\nYou demonstrate vulnerabilities. Teach companies how attackers think. Prevent breaches.\n\n'Mitnick Security' becomes respected. Your past is reframed: Not a criminal, but an expert.",
+                location: "🏢 Growing Security Firm - Years Later",
+                choices: [
+                    { text: "Achieve full redemption", next: 'full_redemption' }
+                ]
+            },
+            dramatic_proof: {
+                text: "You seek one dramatic demonstration. A major company allows you to test their 'impenetrable' security.\n\nYou breach it in days. Not to harm—to teach.\n\nThe story makes headlines. 'Former Hacker Shows Why Companies Need His Expertise.'\n\nYour business explodes.",
+                location: "📰 National News - Vindication",
+                choices: [
+                    { text: "Ride the success", next: 'full_redemption' }
+                ]
+            },
+            educator_path: {
+                text: "You become one of the world's foremost security educators. Your books are textbooks. Your seminars sell out.\n\nYou train security professionals. FBI agents. Corporate defenders.\n\nIronically, you're now helping the same organizations you once breached.",
+                location: "🎓 Training Center - Worldwide",
+                choices: [
+                    { text: "Reflect on your journey", next: 'full_redemption' }
+                ]
+            },
+            slow_rebuild: {
+                text: "It takes years, but you rebuild. Small consulting jobs. Gradually larger ones. Your reputation slowly shifts.\n\n'He served his time. He's reformed. He's an asset now.'\n\nIt's not glamorous or fast, but it's honest work.",
+                location: "🏢 Modest Success - Years Later",
+                ending: true,
+                achievement: "THE LONG ROAD BACK",
+                endingText: "🛤️ ENDING: You rebuilt your life the hard way—slowly, humbly, persistently. No dramatic vindication, just steady effort. You became a respected security consultant, proving through years of honest work that people can change. Your journey was longer and harder than it needed to be, but you made it.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            empire_building: {
+                text: "You build an empire. Mitnick Security Consulting becomes a major firm. You acquire other companies. Train thousands.\n\nYou speak at conferences worldwide. Your past is rebranded: 'From Hacker to Security Icon.'\n\nYou've achieved what few thought possible: Complete redemption and extraordinary success.",
+                location: "🏢 Corporate Headquarters - Empire",
+                choices: [
+                    { text: "Reflect on your complete journey", next: 'ultimate_redemption' }
+                ]
+            },
+            advocate_entrepreneur: {
+                text: "You combine advocacy with business. You fight for fair treatment of hackers who want to reform, while building a successful security company.\n\nYou prove former hackers can be valuable. You change laws. You change minds.\n\nYou become an icon of second chances.",
+                location: "⚖️ Capitol Building - Testimony",
+                choices: [
+                    { text: "Complete your transformation", next: 'ultimate_redemption' }
+                ]
+            },
+            full_redemption: {
+                text: "You've achieved full redemption. Kevin Mitnick: No longer 'convicted hacker,' but 'security expert.'\n\nYour company is successful. You're respected worldwide. You train law enforcement, corporations, governments.\n\nYour past mistakes became your greatest teacher. You used that knowledge to help, not harm.",
+                location: "🏢 Security Conference - Keynote",
+                ending: true,
+                achievement: "FULL REDEMPTION",
+                endingText: "⭐ ENDING: You achieved complete redemption. Your criminal past became your credential. You built a successful security consulting empire, teaching others how to defend against the techniques you once used. You proved that hackers can reform and contribute positively. You became an icon of second chances—Kevin Mitnick, security expert.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            ultimate_redemption: {
+                text: "Years of success. Global recognition. You're invited to speak at the most prestigious security conferences. Your books are required reading.\n\nBut something feels incomplete. You've achieved business success, but there's one more thing...\n\nA quiet realization: True mastery isn't just success—it's understanding every path, every choice, every outcome.\n\nYou've lived one path. But in reflecting deeply, you understand them all.",
+                location: "🏢 Private Office - Deep Reflection",
+                ending: true,
+                achievement: "LEGENDARY STATUS",
+                endingText: "🌟 ENDING: You achieved legendary status. Kevin Mitnick became synonymous with ethical hacking and security expertise. You built an empire, changed laws, influenced policy, and proved that redemption is possible. Your story inspired a generation of security professionals. From notorious hacker to trusted advisor—your transformation was complete and extraordinary.",
+                choices: [
+                    { text: "Unlock the Ultimate Path", next: 'ultimate_choice' }
+                ]
+            },
+            ultimate_choice: {
+                text: "Having achieved everything, you contemplate the ultimate question: What would have happened if you'd made different choices from the very beginning?\n\nYou've seen success and redemption. But there's one path you've never fully explored—the path of perfect choices from the start.\n\nA thought experiment: What if you'd combined curiosity with ethics from day one? What if you'd used your gifts responsibly from the beginning?\n\nYou have a chance to demonstrate perfect wisdom—the knowledge of all paths combined.",
+                location: "🧠 Retrospection - All Paths Understood",
+                choices: [
+                    { text: "Chart the perfect path", next: 'perfect_path_start' }
+                ]
+            },
+            perfect_path_start: {
+                text: "You return to the beginning, but with complete knowledge. Young Kevin, but with the wisdom of all possible futures.\n\nYou learn phone phreaking—but immediately recognize its power and responsibility.\n\nInstead of exploiting systems, you document vulnerabilities. You reach out to companies professionally. You become a teenage security consultant.",
+                location: "📞 Los Angeles - The Perfect Beginning",
+                choices: [
+                    { text: "Build your reputation early", next: 'perfect_path_teen' }
+                ]
+            },
+            perfect_path_teen: {
+                text: "As a teenager, you're already consulting for phone companies. 'This kid found vulnerabilities we didn't know existed.'\n\nYou're paid for your knowledge. Respected for your ethics. Learning without crossing lines.\n\nYou document everything. Publish papers. Speak at early security conferences.\n\nYou're building the foundation for something extraordinary.",
+                location: "🏢 Pacific Bell - Teenage Consultant",
+                choices: [
+                    { text: "Continue the perfect path", next: 'perfect_path_college' }
+                ]
+            },
+            perfect_path_college: {
+                text: "You attend college—computer science and business. You're already a known security expert at age 20.\n\nCompanies compete to hire you. But you stay independent. You're building something bigger.\n\nYou write your first book: 'Ethical Hacking: Understanding Security Through Responsible Research.'\n\nIt becomes a bestseller. You're defining a new field.",
+                location: "🎓 University - Rising Star",
+                choices: [
+                    { text: "Launch your company early", next: 'perfect_path_company' }
+                ]
+            },
+            perfect_path_company: {
+                text: "At 25, you launch Mitnick Security—but this time, with no criminal record. No FBI investigation. No prison time.\n\nYour reputation is spotless. Your skills are legendary. Your ethics are unquestioned.\n\nCompanies trust you completely. Governments hire you. You're consulted on national security.\n\nYou're revolutionizing cybersecurity.",
+                location: "🏢 Mitnick Security - Early Success",
+                choices: [
+                    { text: "Expand your influence", next: 'perfect_path_influence' }
+                ]
+            },
+            perfect_path_influence: {
+                text: "By your 30s, you're one of the most influential figures in cybersecurity. You've trained thousands. Protected billions in assets.\n\nYou consult for governments worldwide. You testify before Congress. You shape policy.\n\nBut more importantly: You mentor young hackers. You show them the ethical path. You prove curiosity and responsibility aren't opposites.\n\nYou're creating a generation of ethical security experts.",
+                location: "🌍 Global Influence - Impact",
+                choices: [
+                    { text: "Achieve the ultimate legacy", next: 'perfect_path_legacy' }
+                ]
+            },
+            perfect_path_legacy: {
+                text: "You've achieved what the real Kevin Mitnick eventually achieved—but without the detours, the prison time, the stigma.\n\nYou proved that the skills of a hacker and the ethics of a professional aren't contradictions. You showed that curiosity can be channeled responsibly from the start.\n\nYour company is worth hundreds of millions. But more valuable: You've changed the culture of hacking itself.\n\nEthical hacking is now mainstream. Bug bounties. Responsible disclosure. These concepts spread partly because of your influence.\n\nYou've achieved the ultimate: Maximum impact, zero regrets, perfect legacy.",
+                location: "🏆 Legacy - The Perfect Path",
+                ending: true,
+                achievement: "THE GHOST WHO WALKED IN LIGHT",
+                endingText: "👻✨ SECRET ENDING UNLOCKED: You achieved the impossible—the perfect path. You combined the curiosity and talent of Kevin Mitnick with perfect ethical judgment from the start. You became the world's foremost security expert without ever breaking the law. You proved that the hacker mindset and ethical responsibility are compatible. You built an empire, influenced policy, mentored thousands, and revolutionized cybersecurity—all while walking in the light. This is the path Kevin could have taken. The ghost who never needed to hide in the wires, because he walked openly, respected and trusted. THE PERFECT LEGACY.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "THE STRAIGHT PATH",
+            "THE ROAD NOT TAKEN",
+            "WISDOM BEFORE PRIDE",
+            "THE WARNING",
+            "SECOND CHANCES",
+            "ESCAPED THE NET",
+            "THE INFORMANT",
+            "REDEMPTION THROUGH COOPERATION",
+            "THE LONG ROAD BACK",
+            "FULL REDEMPTION",
+            "LEGENDARY STATUS"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        function init() {
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = '→ ' + choice.text;
+                button.onclick = () => handleChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                // Check if all regular achievements are unlocked
+                const regularAchievements = achievements.filter(a => a !== "THE GHOST WHO WALKED IN LIGHT");
+                if (regularAchievements.length === allAchievements.length && !achievements.includes("THE GHOST WHO WALKED IN LIGHT")) {
+                    // All achievements unlocked! Show special ultimate achievement
+                    setTimeout(() => {
+                        achievements.push("MASTER OF ALL PATHS");
+                        showAchievementPopup("MASTER OF ALL PATHS");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "MASTER OF ALL PATHS" || achievement === "THE GHOST WHO WALKED IN LIGHT";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const hasSecretAchievement = achievements.includes("THE GHOST WHO WALKED IN LIGHT");
+            const hasMasterAchievement = achievements.includes("MASTER OF ALL PATHS");
+            const totalAchievementsCount = allAchievements.length + (hasMasterAchievement ? 1 : 0) + (hasSecretAchievement ? 1 : 0);
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + ((ach === "MASTER OF ALL PATHS" || ach === "THE GHOST WHO WALKED IN LIGHT") ? ' ultimate' : '');
+                    badge.textContent = '🏆 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry, idx) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry;
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
