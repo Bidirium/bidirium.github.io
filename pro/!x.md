@@ -22,6 +22,8 @@ https://bidirium.github.io/pro/det.html
 
 https://bidirium.github.io/pro/lain3x.html
 
+https://bidirium.github.io/pro/linux.html
+
 https://bidirium.github.io/pro/kev.html
 
 https://bidirium.github.io/pro/snow2x.html
