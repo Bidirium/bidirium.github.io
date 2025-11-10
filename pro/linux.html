@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Linux Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a3a 50%, #0a0a2a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ff00;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ff00;
+            color: #00ff00;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            border-color: #00ff00;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ff00;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .terminal-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005500;
+            border-color: #005500;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 0, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ff00;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005500;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005500, #00ff00);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 0, 0.5);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ff00, #00ffff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #00ffff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 0, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff0000;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff6666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .ending-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005500;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        .choice-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005500;
+        }
+
+        .history-title {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ff00;
+        }
+
+        .history-button.current {
+            background-color: #00ff00;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 0, 0.5);
+            color: #00ff00;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🏆</div>
+            <div>
+                <div style="font-weight: bold; font-size: 0.875rem;">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName" style="font-size: 0.75rem;"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">
+                    <span class="terminal-icon">$</span>
+                    THE LINUX QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()">Forward →</button>
+                </div>
+            </div>
+
+            <div class="location-box">
+                <span>📂</span>
+                <p class="location-text"><strong>DIRECTORY:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div>
+                        <span>⚡</span>
+                        <span class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/10)</span>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ SESSION TERMINATED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                COMMAND HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: "user@localhost:~$ _\n\nYou've just installed Linux for the first time. The terminal cursor blinks at you, waiting. Your Windows partition is gone. There's no turning back now.\n\nYour friend who convinced you to try Linux said: 'Just learn the basics. You'll be fine.'\n\nBut right now, you're staring at a black screen with green text. What do you do?",
+                location: "~",
+                choices: [
+                    { text: "ls - List files in current directory", next: 'list_files' },
+                    { text: "help - Look for help", next: 'help_command' },
+                    { text: "Panic and look for GUI", next: 'panic_gui' }
+                ]
+            },
+            
+            list_files: {
+                text: "user@localhost:~$ ls\n\nDocuments  Downloads  Desktop  Pictures  Videos\n\nGood! You can see your directories. The 'ls' command lists files and folders. You're learning already.\n\nYou notice a file called 'README.txt' in your home directory.",
+                location: "~",
+                choices: [
+                    { text: "cat README.txt - Read the file", next: 'read_readme' },
+                    { text: "cd Documents - Navigate to Documents", next: 'explore_docs' },
+                    { text: "man ls - Check the manual for ls", next: 'check_manual' }
+                ]
+            },
+
+            help_command: {
+                text: "user@localhost:~$ help\n\nbash: help: no help topics match 'help'\n\nThat didn't work. Linux doesn't have a 'help' command like that. Try 'man' (manual) for help with specific commands.",
+                location: "~",
+                choices: [
+                    { text: "ls - List files", next: 'list_files' },
+                    { text: "man bash - Read bash manual", next: 'read_bash_manual' }
+                ]
+            },
+
+            panic_gui: {
+                text: "You frantically search for a way back to the graphical interface. You close the terminal and spend the next hour clicking through menus.\n\nYou install Windows the next day.",
+                location: "~",
+                ending: true,
+                achievement: "GUI REFUGEE",
+                endingText: "💀 ENDING: You returned to the familiar. Linux stayed installed for 3 days. Years later, you wonder what you might have learned...",
+                choices: [
+                    { text: "Try again", next: 'start' }
+                ]
+            },
+
+            check_manual: {
+                text: "user@localhost:~$ man ls\n\nYou discover the manual pages! Every command has documentation. You learn that 'ls -la' shows hidden files too.\n\nThis is the path of someone who reads documentation. Smart.",
+                location: "~",
+                choices: [
+                    { text: "ls -la - Try the new command", next: 'list_hidden' },
+                    { text: "Keep reading manuals", next: 'manual_journey' }
+                ]
+            },
+
+            read_bash_manual: {
+                text: "user@localhost:~$ man bash\n\nThe bash manual is 4,000 lines long. But you learn about pipes, redirects, variables, and loops.",
+                location: "~",
+                choices: [
+                    { text: "Exit and try something simpler", next: 'list_files' },
+                    { text: "Keep reading (dedication!)", next: 'bash_expert_path' }
+                ]
+            },
+
+            bash_expert_path: {
+                text: "You actually read the bash manual. Hours pass. You learn the ARCHITECTURE.\n\nThis dedication will serve you well.",
+                location: "~",
+                choices: [
+                    { text: "Start exploring the system", next: 'explore_root' },
+                    { text: "Practice what you learned", next: 'practice_commands' }
+                ]
+            },
+
+            list_hidden: {
+                text: "user@localhost:~$ ls -la\n\nYou see hidden files! Everything starting with '.' is hidden. You see .bashrc—your shell configuration.\n\nYou're learning the deep structure of Linux.",
+                location: "~",
+                choices: [
+                    { text: "nano .bashrc - Edit your config", next: 'edit_bashrc' },
+                    { text: "Learn about permissions first", next: 'permission_lesson' }
+                ]
+            },
+
+            manual_journey: {
+                text: "You explore more manuals: grep, find, tar, ssh. You're building a mental map of available tools. Knowledge is power in Linux.",
+                location: "~",
+                choices: [
+                    { text: "Try using these commands", next: 'practice_commands' },
+                    { text: "Learn about pipes", next: 'pipes_introduction' }
+                ]
+            },
+
+            read_readme: {
+                text: "user@localhost:~$ cat README.txt\n\n'Welcome to Linux! Learn to navigate, list files, read files, and edit. Don't use sudo carelessly!'\n\nA roadmap! Your friend left you a guide.",
+                location: "~",
+                choices: [
+                    { text: "Follow the guide carefully", next: 'guided_path' },
+                    { text: "Ignore it and explore freely", next: 'chaos_path' }
+                ]
+            },
+
+            explore_docs: {
+                text: "user@localhost:~$ cd Documents\nuser@localhost:~/Documents$ ls\n\nproject_ideas.txt  learning_notes.txt\n\nYou're in the Documents directory.",
+                location: "~/Documents",
+                choices: [
+                    { text: "cat project_ideas.txt", next: 'read_ideas' },
+                    { text: "cd .. - Go back home", next: 'list_files' },
+                    { text: "mkdir linux_projects", next: 'create_directory' }
+                ]
+            },
+
+            guided_path: {
+                text: "You follow the guide systematically. You practice:\n\ncd, ls, touch, rm, cp, mv\n\nYou're building a solid foundation.",
+                location: "~",
+                choices: [
+                    { text: "Continue with the guide", next: 'permission_lesson' },
+                    { text: "Try something more advanced", next: 'advanced_challenge' }
+                ]
+            },
+
+            chaos_path: {
+                text: "You explore randomly:\n\nuser@localhost:~$ cd /\nuser@localhost:/$ ls\n\nbin  boot  dev  etc  home  lib\n\nYou're in the root directory. This is the heart of Linux.",
+                location: "/",
+                choices: [
+                    { text: "cd /etc - Explore configuration", next: 'explore_etc' },
+                    { text: "cd /home - Go back to safety", next: 'return_home' }
+                ]
+            },
+
+            permission_lesson: {
+                text: "You study permissions:\n\nrwx = read, write, execute\nchmod changes permissions\n\nYou create a test script and make it executable!",
+                location: "~",
+                choices: [
+                    { text: "./test.sh - Run your script!", next: 'first_script' },
+                    { text: "Learn about sudo first", next: 'sudo_lesson' }
+                ]
+            },
+
+            edit_bashrc: {
+                text: "user@localhost:~$ nano .bashrc\n\nYou open the nano editor. You see aliases. Should you edit this without understanding it?",
+                location: "~",
+                choices: [
+                    { text: "Add a cool alias and save", next: 'customize_shell' },
+                    { text: "Exit without changes", next: 'safe_choice' },
+                    { text: "Delete everything (chaos!)", next: 'break_bashrc' }
+                ]
+            },
+
+            explore_root: {
+                text: "user@localhost:/$ ls\n\n/bin - Essential binaries\n/etc - Configuration files\n/home - User directories\n/var - Variable data\n\nThis is the Linux filesystem hierarchy.",
+                location: "/",
+                choices: [
+                    { text: "cd /etc - System config", next: 'explore_etc' },
+                    { text: "cd /var/log - System logs", next: 'explore_logs' }
+                ]
+            },
+
+            practice_commands: {
+                text: "You practice commands daily. After weeks, you're comfortable with the terminal. You're ready for more.",
+                location: "~",
+                choices: [
+                    { text: "Learn bash scripting", next: 'bash_scripting_path' },
+                    { text: "Choose a specialization", next: 'choose_specialization' }
+                ]
+            },
+
+            pipes_introduction: {
+                text: "You learn about pipes (|):\n\nls -la | grep '.txt'\ncat file.txt | wc -l\n\nPipes connect commands. This is POWER!",
+                location: "~",
+                choices: [
+                    { text: "Master pipes", next: 'pipe_mastery' },
+                    { text: "Learn grep specifically", next: 'grep_lesson' }
+                ]
+            },
+
+            create_directory: {
+                text: "user@localhost:~/Documents$ mkdir linux_projects\n\nYou've created a directory! You're organizing like a pro.",
+                location: "~/Documents/linux_projects",
+                choices: [
+                    { text: "Create a project file", next: 'create_first_project' },
+                    { text: "Go back and explore more", next: 'list_files' }
+                ]
+            },
+
+            read_ideas: {
+                text: "Ideas:\n- Build a bash script to organize downloads\n- Set up a web server\n- Learn vim properly\n\nYou have ambitions! But you need more skills first.",
+                location: "~/Documents",
+                choices: [
+                    { text: "Start with bash scripts", next: 'bash_scripting_path' },
+                    { text: "Learn vim first", next: 'vim_journey' }
+                ]
+            },
+
+            advanced_challenge: {
+                text: "You try to set up a web server:\n\nsudo apt install apache2\n\nWait. Sudo gives root privileges. Do you really know what you're doing?",
+                location: "~",
+                choices: [
+                    { text: "Go ahead with sudo", next: 'premature_sudo' },
+                    { text: "Learn more basics first", next: 'wise_retreat' }
+                ]
+            },
+
+            explore_etc: {
+                text: "user@localhost:/etc$ ls\n\napt/  passwd  hosts  fstab  sudoers\n\nThe /etc directory! System-wide configuration files.",
+                location: "/etc",
+                choices: [
+                    { text: "cat /etc/passwd - View users", next: 'view_passwd' },
+                    { text: "Return to safer territory", next: 'return_home' }
+                ]
+            },
+
+            return_home: {
+                text: "user@localhost:$ cd ~\n\nYou return home. Smart to not mess with system files yet.",
+                location: "~",
+                choices: [
+                    { text: "Practice more commands", next: 'guided_path' },
+                    { text: "Try pipes", next: 'pipes_introduction' }
+                ]
+            },
+
+            first_script: {
+                text: "user@localhost:~$ ./test.sh\nHello World!\n\nIt works! You wrote your first shell script! This is the beginning of automation.",
+                location: "~",
+                achievement: "SCRIPT MASTER",
+                choices: [
+                    { text: "Write a more complex script", next: 'advanced_scripting' },
+                    { text: "Learn about cron jobs", next: 'cron_introduction' }
+                ]
+            },
+
+            sudo_lesson: {
+                text: "You learn about sudo = 'Super User DO'. Great power, great responsibility.\n\nAlways know what you're running with sudo!",
+                location: "~",
+                choices: [
+                    { text: "Practice sudo safely", next: 'safe_sudo_practice' },
+                    { text: "Continue without sudo", next: 'user_space_mastery' }
+                ]
+            },
+
+            customize_shell: {
+                text: "You add aliases to .bashrc:\n\nalias ll='ls -lah'\nalias update='sudo apt update'\n\nYour shell is now customized!",
+                location: "~",
+                choices: [
+                    { text: "Test your new aliases", next: 'test_aliases' },
+                    { text: "Learn more shell scripting", next: 'bash_scripting_path' }
+                ]
+            },
+
+            safe_choice: {
+                text: "You exit nano without changes. Wise. Never edit critical configs until you understand them.",
+                location: "~",
+                choices: [
+                    { text: "Continue learning", next: 'guided_path' },
+                    { text: "Explore the system", next: 'explore_root' }
+                ]
+            },
+
+            break_bashrc: {
+                text: "You delete everything in .bashrc and save. Your prompt breaks. Colors gone. Aliases gone.\n\nYou just learned about backups the hard way.",
+                location: "~",
+                ending: true,
+                achievement: "CONFIGURATION CHAOS",
+                endingText: "💀 ENDING: You learned an important lesson: backups matter. You reinstall Linux. This time, you'll be more careful.",
+                choices: [
+                    { text: "Start over (wiser now)", next: 'start' }
+                ]
+            },
+
+            explore_logs: {
+                text: "user@localhost:/var/log$ ls\n\nauth.log  syslog  dmesg\n\nLogs! This is where Linux records everything.",
+                location: "/var/log",
+                choices: [
+                    { text: "grep 'error' syslog", next: 'grep_logs' },
+                    { text: "Learn log analysis", next: 'log_mastery' }
+                ]
+            },
+
+            bash_scripting_path: {
+                text: "You dive into bash scripting:\n\nVariables, conditionals, loops, functions!\n\nYou write a backup script that works!",
+                location: "~",
+                choices: [
+                    { text: "Test your backup script", next: 'backup_success' },
+                    { text: "Learn about cron", next: 'cron_introduction' }
+                ]
+            },
+
+            vim_journey: {
+                text: "user@localhost:~$ vim tutorial.txt\n\nYou press 'i' for INSERT, type, press ESC, type :wq\n\nYou survived vim!",
+                location: "~",
+                choices: [
+                    { text: "Learn vim properly", next: 'vim_mastery' },
+                    { text: "Stick with nano", next: 'bash_scripting_path' }
+                ]
+            },
+
+            premature_sudo: {
+                text: "Apache2 installs. But you don't know how to configure it. You paste random commands with sudo. Something breaks.",
+                location: "~",
+                ending: true,
+                achievement: "SUDO WARRIOR",
+                endingText: "💀 ENDING: You broke your system with sudo. You reinstall. Next time: learn first, sudo second.",
+                choices: [
+                    { text: "Start over with caution", next: 'start' }
+                ]
+            },
+
+            wise_retreat: {
+                text: "You stop. You're not ready for system administration yet. You build a foundation first.\n\nThis patience will make you better.",
+                location: "~",
+                choices: [
+                    { text: "Master the fundamentals", next: 'fundamentals_mastery' }
+                ]
+            },
+
+            view_passwd: {
+                text: "user@localhost:/etc$ cat passwd\n\nroot:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000:user:/home/user:/bin/bash\n\nYou see all user accounts!",
+                location: "/etc",
+                choices: [
+                    { text: "Learn user management", next: 'user_management' },
+                    { text: "Return home", next: 'return_home' }
+                ]
+            },
+
+            test_aliases: {
+                text: "user@localhost:~$ ll\n\nYour alias works! Detailed file listing appears. Your terminal is becoming efficient!",
+                location: "~",
+                choices: [
+                    { text: "Create more aliases", next: 'bash_scripting_path' },
+                    { text: "Learn bash functions", next: 'bash_scripting_path' }
+                ]
+            },
+
+            grep_logs: {
+                text: "user@localhost:/var/log$ grep 'error' syslog\n\nYou found errors! You can troubleshoot problems now.",
+                location: "/var/log",
+                choices: [
+                    { text: "Investigate failures", next: 'troubleshooting_path' },
+                    { text: "Learn log rotation", next: 'log_mastery' }
+                ]
+            },
+
+            log_mastery: {
+                text: "You learn log management:\n\njournalctl, logrotate, tail -f\n\nYou write a script to monitor critical errors!",
+                location: "/var/log",
+                achievement: "PROBLEM SOLVER",
+                choices: [
+                    { text: "Become troubleshooting expert", next: 'troubleshooting_master' },
+                    { text: "Choose specialization", next: 'choose_specialization' }
+                ]
+            },
+
+            backup_success: {
+                text: "user@localhost:~$ ./backup.sh\n\nBackup complete!\n\nYou've created a compressed archive! This is practical Linux use.",
+                location: "~",
+                achievement: "BACKUP MASTER",
+                choices: [
+                    { text: "Automate with cron", next: 'cron_automation' },
+                    { text: "Learn more scripting", next: 'bash_mastery' }
+                ]
+            },
+
+            vim_mastery: {
+                text: "You commit to vim:\n\ni, ESC, :w, :q, dd, yy, p, /pattern\n\nAfter practice, you're FAST. Vim has transformed you.",
+                location: "~",
+                ending: true,
+                achievement: "VIM MASTER",
+                endingText: "⚡ VIM ENDING: You've achieved vim mastery. You edit at the speed of thought. :wq",
+                choices: [
+                    { text: "Start a new journey", next: 'start' }
+                ]
+            },
+
+            fundamentals_mastery: {
+                text: "You spend months mastering fundamentals:\n\nFiles, permissions, processes, pipes, archives\n\nYou're no longer a beginner. You're competent.",
+                location: "~",
+                choices: [
+                    { text: "System administration", next: 'sysadmin_path' },
+                    { text: "Development tools", next: 'dev_tools_path' },
+                    { text: "Security specialist", next: 'security_path' }
+                ]
+            },
+
+            user_management: {
+                text: "You learn user management:\n\nuseradd, passwd, usermod, userdel\ngroups, id\n\nYou understand multi-user systems now.",
+                location: "/etc",
+                choices: [
+                    { text: "Set up proper permissions", next: 'permission_mastery' },
+                    { text: "Continue exploring", next: 'explore_root' }
+                ]
+            },
+
+            troubleshooting_path: {
+                text: "You investigate system failures. You learn to read errors, identify problems, find solutions.\n\nTroubleshooting becomes second nature.",
+                location: "/var/log",
+                choices: [
+                    { text: "Become master troubleshooter", next: 'troubleshooting_master' },
+                    { text: "Learn system monitoring", next: 'monitoring_path' }
+                ]
+            },
+
+            troubleshooting_master: {
+                text: "You become an expert troubleshooter:\n\n1. Check logs\n2. Check service status\n3. Check resources\n4. Google the error\n5. Fix and document\n\nYou solve problems methodically.",
+                location: "~",
+                achievement: "TROUBLESHOOTER",
+                choices: [
+                    { text: "Master system monitoring", next: 'monitoring_path' },
+                    { text: "Choose specialization", next: 'choose_specialization' }
+                ]
+            },
+
+            monitoring_path: {
+                text: "You set up monitoring:\n\nhtop, iotop, nethogs, custom scripts\n\nYou have visibility into everything!",
+                location: "~",
+                choices: [
+                    { text: "Learn performance tuning", next: 'performance_path' },
+                    { text: "Choose specialization", next: 'choose_specialization' }
+                ]
+            },
+
+            cron_automation: {
+                text: "user@localhost:~$ crontab -e\n\n0 2 * * * /home/user/backup.sh\n\nYour system runs automated tasks! AUTOMATION MASTERY achieved!",
+                location: "~",
+                achievement: "AUTOMATION MASTER",
+                choices: [
+                    { text: "Advanced automation", next: 'bash_mastery' },
+                    { text: "Choose specialization", next: 'choose_specialization' }
+                ]
+            },
+
+            cron_introduction: {
+                text: "Cron lets you schedule tasks!\n\n* * * * * command\nMinute Hour Day Month Weekday\n\nYou can automate ANYTHING.",
+                location: "~",
+                choices: [
+                    { text: "Set up backup job", next: 'cron_automation' },
+                    { text: "Continue learning", next: 'bash_scripting_path' }
+                ]
+            },
+
+            bash_mastery: {
+                text: "You achieve bash mastery:\n\nArrays, functions, error handling, signals\n\nYour scripts are professional quality!",
+                location: "~",
+                achievement: "BASH WIZARD",
+                choices: [
+                    { text: "Choose specialization", next: 'choose_specialization' }
+                ]
+            },
+
+            choose_specialization: {
+                text: "You've mastered fundamentals. Time to specialize!\n\n1. System Administrator\n2. DevOps Engineer\n3. Security Specialist\n4. Performance Engineer",
+                location: "~",
+                choices: [
+                    { text: "System Administrator", next: 'sysadmin_mastery' },
+                    { text: "DevOps Engineer", next: 'devops_mastery' },
+                    { text: "Security Specialist", next: 'security_mastery' },
+                    { text: "Performance Engineer", next: 'performance_mastery' }
+                ]
+            },
+
+            sysadmin_path: {
+                text: "You become a system administrator:\n\nUser management, services, logs, backups, security, monitoring\n\nYou manage production servers!",
+                location: "~",
+                choices: [
+                    { text: "Master sysadmin skills", next: 'sysadmin_mastery' }
+                ]
+            },
+
+            dev_tools_path: {
+                text: "You focus on development:\n\nGit, Docker, Python, build tools\n\nYou're building a developer's environment!",
+                location: "~",
+                choices: [
+                    { text: "Master DevOps", next: 'devops_mastery' }
+                ]
+            },
+
+            security_path: {
+                text: "You focus on security:\n\nFirewall, SSH hardening, SELinux, auditing\n\nYou're becoming a security specialist!",
+                location: "~",
+                choices: [
+                    { text: "Master security", next: 'security_mastery' }
+                ]
+            },
+
+            pipe_mastery: {
+                text: "You chain multiple pipes:\n\ncat /etc/passwd | grep '/bin/bash' | cut -d: -f1\n\nYou're thinking in pipelines!",
+                location: "~",
+                choices: [
+                    { text: "Continue learning", next: 'practice_commands' }
+                ]
+            },
+
+            grep_lesson: {
+                text: "grep searches for patterns:\n\ngrep 'error' file.txt\ngrep -r 'TODO' .\ngrep -i 'warning' log.txt\n\nYou can find anything!",
+                location: "~",
+                choices: [
+                    { text: "Practice more", next: 'practice_commands' }
+                ]
+            },
+
+            create_first_project: {
+                text: "You write an organizer script that sorts files! Your first real project!",
+                location: "~/Documents/linux_projects",
+                choices: [
+                    { text: "Test it!", next: 'test_organizer' }
+                ]
+            },
+
+            advanced_scripting: {
+                text: "You write sophisticated scripts with loops and conditions. This is automation power!",
+                location: "~",
+                choices: [
+                    { text: "Set up cron job", next: 'cron_automation' },
+                    { text: "Master bash", next: 'bash_mastery' }
+                ]
+            },
+
+            safe_sudo_practice: {
+                text: "You practice sudo carefully:\n\nsudo apt update\nsudo apt upgrade\n\nYou always read what sudo commands do!",
+                location: "~",
+                choices: [
+                    { text: "System administration", next: 'sysadmin_path' }
+                ]
+            },
+
+            user_space_mastery: {
+                text: "You master everything WITHOUT sudo: pipes, grep, find, awk, sed, ssh, git, vim\n\nYou're efficient and safe!",
+                location: "~",
+                choices: [
+                    { text: "Explore system admin", next: 'sysadmin_path' },
+                    { text: "Development tools", next: 'dev_tools_path' }
+                ]
+            },
+
+            sysadmin_mastery: {
+                text: "You've become a master system administrator managing production servers!\n\nMulti-server management, automation, monitoring, security!",
+                location: "~",
+                ending: true,
+                achievement: "SYSADMIN MASTER",
+                endingText: "🎯 SYSADMIN ENDING: You've mastered Linux system administration. Companies compete to hire you!",
+                choices: [
+                    { text: "Discover the ultimate path", next: 'ultimate_check' }
+                ]
+            },
+
+            devops_mastery: {
+                text: "You've become a DevOps master!\n\nCI/CD, Infrastructure as Code, Kubernetes, automation everywhere!",
+                location: "~",
+                ending: true,
+                achievement: "DEVOPS MASTER",
+                endingText: "🚀 DEVOPS ENDING: You've mastered the DevOps philosophy. You deploy hundreds of times per day!",
+                choices: [
+                    { text: "Discover the ultimate path", next: 'ultimate_check' }
+                ]
+            },
+
+            security_mastery: {
+                text: "You've become a Linux security master!\n\nPenetration testing, hardening, compliance, incident response!",
+                location: "~",
+                ending: true,
+                achievement: "SECURITY MASTER",
+                endingText: "🔒 SECURITY ENDING: You've mastered Linux security. You're a guardian!",
+                choices: [
+                    { text: "Discover the ultimate path", next: 'ultimate_check' }
+                ]
+            },
+
+            performance_mastery: {
+                text: "You've become a performance master!\n\nKernel tuning, optimization, profiling, benchmarking!",
+                location: "~",
+                ending: true,
+                achievement: "PERFORMANCE MASTER",
+                endingText: "⚡ PERFORMANCE ENDING: You make computers sing!",
+                choices: [
+                    { text: "Discover the ultimate path", next: 'ultimate_check' }
+                ]
+            },
+
+            permission_mastery: {
+                text: "You master file permissions and ownership:\n\nchmod, chown, umask, ACLs\n\nYou secure your system properly!",
+                location: "~",
+                choices: [
+                    { text: "System administration", next: 'sysadmin_path' }
+                ]
+            },
+
+            performance_path: {
+                text: "You learn performance tuning:\n\nsysctl, nice, ionice, cgroups\n\nYour systems FLY!",
+                location: "~",
+                choices: [
+                    { text: "Master performance", next: 'performance_mastery' }
+                ]
+            },
+
+            test_organizer: {
+                text: "user@localhost:~/Documents/linux_projects$ ./organizer.sh\n\nFiles organized by type! Your script works!",
+                location: "~/Documents/linux_projects",
+                achievement: "PROJECT BUILDER",
+                choices: [
+                    { text: "Learn advanced bash", next: 'bash_mastery' }
+                ]
+            },
+
+            ultimate_check: {
+                text: "You've achieved mastery. But have you unlocked ALL achievements?\n\nCheck your progress...",
+                location: "~",
+                choices: [
+                    { text: "Continue the ultimate path", next: 'architect_path' },
+                    { text: "Start over", next: 'start' }
+                ]
+            },
+
+            architect_path: {
+                text: "You design the ultimate Linux infrastructure!\n\nLoad-balanced servers, zero-downtime, comprehensive monitoring!\n\nYou're a Linux architect!",
+                location: "~",
+                ending: true,
+                achievement: "LINUX ARCHITECT",
+                endingText: "🏆 ARCHITECT ENDING: You've reached the highest level. You design systems serving millions!",
+                choices: [
+                    { text: "Start new journey", next: 'start' }
+                ]
+            }
+        };
+
+        let currentState = 'start';
+        let history = ['start'];
+        let historyIndex = 0;
+        let achievements = new Set();
+
+        const allAchievements = [
+            "GUI REFUGEE", "SCRIPT MASTER", "CONFIGURATION CHAOS", "PROBLEM SOLVER",
+            "BACKUP MASTER", "VIM MASTER", "SUDO WARRIOR", "TROUBLESHOOTER",
+            "AUTOMATION MASTER", "BASH WIZARD", "SYSADMIN MASTER", "DEVOPS MASTER",
+            "SECURITY MASTER", "PERFORMANCE MASTER", "PROJECT BUILDER", "LINUX ARCHITECT"
+        ];
+
+        function showAchievement(name) {
+            const popup = document.getElementById('achievementPopup');
+            const nameEl = document.getElementById('achievementName');
+            nameEl.textContent = name;
+            
+            popup.className = 'achievement-popup normal';
+            popup.style.display = 'flex';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateAchievements() {
+            const box = document.getElementById('achievementsBox');
+            const count = document.getElementById('achievementCount');
+            const left = document.getElementById('achievementsLeft');
+            const list = document.getElementById('achievementsList');
+            const fill = document.getElementById('progressFill');
+            
+            if (achievements.size > 0) {
+                box.style.display = 'block';
+                count.textContent = achievements.size;
+                left.textContent = allAchievements.length - achievements.size;
+                
+                const percentage = (achievements.size / allAchievements.length) * 100;
+                fill.style.width = percentage + '%';
+                
+                list.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge';
+                    badge.textContent = ach;
+                    list.appendChild(badge);
+                });
+            }
+        }
+
+        function updateHistory() {
+            const box = document.getElementById('historyBox');
+            const buttons = document.getElementById('historyButtons');
+            const indexEl = document.getElementById('historyIndex');
+            const lengthEl = document.getElementById('historyLength');
+            
+            if (history.length > 1) {
+                box.style.display = 'block';
+                indexEl.textContent = historyIndex + 1;
+                lengthEl.textContent = history.length;
+                
+                buttons.innerHTML = '';
+                history.forEach((state, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'history-button';
+                    btn.textContent = index + 1;
+                    
+                    if (index === historyIndex) {
+                        btn.classList.add('current');
+                    } else if (index < historyIndex) {
+                        btn.classList.add('visited');
+                    }
+                    
+                    btn.onclick = () => jumpToHistory(index);
+                    buttons.appendChild(btn);
+                });
+            }
+        }
+
+        function jumpToHistory(index) {
+            historyIndex = index;
+            currentState = history[index];
+            renderScenario();
+            updateHistory();
+            updateNavigationButtons();
+        }
+
+        function goBack() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                currentState = history[historyIndex];
+                renderScenario();
+                updateHistory();
+                updateNavigationButtons();
+            }
+        }
+
+        function goForward() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                currentState = history[historyIndex];
+                renderScenario();
+                updateHistory();
+                updateNavigationButtons();
+            }
+        }
+
+        function updateNavigationButtons() {
+            const backBtn = document.getElementById('backBtn');
+            const forwardBtn = document.getElementById('forwardBtn');
+            
+            backBtn.disabled = historyIndex === 0;
+            forwardBtn.disabled = historyIndex === history.length - 1;
+        }
+
+        function makeChoice(nextState) {
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            
+            history.push(nextState);
+            historyIndex = history.length - 1;
+            currentState = nextState;
+            
+            renderScenario();
+            updateHistory();
+            updateNavigationButtons();
+            window.scrollTo(0, 0);
+        }
+
+        function renderScenario() {
+            const scenario = scenarios[currentState];
+            
+            if (!scenario) {
+                console.error('Invalid state:', currentState);
+                currentState = 'start';
+                return renderScenario();
+            }
+            
+            document.getElementById('scenarioText').textContent = scenario.text;
+            document.getElementById('location').textContent = scenario.location;
+            
+            const endingText = document.getElementById('endingText');
+            const endingWarning = document.getElementById('endingWarning');
+            
+            if (scenario.ending && scenario.endingText) {
+                endingText.textContent = scenario.endingText;
+                endingText.style.display = 'block';
+                endingWarning.style.display = 'block';
+            } else {
+                endingText.style.display = 'none';
+                endingWarning.style.display = 'none';
+            }
+            
+            if (scenario.achievement && !achievements.has(scenario.achievement)) {
+                achievements.add(scenario.achievement);
+                showAchievement(scenario.achievement);
+                updateAchievements();
+            }
+            
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            
+            scenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.textContent = choice.text;
+                button.onclick = () => makeChoice(choice.next);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        renderScenario();
+        updateNavigationButtons();
+    </script>
+</body>
+</html>
