@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Crash Quest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a3a 50%, #0a0a2a 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #00ffff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 255, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #0a0a0a;
+            border-color: #00ffff;
+            color: #00ffff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #00ffff, #ff00ff);
+            border-color: #00ffff;
+            color: #000;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .achievement-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .achievement-content div:first-child {
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+
+        .achievement-content div:last-child {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #00ffff;
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 255, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        @media (min-width: 640px) {
+            .title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .cyber-icon {
+            display: inline-block;
+            animation: pulse 0.6s ease-in-out infinite;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .nav-button:disabled {
+            background-color: #1a1a1a;
+            color: #005555;
+            border-color: #005555;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #00ffff;
+            color: #000;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 1px solid #00ffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-icon {
+            color: #00ffff;
+            flex-shrink: 0;
+        }
+
+        .location-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .location-text strong {
+            font-weight: bold;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(0, 50, 50, 0.3);
+            border-radius: 0.25rem;
+            border: 1px solid #00ffff;
+        }
+
+        .achievements-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .achievements-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .achievements-title-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .achievements-count {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #0a0a0a;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #005555;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #005555, #00ffff);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(0, 100, 100, 0.5);
+            color: #00ffff;
+            border: 1px solid #00ffff;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #00ffff, #ff00ff);
+            color: #000;
+            animation: pulse 0.5s ease-in-out infinite;
+            border-color: #ff00ff;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(50, 0, 50, 0.5);
+            border-radius: 0.25rem;
+            border: 2px solid #ff00ff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #ff66ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ffff;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 640px) {
+            .scenario-text {
+                font-size: 0.875rem;
+            }
+        }
+
+        .ending-text {
+            color: #ff00ff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #005555;
+        }
+
+        @media (max-width: 640px) {
+            .ending-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #00ffff;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .choice-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        .choice-button:hover {
+            background-color: #00ffff;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .choice-button:active {
+            transform: scale(0.98);
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #005555;
+        }
+
+        .history-title {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .history-title {
+                font-size: 1rem;
+            }
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: 1px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #0a0a0a;
+            color: #00ffff;
+        }
+
+        .history-button.current {
+            background-color: #00ffff;
+            color: #000;
+            font-weight: bold;
+            transform: scale(1.1);
+        }
+
+        .history-button.visited {
+            background-color: rgba(0, 50, 50, 0.5);
+            color: #00ffff;
+        }
+
+        .history-button.visited:hover {
+            background-color: rgba(0, 100, 100, 0.5);
+        }
+
+        .history-button.unvisited {
+            background-color: #0a0a0a;
+            color: #005555;
+        }
+
+        .history-hint {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .quest-log-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 2px solid #005555;
+        }
+
+        .quest-log-title {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 640px) {
+            .quest-log-title {
+                font-size: 1rem;
+            }
+        }
+
+        .quest-log-entries {
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .quest-log-entry {
+            opacity: 0.7;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #005555;
+            margin-bottom: 0.5rem;
+        }
+
+        .quest-log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            .main-box {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .button-group {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Achievement Popup -->
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div class="achievement-icon">🎯</div>
+            <div class="achievement-content">
+                <div id="achievementTitle">⚡ ACHIEVEMENT UNLOCKED!</div>
+                <div id="achievementName"></div>
+            </div>
+        </div>
+
+        <!-- Main Game Box -->
+        <div class="main-box">
+            <!-- Header -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="cyber-icon">◉</span>
+                    SNOW CRASH QUEST
+                </h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="location-box">
+                <span class="location-icon">📍</span>
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <!-- Achievements -->
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <div class="achievements-header">
+                    <div class="achievements-title">
+                        <span>🎯</span>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                    </div>
+                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <!-- Ending Warning -->
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ SIMULATION TERMINATED ⚠️</p>
+            </div>
+
+            <!-- Scenario Text -->
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <!-- Choices -->
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <!-- History -->
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 class="history-title">
+                <span>🔄</span>
+                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+            <p class="history-hint">Click any number to jump to that decision point</p>
+        </div>
+
+        <!-- Quest Log -->
+        <div id="questLogBox" class="quest-log-box" style="display: none;">
+            <h3 class="quest-log-title">
+                <span>📜</span>
+                EVENT LOG
+            </h3>
+            <div class="quest-log-entries" id="questLogEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data - Snow Crash story
+        const scenarios = {
+            start: {
+                text: "You're a courier in the Metaverse - a virtual reality network where corporations rule and hackers are legends. Your handle: Protagonist.\n\nA message appears in your virtual HUD: 'New delivery: Black Ice Bar. Priority level: MAXIMUM. Warning: Package contains executable code.'\n\nYour phone buzzes. Real world. Unknown corporate prefix.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Answer the call", next: 'answer_call' },
+                    { text: "Check the package details first", next: 'check_package' },
+                    { text: "Ignore both and log into Metaverse", next: 'metaverse_early' }
+                ]
+            },
+            answer_call: {
+                text: "'Protagonist. We need to talk about that package. Don't open it. Don't scan it. Just deliver it and forget you ever saw it.'\n\nThe voice is distorted, corporate encryption. The line clicks dead before you can respond.\n\nNow you're curious. Very curious.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Scan the package anyway", next: 'scan_package' },
+                    { text: "Just deliver it as instructed", next: 'obey_orders' },
+                    { text: "Research the sender first", next: 'research_sender' }
+                ]
+            },
+            check_package: {
+                text: "You examine the package metadata. Sender: Anonymous. Recipient: Black Ice Bar, Metaverse coordinates embedded. File type: .snow\n\nThat extension doesn't exist in any standard protocol. Custom executable. Could be anything—virus, data bomb, or worse.\n\nYour scanner shows anomalous code patterns. Linguistic structures. This isn't normal software.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Investigate the code structure", next: 'investigate_code' },
+                    { text: "Deliver without opening", next: 'safe_delivery' },
+                    { text: "Contact a hacker friend", next: 'call_hacker' }
+                ]
+            },
+            metaverse_early: {
+                text: "You jack into the Metaverse without checking details. Amateur move.\n\nYou materialize on a neon street. Your avatar renders perfectly. Too perfectly. The physics feel wrong. Laggy. Corrupted.\n\nA figure approaches through digital static. Their face glitches between human and... something else.",
+                location: "🌐 Metaverse - Corrupted District",
+                choices: [
+                    { text: "Engage with the figure", next: 'corrupted_encounter' },
+                    { text: "Jack out immediately", next: 'emergency_logout' }
+                ]
+            },
+            scan_package: {
+                text: "You run a deep scan. The code unfolds like ancient cuneiform mixed with assembly language. Biblical. Mathematical. Wrong.\n\nYour scanner displays: 'WARNING: Memetic hazard detected. Linguistic virus. Self-replicating. Do not execute.'\n\nToo late. You already parsed the first line. Your brain feels... different.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Try to purge your short-term memory", next: 'memory_purge' },
+                    { text: "Write down what you saw", next: 'document_virus' }
+                ]
+            },
+            obey_orders: {
+                text: "You take the package to Black Ice Bar. The bouncer scans your ID, waves you through.\n\nInside the Metaverse bar, you see the recipient: A figure in ancient robes, face obscured by linguistic symbols that hurt to perceive.\n\nThey accept the package. 'You didn't look inside. Wise. Or cowardly. Hard to tell which.'",
+                location: "🌐 Metaverse - Black Ice Bar",
+                ending: true,
+                achievement: "IGNORANT COURIER",
+                endingText: "📦 ENDING: You delivered the package without question. Professional. Safe. Boring. Whatever was in that code spreads through the Metaverse, but you're not involved. You survive, unburdened by knowledge or consequence. Sometimes ignorance is the best defense.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            research_sender: {
+                text: "You dig into the package origin. The trail leads through shell corporations, dark web markets, and finally... ancient history databases?\n\nThe sender used addresses associated with linguistic archaeology. Sumerian texts. Babel references. This isn't corporate espionage.\n\nThis is something older. Something dangerous.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Investigate Sumerian connection", next: 'sumerian_path' },
+                    { text: "Deliver and stay quiet", next: 'cautious_delivery' }
+                ]
+            },
+            investigate_code: {
+                text: "You carefully analyze the code without executing it. The patterns are linguistic—not programming language, but actual language. Ancient Sumerian. Binary. DNA sequences.\n\nIt's a virus that operates on multiple levels: code, language, thought itself. A 'snow crash' - system failure at the cognitive level.\n\nYou're beginning to understand something terrifying.",
+                location: "🏙️ Downtown - Reality - Research Mode",
+                choices: [
+                    { text: "Research Sumerian origins", next: 'deep_research' },
+                    { text: "Find someone who understands this", next: 'find_expert' }
+                ]
+            },
+            safe_delivery: {
+                text: "You deliver the package without opening it. Professional. Clean.\n\nBut at Black Ice Bar, you see others opening similar packages. Their eyes glaze. They start speaking in ancient tongues. The virus is spreading.\n\nYou weren't the only courier. This was a coordinated attack.",
+                location: "🌐 Metaverse - Black Ice Bar",
+                choices: [
+                    { text: "Try to stop the spread", next: 'containment_attempt' },
+                    { text: "Jack out and run", next: 'coward_escape' }
+                ]
+            },
+            call_hacker: {
+                text: "You ping Da5id, your hacker friend. His avatar materializes in your apartment's AR overlay.\n\n'Yo, Pro. What's—' He sees the package scan. His face goes pale. 'Where did you get that? That's Snow Crash. The original strain. That code hasn't been seen since the Babel incident.'\n\n'What's Snow Crash?' you ask.\n\n'The end of everything. Maybe.'",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Listen to Da5id's explanation", next: 'learn_snow_crash' },
+                    { text: "Ask him to help contain it", next: 'team_up_hacker' }
+                ]
+            },
+            corrupted_encounter: {
+                text: "The glitching figure speaks: 'You came too soon. The streets aren't safe. Snow Crash is spreading. Visual. Auditory. Linguistic. It infects through perception itself.'\n\nThey hand you a data crystal. 'This contains the antivirus. Or the next evolution. Hard to tell. Choose wisely.'\n\nThey dissolve into static.",
+                location: "🌐 Metaverse - Corrupted District",
+                choices: [
+                    { text: "Examine the crystal's code", next: 'analyze_antivirus' },
+                    { text: "Jack out with the crystal", next: 'escape_with_data' }
+                ]
+            },
+            emergency_logout: {
+                text: "You jack out hard. Your neural interface sparks. You're back in reality, heart pounding.\n\nBut something followed you. The package on your desk is open. The code is displaying on every screen in your apartment. Self-executing.\n\nYou're infected. The question is: what do you do about it?",
+                location: "🏙️ Downtown - Reality - Infected",
+                choices: [
+                    { text: "Research the infection", next: 'study_infection' },
+                    { text: "Quarantine yourself", next: 'self_quarantine' }
+                ]
+            },
+            memory_purge: {
+                text: "You trigger your neural interface's emergency reset. Memory wipe. Short-term only.\n\nIt works. Mostly. But fragments remain. You can't unsee certain patterns. The linguistic structures are embedded in your wetware now.\n\nYou're compromised, but functional. For now.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Document what you remember", next: 'partial_documentation' },
+                    { text: "Hunt down the source", next: 'revenge_path' }
+                ]
+            },
+            document_virus: {
+                text: "You write down the code patterns, the linguistic structures, everything. Your hand moves automatically. You're not controlling it anymore.\n\nThe documentation is perfect. Too perfect. You've created a written vector for the virus. Anyone who reads your notes will be infected.\n\nYou've become Patient Zero for a new strain.",
+                location: "🏙️ Downtown - Reality",
+                ending: true,
+                achievement: "PATIENT ZERO",
+                endingText: "💀 ENDING: You documented the virus, inadvertently creating a written transmission vector. Your notes spread through hacker channels, infecting thousands. You meant to warn people. Instead, you weaponized the information. Good intentions, catastrophic execution. The road to digital hell is paved with well-documented code.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            sumerian_path: {
+                text: "You dive into ancient texts. Sumerian mythology. The Tower of Babel. The original 'snow crash'—when humanity spoke one language and tried to build to heaven.\n\nThe code in your package is a reconstruction. An attempt to recreate the original linguistic virus that shattered human communication.\n\nSomeone is trying to hack reality through language itself.",
+                location: "🏙️ Downtown - Reality - Research",
+                choices: [
+                    { text: "Find historical countermeasures", next: 'ancient_defense' },
+                    { text: "Continue technical analysis", next: 'deep_research' }
+                ]
+            },
+            cautious_delivery: {
+                text: "You make the delivery, keeping your head down. But you keep researching on the side.\n\nWeeks pass. Snow Crash spreads. The Metaverse becomes dangerous. People's minds crash when exposed to certain linguistic patterns.\n\nYou survive, but you're haunted. You could have done more.",
+                location: "🏙️ Downtown - Reality - Weeks Later",
+                ending: true,
+                achievement: "BYSTANDER",
+                endingText: "😶 ENDING: You witnessed the beginning of a plague and chose caution over action. The world changes around you. Snow Crash becomes endemic. Millions are infected. You're safe, but at what cost? History will record this moment, and you'll know you were there when it started—and did nothing.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            deep_research: {
+                text: "You spend days researching. The virus operates on multiple levels:\n\n1. Code level - crashes computer systems\n2. Linguistic level - reprograms human cognition\n3. Memetic level - self-replicates through communication\n\nIt's based on a proto-language, a universal grammar that bypasses conscious thought. You're understanding the mechanism. Knowledge is power.",
+                location: "🏙️ Downtown - Reality - Deep Research",
+                choices: [
+                    { text: "Try to create a vaccine", next: 'vaccine_development' },
+                    { text: "Find the creator", next: 'hunt_creator' }
+                ]
+            },
+            find_expert: {
+                text: "You search for experts in memetic hazards. The trail leads to Dr. Lagos, a renegade linguist who studies ancient mind viruses.\n\nHis office is a fortress of countermeasures. 'You've been exposed,' he says immediately. 'I can see it in your speech patterns. Come. We have much to discuss.'",
+                location: "🏙️ University District - Lagos Lab",
+                choices: [
+                    { text: "Learn from Lagos", next: 'lagos_teachings' },
+                    { text: "Ask about a cure", next: 'seek_cure' }
+                ]
+            },
+            containment_attempt: {
+                text: "You try to contain the outbreak. You shut down terminals. Block infected users. Firewall entire sections of the Metaverse.\n\nBut it's spreading too fast. The virus uses human communication itself as a transmission vector. Every conversation. Every message. Every glance at infected code.\n\nYou can't contain language itself.",
+                location: "🌐 Metaverse - Black Ice Bar - Crisis",
+                choices: [
+                    { text: "Study the infected to find a pattern", next: 'field_research' },
+                    { text: "Find the source of the outbreak", next: 'trace_origin' }
+                ]
+            },
+            coward_escape: {
+                text: "You jack out and run. Your apartment. Your city. You go dark. Off grid.\n\nWeeks later, you hear the news. Snow Crash has infected millions. The Metaverse is a wasteland. Reality is fracturing as people can't distinguish real from virtual.\n\nYou survived. But at what cost?",
+                location: "🏔️ Remote Location - Exile",
+                ending: true,
+                achievement: "SURVIVOR'S FLIGHT",
+                endingText: "🏃 ENDING: You ran when things got dangerous. Self-preservation is a valid strategy, but you'll spend the rest of your life wondering: what if you'd stayed? What if you'd fought? You're alive, but you're not living. The guilt is a prison more secure than any firewall.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            learn_snow_crash: {
+                text: "Da5id explains: 'Snow Crash is a dual virus. It crashes computers and brains simultaneously. Based on Sumerian linguistic structures—the original proto-language that hardwired human consciousness.'\n\n'Someone weaponized the Tower of Babel myth. If this spreads, it could crash global civilization. Digital and biological.'",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Ask how to stop it", next: 'learn_countermeasures' },
+                    { text: "Request his help", next: 'team_up_hacker' }
+                ]
+            },
+            team_up_hacker: {
+                text: "Da5id agrees to help. Together, you begin reverse-engineering the virus. His coding skills plus your street knowledge creates a powerful combination.\n\nYou discover the virus has a creator—someone who calls themselves 'Raven.' A figure in the dark web. Dangerous. Connected to corporate interests.\n\n'We need more help,' Da5id says. 'This is bigger than us.'",
+                location: "🏙️ Downtown - Reality - Da5id's Lab",
+                choices: [
+                    { text: "Recruit a team", next: 'build_team' },
+                    { text: "Go after Raven", next: 'confront_raven' }
+                ]
+            },
+            analyze_antivirus: {
+                text: "You examine the crystal's code. It's beautiful. Elegant. And terrifying.\n\nIt's not an antivirus. It's the OPPOSITE of Snow Crash. A linguistic vaccine that rewrites human cognition to be immune. But at a cost—it removes free will. Makes humans predictable. Controllable.\n\nCure or control? The line is thin.",
+                location: "🌐 Metaverse - Corrupted District",
+                choices: [
+                    { text: "Study it to create something better", next: 'improve_vaccine' },
+                    { text: "Destroy this abomination", next: 'destroy_crystal' }
+                ]
+            },
+            escape_with_data: {
+                text: "You jack out with the crystal. In reality, it manifests as a physical data core—bleeding-edge tech. Quantum storage.\n\nThis could be the key to everything. Or the greatest trap ever devised. You need to analyze it carefully. Very carefully.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Analyze it yourself", next: 'self_analysis' },
+                    { text: "Take it to an expert", next: 'find_expert' }
+                ]
+            },
+            study_infection: {
+                text: "You study your own infection. You become your own lab rat. Documenting symptoms. Tracking cognitive changes. Measuring linguistic drift.\n\nYou're learning. The virus isn't just destructive—it's reconstructive. It's trying to create a new language. A new way of thinking. But why?",
+                location: "🏙️ Downtown - Reality - Self-Experimentation",
+                choices: [
+                    { text: "Let the infection evolve", next: 'evolution_path' },
+                    { text: "Document and share findings", next: 'become_investigator' }
+                ]
+            },
+            self_quarantine: {
+                text: "You lock yourself in your apartment. Cut all communication. Complete isolation.\n\nThe infection can't spread if you don't interact with anyone. You're protecting others. But you're also alone. Watching the world through screens as it falls apart.\n\nIs this heroism or cowardice?",
+                location: "🏙️ Downtown - Reality - Quarantine",
+                ending: true,
+                achievement: "NOBLE ISOLATION",
+                endingText: "🔒 ENDING: You quarantined yourself to protect others. Noble. Self-sacrificing. Lonely. You watch through news feeds as the world fights Snow Crash without you. Your sacrifice matters, but you'll never know how much. Sometimes the greatest heroes are those who do nothing—deliberately.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            partial_documentation: {
+                text: "You write down fragments. Incomplete. Careful not to create a full transmission vector. Your notes are cryptic, usable only by experts.\n\nYou send them to Da5id, to Dr. Lagos, to other researchers. You're contributing to the resistance without becoming a vector yourself.\n\nSmart. Strategic. This might actually help.",
+                location: "🏙️ Downtown - Reality",
+                choices: [
+                    { text: "Join the research effort", next: 'join_researchers' },
+                    { text: "Hunt the source", next: 'hunt_origin' }
+                ]
+            },
+            revenge_path: {
+                text: "Someone did this to you. Infected you. Used you as a courier. Made you Patient Zero.\n\nYou're going to find them. And make them pay. Revenge is a powerful motivator. Perhaps too powerful.\n\nYour skills, your anger, your infection—all weapons now.",
+                location: "🏙️ Downtown - Reality - Vendetta Mode",
+                choices: [
+                    { text: "Track the original sender", next: 'track_sender' },
+                    { text: "Infiltrate corporate databases", next: 'corporate_hack' }
+                ]
+            },
+            ancient_defense: {
+                text: "You research historical responses to cognitive viruses. Ancient civilizations had their own versions. Madness plagues. Glossolalia outbreaks. Tower of Babel.\n\nYou find references to 'Nam-Shubs'—counter-spells. Linguistic vaccines that used ancient Sumerian to immunize against mental viruses.\n\nThe ancients knew. They prepared. Their knowledge might save you.",
+                location: "🏙️ University District - Ancient Archives",
+                choices: [
+                    { text: "Reconstruct a Nam-Shub", next: 'reconstruct_namshub' },
+                    { text: "Combine ancient and modern methods", next: 'hybrid_approach' }
+                ]
+            },
+            vaccine_development: {
+                text: "You work on a vaccine. Not just treatment—prevention. Inoculation against linguistic viruses.\n\nThe breakthrough comes when you realize: the vaccine itself must be a virus. A beneficial one. A cognitive immune system booster.\n\nYou're creating a white virus to fight the black. Fighting fire with fire.",
+                location: "🏙️ Downtown - Reality - Development Lab",
+                choices: [
+                    { text: "Test it on yourself first", next: 'self_sacrifice_test' },
+                    { text: "Test on volunteers", next: 'volunteer_testing' }
+                ]
+            },
+            hunt_creator: {
+                text: "You track the creator. The trail is Byzantine—shell companies, dead drops, encrypted everything. But you're persistent.\n\nFinally: L. Bob Rife. Media mogul. Tech emperor. He's been orchestrating everything. Snow Crash is his weapon. His key to global control.\n\nHe wants to create a monopoly not just on media—but on thought itself.",
+                location: "🏙️ Corporate District - Intelligence Gathered",
+                choices: [
+                    { text: "Confront him directly", next: 'confront_rife' },
+                    { text: "Expose him to the world", next: 'expose_rife' }
+                ]
+            },
+            lagos_teachings: {
+                text: "Dr. Lagos teaches you about memetic theory. Ancient viruses. Linguistic programming. The nature of consciousness itself.\n\n'Snow Crash exploits the human brain's linguistic firmware,' he explains. 'Everyone has this vulnerability. It's hardwired from Sumerian times. We need to update that firmware.'\n\nYou're learning the deep science. This is crucial knowledge.",
+                location: "🏙️ University District - Lagos Lab",
+                choices: [
+                    { text: "Help develop the firmware update", next: 'firmware_project' },
+                    { text: "Use this knowledge to fight", next: 'educated_warrior' }
+                ]
+            },
+            seek_cure: {
+                text: "'There is no cure,' Lagos says bluntly. 'Only mitigation. The virus rewrites neural pathways. Once infected, you can manage symptoms, slow progression, even achieve remission. But cure? Impossible.'\n\nHe pauses. 'However, I'm working on something. A Nam-Shub. A counter-virus. But it's incomplete. Dangerous.'",
+                location: "🏙️ University District - Lagos Lab",
+                choices: [
+                    { text: "Volunteer for experimental treatment", next: 'experimental_treatment' },
+                    { text: "Help him complete the Nam-Shub", next: 'assist_namshub' }
+                ]
+            },
+            field_research: {
+                text: "You study the infected in real-time. Documenting symptoms. Progression rates. Transmission vectors. You're building the most comprehensive database on Snow Crash available.\n\nOthers notice. You're contacted by Dr. Lagos, Da5id, corporate security, and government agencies. Everyone wants your data.\n\nInformation is currency. How do you spend it?",
+                location: "🌐 Metaverse - Black Ice Bar - Research Zone",
+                choices: [
+                    { text: "Share freely with everyone", next: 'open_source_data' },
+                    { text: "Keep it and use it yourself", next: 'solo_analyst' }
+                ]
+            },
+            trace_origin: {
+                text: "You trace the outbreak to its source. Network forensics. Digital archaeology. Following the infection backwards through time.\n\nYou find the original upload point. A corporate server. Owned by L. Bob Rife Enterprises. This was deliberate. Planned. An attack.\n\nYou have evidence. The question is: what do you do with it?",
+                location: "🌐 Metaverse - Black Ice Bar - Investigation",
+                choices: [
+                    { text: "Expose the evidence", next: 'public_exposure' },
+                    { text: "Use it as leverage against Rife", next: 'blackmail_rife' }
+                ]
+            },
+            learn_countermeasures: {
+                text: "Da5id shows you defensive measures. Mental exercises. Linguistic firewalls. Code patterns that disrupt Snow Crash's replication.\n\n'The virus exploits how we process language,' he explains. 'So we need to process language differently. Consciously. Deliberately. It's exhausting but effective.'\n\nYou're learning to fight at the cognitive level.",
+                location: "🏙️ Downtown - Reality - Da5id's Lab",
+                choices: [
+                    { text: "Master these techniques", next: 'defensive_mastery' },
+                    { text: "Teach them to others", next: 'spread_knowledge' }
+                ]
+            },
+            build_team: {
+                text: "You recruit experts. Da5id for hacking. Dr. Lagos for linguistics. Y.T. for street intelligence. Juanita for Metaverse operations. A proper team.\n\nTogether, you're formidable. Each brings unique skills. Synergy. You've built something powerful—a united front against Snow Crash.",
+                location: "🏙️ Downtown - Team Headquarters",
+                choices: [
+                    { text: "Plan coordinated assault", next: 'team_assault' },
+                    { text: "Develop comprehensive strategy", next: 'master_plan' }
+                ]
+            },
+            confront_raven: {
+                text: "You find Raven in the Metaverse. A massive avatar. Dangerous. He's not just a hacker—he's a true believer. He thinks Snow Crash will save humanity by forcing unity.\n\n'You don't understand,' he says. 'Division is killing us. One language. One mind. One humanity. It's the only way.'\n\nFanaticism is the hardest enemy to fight.",
+                location: "🌐 Metaverse - Raven's Domain",
+                choices: [
+                    { text: "Fight him", next: 'battle_raven' },
+                    { text: "Try to convert him", next: 'turn_raven' }
+                ]
+            },
+            improve_vaccine: {
+                text: "You study the crystal's code, learning from it but improving it. Removing the control elements. Keeping the protection.\n\nIt takes months. But you create something revolutionary—a true vaccine that protects without controlling. It preserves free will while blocking Snow Crash.\n\nThis is the breakthrough. This could save everything.",
+                location: "🏙️ Downtown - Reality - Research Lab",
+                choices: [
+                    { text: "Deploy the improved vaccine", next: 'true_vaccine_deployment' },
+                    { text: "Test thoroughly first", next: 'cautious_testing' }
+                ]
+            },
+            destroy_crystal: {
+                text: "You delete the crystal's code. Permanent erasure. Whatever it contained is gone forever.\n\nBut was it the cure? Or a trap? You'll never know. The burden of that uncertainty will haunt you.\n\nSometimes destruction is easier than understanding. But easier isn't always right.",
+                location: "🌐 Metaverse - Corrupted District",
+                choices: [
+                    { text: "Continue fighting without it", next: 'pure_resistance' },
+                    { text: "Search for alternatives", next: 'alternative_path' }
+                ]
+            },
+            self_analysis: {
+                text: "You analyze the crystal alone. No outside input. Complete independence. You discover it's a hybrid—part vaccine, part weapon. Depending on how it's deployed.\n\nYou now hold immense power. The ability to save or enslave. The responsibility is crushing.",
+                location: "🏙️ Downtown - Reality - Isolation",
+                choices: [
+                    { text: "Use it to save people", next: 'responsible_deployment' },
+                    { text: "Keep studying to understand fully", next: 'obsessive_research' }
+                ]
+            },
+            evolution_path: {
+                text: "You let the infection evolve naturally. Observing. Adapting. Becoming something new.\n\nYou're changing. Your consciousness is expanding. You can see code in reality. Understand languages you never learned. Your brain is rewriting itself.\n\nYou're becoming transhuman. Or post-human. The line blurs.",
+                location: "🏙️ Downtown - Reality - Transformation",
+                choices: [
+                    { text: "Embrace the transformation", next: 'transcendence_path' },
+                    { text: "Fight back before it's too late", next: 'last_resistance' }
+                ]
+            },
+            become_investigator: {
+                text: "You start documenting everything. Who got infected. How it spreads. Symptoms. Vectors.\n\nYou're building a database. Understanding the enemy. Others join you—journalists, hackers, scientists. You're becoming a leader in the resistance.\n\nBut every investigation brings you closer to the source. And the source is dangerous.",
+                location: "🌐 Metaverse - Black Ice Bar",
+                choices: [
+                    { text: "Form a task force", next: 'build_resistance' },
+                    { text: "Publish your findings", next: 'expose_truth' }
+                ]
+            },
+            join_researchers: {
+                text: "You join the research community. Academia. Private labs. Government think tanks. Your field experience combined with their theoretical knowledge creates breakthroughs.\n\nYou're making real progress. Understanding Snow Crash at a fundamental level. The solution is close. You can feel it.",
+                location: "🏙️ Research Campus - Joint Task Force",
+                choices: [
+                    { text: "Focus on theoretical breakthrough", next: 'theory_development' },
+                    { text: "Prioritize practical applications", next: 'applied_research' }
+                ]
+            },
+            hunt_origin: {
+                text: "You trace the virus back through the network. Digital breadcrumbs. Proxy servers. Encrypted channels.\n\nThe trail leads to a massive corporate structure. L. Bob Rife Enterprises. Media mogul. Tech titan. Possible madman.\n\nHe's been collecting ancient Sumerian artifacts. Hiring linguists. Building something in the Metaverse. Something big.",
+                location: "🏙️ Corporate District - Surveillance",
+                choices: [
+                    { text: "Infiltrate his corporation", next: 'corporate_infiltration' },
+                    { text: "Expose him publicly", next: 'public_exposure' }
+                ]
+            },
+            track_sender: {
+                text: "You hunt the original sender. Digital forensics. Intimidation. Hacking. Whatever it takes.\n\nThe trail leads through dummy accounts, shell corporations, and finally... Rife Enterprises. Everything leads back to L. Bob Rife. He orchestrated this. He's responsible.\n\nRevenge is within reach.",
+                location: "🏙️ Corporate District - Infiltration",
+                choices: [
+                    { text: "Confront Rife personally", next: 'confront_rife' },
+                    { text: "Sabotage his empire", next: 'sabotage_rife' }
+                ]
+            },
+            corporate_hack: {
+                text: "You hack Rife's corporate databases. Layers of security. Firewalls. ICE. But you're motivated. Angry. Infected with a virus that makes you see code differently.\n\nYou break through. Inside, you find the truth. Plans. Timelines. Objectives. Rife wants to control all human thought through Snow Crash. Create a monopoly on consciousness itself.",
+                location: "🌐 Metaverse - Corporate Servers",
+                choices: [
+                    { text: "Download everything and expose it", next: 'data_dump' },
+                    { text: "Use the data as leverage", next: 'blackmail_rife' }
+                ]
+            },
+            reconstruct_namshub: {
+                text: "You reconstruct an ancient Nam-Shub from fragments. It's a counter-virus written in proto-Sumerian. A linguistic vaccine that predates modern language itself.\n\nYou speak the words. Reality shifts. The Snow Crash infection recoils. This is it. The original defense against the original attack.",
+                location: "🏙️ University District - Linguistic Lab",
+                choices: [
+                    { text: "Teach the Nam-Shub to others", next: 'spread_namshub' },
+                    { text: "Broadcast it globally", next: 'mass_namshub' }
+                ]
+            },
+            hybrid_approach: {
+                text: "You combine ancient Nam-Shubs with modern neural interface technology. The old and new together. Traditional wisdom with cutting-edge science.\n\nThe result is revolutionary. A cognitive vaccine that works on multiple levels. Technological. Linguistic. Spiritual. This might actually work.",
+                location: "🏙️ Downtown - Hybrid Research Lab",
+                choices: [
+                    { text: "Deploy the hybrid solution", next: 'hybrid_deployment' },
+                    { text: "Test it thoroughly first", next: 'hybrid_testing' }
+                ]
+            },
+            self_sacrifice_test: {
+                text: "You inject yourself first. If anyone should bear the risk, it's you. The creator. The developer. The one who understands the stakes.\n\nThe vaccine fights your infection. Pain. Transformation. Rebirth. You emerge changed but cured. Proof of concept written in your own flesh.",
+                location: "🏙️ Downtown - Reality - Self-Sacrifice",
+                choices: [
+                    { text: "Share the cure with everyone", next: 'humanitarian_distribution' },
+                    { text: "Give it to governments", next: 'government_distribution' }
+                ]
+            },
+            volunteer_testing: {
+                text: "Volunteers line up. Desperate. Infected. Willing to try anything. You test your vaccine on them. Carefully. Monitoring every symptom.\n\nResults are promising. The vaccine works. Not perfectly. Not for everyone. But it works. You're close to a breakthrough.",
+                location: "🏙️ Downtown - Reality - Clinical Site",
+                choices: [
+                    { text: "Refine based on results", next: 'iterative_improvement' },
+                    { text: "Scale up production now", next: 'premature_production' }
+                ]
+            },
+            confront_rife: {
+                text: "You find Rife in his stronghold. Virtual or real—the line blurs. He's calm. Confident. He expected you.\n\n'Protagonist. You've come so far. But you don't understand. Snow Crash isn't a weapon. It's salvation. I'm saving humanity from itself.'\n\nHe offers his hand. 'Join me. Help me create unity. One language. One mind. One humanity.'",
+                location: "🏙️ Rife Tower / 🌐 Metaverse Convergence",
+                choices: [
+                    { text: "Refuse and fight", next: 'final_battle' },
+                    { text: "Counter his philosophy", next: 'philosophical_showdown' },
+                    { text: "Offer a third path", next: 'third_way' }
+                ]
+            },
+            expose_rife: {
+                text: "You expose everything publicly. Every news outlet. Every social platform. Full transparency. Rife's crimes. His plans. His responsibility for Snow Crash.\n\nThe world reacts. Protests. Lawsuits. Investigations. Rife's empire starts crumbling. But he's powerful. Rich. Connected. The legal battle will take years.",
+                location: "🏙️ Downtown - Reality - Media Firestorm",
+                choices: [
+                    { text: "Support the legal process", next: 'justice_path' },
+                    { text: "Take direct action while he's weakened", next: 'opportunistic_strike' }
+                ]
+            },
+            firmware_project: {
+                text: "You work with Lagos on the firmware update. It's revolutionary—rewriting human cognitive architecture to be immune to linguistic viruses. Not a vaccine. An upgrade.\n\nBut it changes people. Makes them think differently. Better? Different. The line is philosophical.",
+                location: "🏙️ University District - Lagos Lab",
+                choices: [
+                    { text: "Deploy the firmware update", next: 'cognitive_upgrade' },
+                    { text: "Make it optional", next: 'voluntary_upgrade' }
+                ]
+            },
+            educated_warrior: {
+                text: "Armed with Lagos's knowledge, you become a warrior-scholar. Understanding both the technical and linguistic aspects. You're uniquely qualified to fight Snow Crash.\n\nYou lead missions. Train others. Develop tactics. You're effective. A leader emerging from necessity.",
+                location: "🏙️ Downtown - Warrior Scholar HQ",
+                choices: [
+                    { text: "Build an army", next: 'military_campaign' },
+                    { text: "Target Rife with precision", next: 'decapitation_strike' }
+                ]
+            },
+            experimental_treatment: {
+                text: "You volunteer for Lagos's experimental Nam-Shub treatment. It's dangerous. Untested. Could kill you or cure you or something in between.\n\nHe administers the counter-virus. Ancient Sumerian words spoken with perfect pronunciation. Your mind fractures. Reforms. Crystallizes.\n\nYou emerge transformed. Immune. Different.",
+                location: "🏙️ University District - Lagos Lab - Transformation",
+                choices: [
+                    { text: "Help Lagos treat others", next: 'treatment_team' },
+                    { text: "Use your immunity to fight", next: 'immune_warrior' }
+                ]
+            },
+            assist_namshub: {
+                text: "You help Lagos complete the Nam-Shub. Ancient linguistics. Modern neuroscience. Computational theory. You're bridging millennia of knowledge.\n\nThe completed Nam-Shub is elegant. Beautiful. Powerful. It's the perfect counter to Snow Crash—a linguistic vaccine that existed before the disease.",
+                location: "🏙️ University District - Lagos Lab",
+                choices: [
+                    { text: "Deploy the Nam-Shub globally", next: 'global_namshub' },
+                    { text: "Test it carefully first", next: 'careful_namshub' }
+                ]
+            },
+            open_source_data: {
+                text: "You release all your data freely. Open source. Public domain. Anyone can access it. Study it. Use it. Build on it.\n\nThe response is massive. Researchers worldwide contribute. Within months, dozens of defense strategies emerge. Your generosity created a global collaboration.",
+                location: "🌐 Global Network - Open Source Project",
+                choices: [
+                    { text: "Coordinate the collaborative effort", next: 'collaboration_leader' },
+                    { text: "Focus on implementation", next: 'implementation_focus' }
+                ]
+            },
+            solo_analyst: {
+                text: "You keep the data. Study it alone. Build understanding only you possess. Knowledge is power, and you're hoarding it.\n\nYou become the world's foremost expert on Snow Crash. Irreplaceable. Indispensable. Alone. Is wisdom worth loneliness?",
+                location: "🏙️ Downtown - Reality - Solo Analysis",
+                choices: [
+                    { text: "Eventually share your findings", next: 'delayed_sharing' },
+                    { text: "Use the knowledge yourself", next: 'solo_solution' }
+                ]
+            },
+            public_exposure: {
+                text: "You publish everything. Every news outlet. Every forum. Every channel. Full disclosure. Evidence. Analysis. Names.\n\nThe world reacts. Some believe. Many don't. Rife's lawyers attack. His media empire spins. Truth battles propaganda in real-time.\n\nYou've started something. But starting isn't finishing.",
+                location: "🏙️ Downtown - Reality - Media Storm",
+                choices: [
+                    { text: "Continue the information war", next: 'propaganda_battle' },
+                    { text: "Double down with more evidence", next: 'evidence_campaign' }
+                ]
+            },
+            blackmail_rife: {
+                text: "You use your evidence as leverage. Blackmail. Extortion. You force Rife to shut down his operations, release antivirus, fund research, and surrender control.\n\nIt works. But you've become a criminal to fight a criminal. The lines blur. Are you still a hero?",
+                location: "🏙️ Rife Tower - Negotiation",
+                choices: [
+                    { text: "Accept the moral compromise", next: 'grey_victory' },
+                    { text: "Turn yourself in after", next: 'noble_sacrifice' }
+                ]
+            },
+            defensive_mastery: {
+                text: "You master the defensive techniques Da5id taught you. You're immune to Snow Crash now. Conscious linguistic processing. Mental firewalls. Cognitive discipline.\n\nYou're safe. But what about everyone else?",
+                location: "🏙️ Downtown - Reality - Mastery Achieved",
+                choices: [
+                    { text: "Teach others", next: 'spread_knowledge' },
+                    { text: "Use immunity to attack Rife", next: 'immune_warrior' }
+                ]
+            },
+            spread_knowledge: {
+                text: "You teach defensive techniques to everyone. Free classes. Online tutorials. Open source guides. You democratize immunity.\n\nThousands learn. Then millions. The virus still exists but it can't spread unchecked anymore. You've created herd immunity through education.",
+                location: "🏙️ Downtown - Reality - Teaching Network",
+                ending: true,
+                achievement: "EDUCATOR OF MASSES",
+                endingText: "🎓 ENDING: You chose education over violence. Millions learn your defensive techniques. Snow Crash becomes manageable—still dangerous but no longer apocalyptic. You didn't defeat the virus through force but through knowledge. The pen proved mightier than the sword. Civilization adapts and survives because you taught them how.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            team_assault: {
+                text: "Your team launches a coordinated assault on Rife's operations. Simultaneous strikes. Multiple targets. Overwhelming force.\n\nDa5id crashes his servers. Lagos neutralizes his viruses. Y.T. disrupts his logistics. Juanita sabotages his Metaverse infrastructure. You coordinate it all.\n\nIt's working. Rife's empire crumbles in real-time.",
+                location: "🏙️ Multiple Locations - Coordinated Strike",
+                choices: [
+                    { text: "Execute the final blow", next: 'coordinated_strike' },
+                    { text: "Gather more resources first", next: 'preparation_phase' },
+                    { text: "Send in a small team first", next: 'reconnaissance_raid' }
+                ]
+            },
+            master_plan: {
+                text: "Your team develops a comprehensive strategy. Long-term. Multi-phase. Addressing every aspect of the Snow Crash threat. Technical. Social. Political. Economic.\n\nIt's ambitious. It'll take years. But if it works, you don't just defeat Snow Crash—you prevent anything like it from happening again.",
+                location: "🏙️ Downtown - Team Headquarters - Strategy Room",
+                choices: [
+                    { text: "Execute the master plan", next: 'perfect_execution' },
+                    { text: "Adapt as you go", next: 'adaptive_strategy' }
+                ]
+            },
+            battle_raven: {
+                text: "You fight Raven in the Metaverse. His avatar is massive. Powerful. Built for combat. You're outmatched in raw strength.\n\nBut you're smarter. Faster. More creative. You use the environment. Exploit glitches. Fight dirty. You're winning through intelligence.",
+                location: "🌐 Metaverse - Raven's Domain - Combat",
+                choices: [
+                    { text: "Finish him", next: 'defeat_raven' },
+                    { text: "Spare him and convert", next: 'convert_raven' }
+                ]
+            },
+            turn_raven: {
+                text: "You try to turn Raven. Show him what Rife really is. What Snow Crash really does. The suffering. The loss. The control disguised as unity.\n\nSlowly, doubt creeps into his eyes. 'Rife said... he promised... but if you're right...'\n\nYou're breaking through.",
+                location: "🌐 Metaverse - Raven's Domain - Conversion",
+                choices: [
+                    { text: "Welcome him as an ally", next: 'raven_ally' },
+                    { text: "Use him against Rife", next: 'raven_weapon' }
+                ]
+            },
+            true_vaccine_deployment: {
+                text: "You deploy your improved vaccine. It spreads globally. Within weeks, billions are protected. Snow Crash can no longer spread unchecked.\n\nYou've saved civilization. For real. Completely. The virus still exists but it's contained. Manageable. You won.",
+                location: "🌐 Global Network - Victory",
+                ending: true,
+                achievement: "TRUE SAVIOR",
+                endingText: "🏆 ENDING: You created a true vaccine—one that protects without controlling. Snow Crash is defeated. Humanity is free AND safe. Rife's empire crumbles. Civilization rebuilds. Your name will be remembered alongside Salk and Pasteur. You saved the world the right way—through science, ethics, and determination. This is what victory looks like.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            cautious_testing: {
+                text: "You test thoroughly. Phase one trials. Phase two. Phase three. Everything by the book. It takes time but it's safe. Ethical. Right.\n\nEventually, you prove the vaccine works. No shortcuts. No compromises. No regrets.",
+                location: "🏙️ Downtown - Reality - Clinical Trials Complete",
+                choices: [
+                    { text: "Begin mass distribution", next: 'ethical_distribution' },
+                    { text: "Share the formula worldwide", next: 'open_source_cure' }
+                ]
+            },
+            pure_resistance: {
+                text: "Without the crystal, you rely on human ingenuity. Old-fashioned resistance. Guerrilla warfare. Sabotage. Intelligence gathering.\n\nIt's harder. Bloodier. But also more human. You're fighting with your wits and will, not with magic bullets.",
+                location: "🌐 Metaverse - Resistance Cell",
+                choices: [
+                    { text: "Build a guerrilla network", next: 'guerrilla_warfare' },
+                    { text: "Attack Rife directly", next: 'direct_assault' }
+                ]
+            },
+            alternative_path: {
+                text: "You search for other solutions. There must be something between the crystal's control and pure destruction. A middle path.\n\nYou discover ancient texts. Nam-Shubs. Counter-viruses used by Sumerian priests. Not technology. Not magic. Knowledge.",
+                location: "🏙️ University District - Archives",
+                choices: [
+                    { text: "Study the ancient methods", next: 'ancient_defense' },
+                    { text: "Combine old and new", next: 'hybrid_approach' }
+                ]
+            },
+            responsible_deployment: {
+                text: "You use the crystal's power responsibly. Save people. Protect the vulnerable. Never control. Always respect autonomy.\n\nIt's harder than tyranny. Less efficient. But it's right. And slowly, surely, you're winning.",
+                location: "🏙️ Downtown - Reality - Ethical Operations",
+                choices: [
+                    { text: "Continue ethical path", next: 'ethical_victory' },
+                    { text: "Scale up operations", next: 'mass_deployment' }
+                ]
+            },
+            obsessive_research: {
+                text: "You study the crystal obsessively. Days become weeks. Weeks become months. You're unraveling its secrets. But you're also losing yourself in the work.\n\nFinally, you understand everything. The crystal. Snow Crash. Human consciousness itself. You're ready.",
+                location: "🏙️ Downtown - Reality - Deep Study Complete",
+                choices: [
+                    { text: "Use knowledge to save everyone", next: 'enlightened_salvation' },
+                    { text: "Share your understanding", next: 'wisdom_sharing' }
+                ]
+            },
+            transcendence_path: {
+                text: "You embrace the transformation. You're not fighting the infection anymore—you're directing it. Evolving with it. Becoming something new.\n\nYou're no longer fully human. But you're also no longer vulnerable. You've transcended the conflict entirely.",
+                location: "🌐 Reality-Metaverse Convergence",
+                choices: [
+                    { text: "Use your new form to help humanity", next: 'benevolent_transhuman' },
+                    { text: "Continue evolving beyond", next: 'posthuman_ending' }
+                ]
+            },
+            last_resistance: {
+                text: "You fight back against the infection with everything you have. Mental discipline. Meditation. Sheer willpower. It's a battle for your soul.\n\nYou win. Barely. The infection recedes. You're human again. Scarred. Changed. But human.",
+                location: "🏙️ Downtown - Reality - Victory Over Self",
+                choices: [
+                    { text: "Use your experience to help others", next: 'survivor_helper' },
+                    { text: "Hunt down Rife with renewed purpose", next: 'purified_warrior' }
+                ]
+            },
+            build_resistance: {
+                text: "You gather allies. Hackers. Scientists. Couriers. Anyone who understands the threat. You form a network—the Resistance Against Snow Crash (RASC).\n\nTogether, you're stronger. Pooling knowledge. Sharing resources. Coordinating defenses. This is how you win: together.",
+                location: "🏙️ Downtown - RASC Headquarters",
+                choices: [
+                    { text: "Develop countermeasures", next: 'team_countermeasures' },
+                    { text: "Launch offensive against the source", next: 'team_offensive' }
+                ]
+            },
+            expose_truth: {
+                text: "You publish everything. Every news outlet. Every forum. Every channel. Full disclosure. Evidence. Analysis. Names.\n\nThe world reacts. Some believe. Many don't. But you've planted seeds of awareness. The virus will spread slower now.",
+                location: "🏙️ Downtown - Reality - Media Campaign",
+                choices: [
+                    { text: "Support grassroots movement", next: 'grassroots_power' },
+                    { text: "Work with authorities", next: 'official_cooperation' }
+                ]
+            },
+            theory_development: {
+                text: "You focus on pure theory. Understanding Snow Crash at the deepest level. The mathematics of consciousness. The physics of thought.\n\nYour breakthrough paper revolutionizes neuroscience. The practical applications will follow.",
+                location: "🏙️ Research Campus - Theoretical Division",
+                choices: [
+                    { text: "Publish and let others implement", next: 'academic_victory' },
+                    { text: "Lead implementation yourself", next: 'theory_to_practice' }
+                ]
+            },
+            applied_research: {
+                text: "You prioritize practical solutions. Working prototypes. Field-testable vaccines. Real-world defenses.\n\nYour team produces results fast. Not perfect, but effective. Good enough to save lives now.",
+                location: "🏙️ Research Campus - Applied Division",
+                choices: [
+                    { text: "Deploy immediately", next: 'rapid_deployment' },
+                    { text: "Refine while deploying", next: 'iterative_deployment' }
+                ]
+            },
+            corporate_infiltration: {
+                text: "You infiltrate Rife Enterprises. Fake credentials. Cover identity. Deep undercover. You're inside the beast.\n\nYou see the operation firsthand. The scale is staggering. Rife has been planning this for years. Decades. He's collecting ancient Sumerian artifacts. Reconstructing the original Tower of Babel virus.",
+                location: "🏙️ Rife Tower - Undercover",
+                choices: [
+                    { text: "Sabotage from inside", next: 'insider_sabotage' },
+                    { text: "Gather evidence and escape", next: 'intelligence_extraction' }
+                ]
+            },
+            sabotage_rife: {
+                text: "You sabotage his operations from within. Corrupt his databases. Release his test subjects. Destroy his research. Burn it all down.\n\nRife's empire crumbles. But empires don't fall silently. People lose jobs. Supply chains break. Chaos spreads. Your victory has collateral damage.",
+                location: "🏙️ Rife Tower - Sabotage Operations",
+                choices: [
+                    { text: "Accept the cost", next: 'pyrrhic_victory' },
+                    { text: "Try to minimize damage", next: 'careful_sabotage' }
+                ]
+            },
+            data_dump: {
+                text: "You download everything and release it. WikiLeaks style. Total transparency. Rife's secrets exposed to the world.\n\nThe impact is immediate. Global outrage. His empire collapses. But you've also released dangerous information. Some will use it for good. Others for evil.",
+                location: "🌐 Global Network - Data Release",
+                choices: [
+                    { text: "Accept responsibility for both", next: 'transparent_consequences' },
+                    { text: "Try to contain the dangerous parts", next: 'damage_control' }
+                ]
+            },
+            spread_namshub: {
+                text: "You teach the Nam-Shub to others. One by one. Each person you teach can teach others. An exponential spread of immunity.\n\nIt's slow. Personal. But it works. The ancient wisdom spreads person-to-person, creating a network of resistance.",
+                location: "🏙️ Multiple Locations - Teaching Campaign",
+                choices: [
+                    { text: "Continue organic spread", next: 'viral_immunity' },
+                    { text: "Accelerate through media", next: 'mass_namshub' }
+                ]
+            },
+            mass_namshub: {
+                text: "You broadcast the Nam-Shub globally. Every channel. Every frequency. The ancient words spoken in perfect Sumerian reach billions simultaneously.\n\nThe effect is immediate. Mass inoculation. Snow Crash recoils. You've weaponized ancient wisdom.",
+                location: "🌐 Global Broadcast - Mass Immunity",
+                choices: [
+                    { text: "Declare victory", next: 'namshub_victory' },
+                    { text: "Hunt down remaining threats", next: 'cleanup_operations' }
+                ]
+            },
+            hybrid_deployment: {
+                text: "You deploy the hybrid solution. Ancient wisdom meets modern technology. The vaccine spreads through both digital and oral transmission.\n\nIt's elegant. Effective. Unstoppable. Rife never saw this coming.",
+                location: "🌐 Global Network - Hybrid Deployment",
+                choices: [
+                    { text: "Monitor and support deployment", next: 'deployment_success' },
+                    { text: "Go after Rife personally", next: 'final_confrontation' }
+                ]
+            },
+            hybrid_testing: {
+                text: "You test the hybrid approach carefully. Small groups. Controlled conditions. Monitoring every variable.\n\nThe results exceed expectations. The vaccine works perfectly. Protection without control. Freedom with safety. You're ready to save the world.",
+                location: "🏙️ Downtown - Hybrid Testing Complete",
+                choices: [
+                    { text: "Begin global rollout", next: 'global_rollout' },
+                    { text: "Open source the formula", next: 'open_source_cure' }
+                ]
+            },
+            humanitarian_distribution: {
+                text: "You distribute the cure for free. Prioritizing the most vulnerable. Refugees. The poor. The infected. No one left behind.\n\nIt's slow. Expensive. But it's right. You're saving lives without profit motive. Pure altruism.",
+                location: "🏙️ Multiple Locations - Humanitarian Mission",
+                choices: [
+                    { text: "Continue until everyone is saved", next: 'complete_humanitarian' },
+                    { text: "Partner with NGOs for scale", next: 'ngo_partnership' }
+                ]
+            },
+            government_distribution: {
+                text: "You give the vaccine to governments. Let them handle distribution. Official channels. Legal processes. Slow but legitimate.\n\nSome governments act quickly. Others drag their feet. Politics complicates everything. But it's the legal way.",
+                location: "🏛️ Government Centers - Official Distribution",
+                choices: [
+                    { text: "Trust the system", next: 'governmental_success' },
+                    { text: "Supplement with underground distribution", next: 'dual_distribution' }
+                ]
+            },
+            iterative_improvement: {
+                text: "You refine the vaccine based on test results. Each iteration better than the last. Scientific method in action.\n\nFinally, you achieve perfection. The vaccine is ready. Safe. Effective. Complete.",
+                location: "🏙️ Downtown - Reality - Final Vaccine",
+                choices: [
+                    { text: "Deploy worldwide", next: 'perfect_deployment' },
+                    { text: "Make it freely available", next: 'open_source_cure' }
+                ]
+            },
+            premature_production: {
+                text: "You rush production. No time for caution. People are dying now. You flood the market with vaccine.\n\nMost batches work. Some don't. Quality varies. But you're saving more than you're harming. Probably.",
+                location: "🏙️ Industrial District - Mass Production",
+                choices: [
+                    { text: "Accept the tradeoff", next: 'utilitarian_victory' },
+                    { text: "Pause and improve quality", next: 'mid_course_correction' }
+                ]
+            },
+            final_battle: {
+                text: "You fight Rife. All your skills. All your knowledge. All your determination. The battle rages across reality and virtuality.\n\nYou're evenly matched. But you have something he doesn't—you're fighting for freedom, not control. That makes all the difference.\n\nYou land the final blow. Rife falls.",
+                location: "🌐/🏙️ Reality Convergence - Final Combat",
+                choices: [
+                    { text: "Ensure he can never return", next: 'permanent_solution' },
+                    { text: "Take over his infrastructure for good", next: 'inherit_empire' }
+                ]
+            },
+            philosophical_showdown: {
+                text: "You debate Rife. Not with fists, but with ideas. Freedom versus unity. Diversity versus homogeneity. Individual versus collective.\n\nYour arguments are stronger. Your philosophy is better. Slowly, his supporters defect. His ideology crumbles.",
+                location: "🏙️ Rife Tower - Ideological Battle",
+                choices: [
+                    { text: "Win through superior ideas", next: 'intellectual_victory' },
+                    { text: "Combine philosophy with action", next: 'praxis_victory' }
+                ]
+            },
+            third_way: {
+                text: "You offer Rife a third option. Not unity through force. Not division through chaos. But cooperation through choice.\n\n'A network, not a hierarchy. Connection without control. Humanity unified by choice, not compulsion. We can build this together—if you stop trying to force it.'\n\nRife pauses. Considers. He's never heard this option before.",
+                location: "🏙️ Rife Tower - Negotiation",
+                choices: [
+                    { text: "Work together to rebuild", next: 'collaborative_future' },
+                    { text: "Use his resources for good", next: 'redemption_arc' }
+                ]
+            },
+            justice_path: {
+                text: "You trust the legal system. Trials proceed. Evidence is presented. Justice is slow but thorough.\n\nRife is convicted. Sentenced. His empire dismantled legally. It takes years. But it's done right.",
+                location: "🏛️ Federal Courthouse - Justice Served",
+                ending: true,
+                achievement: "JUSTICE PREVAILS",
+                endingText: "⚖️ ENDING: You trusted the system and the system delivered. Rife is convicted. His assets seized. His operations shut down. It took years. Many died waiting. But justice was done properly, legally, ethically. You proved that civilization's institutions can work—given enough time and evidence. Sometimes the boring path is the right path.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            opportunistic_strike: {
+                text: "While Rife is weakened by legal battles, you strike. His defenses are down. His supporters scattered. You dismantle his remaining operations with surgical precision.\n\nYou're vigilante and prosecutor simultaneously. Justice through all means necessary.",
+                location: "🏙️ Rife Empire - Final Assault",
+                choices: [
+                    { text: "Complete the destruction", next: 'total_destruction' },
+                    { text: "Capture key assets for public good", next: 'asset_seizure' }
+                ]
+            },
+            grey_victory: {
+                text: "You accept that you've become what you fought. A wielder of power. A manipulator. But you use it for good. The ends justify the means. You tell yourself.\n\nRife's empire is dismantled. Snow Crash is contained. You win. At a cost.",
+                location: "🏙️ New Power Structure",
+                ending: true,
+                achievement: "GREY GUARDIAN",
+                endingText: "⚖️ ENDING: You became what you fought to defeat the threat. Your methods were questionable, your morals grey, but your results undeniable. Snow Crash is defeated. Rife is gone. You rule from the shadows now, a benevolent dictator who knows too much and has done too much to ever be truly clean. Power corrupts, but you wield it responsibly. Probably.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            noble_sacrifice: {
+                text: "After defeating Rife through blackmail and extortion, you turn yourself in. You broke laws to save lives. Now you'll face justice.\n\nThe trial is public. Some call you hero. Others call you criminal. The jury deliberates. The verdict comes.",
+                location: "🏛️ Federal Courthouse - On Trial",
+                ending: true,
+                achievement: "NOBLE SACRIFICE",
+                endingText: "⚖️ ENDING: You saved the world through illegal means, then faced justice willingly. The court struggles with your case—you're guilty of crimes but saved millions. The verdict: guilty, but sentenced to time served. You're free, but forever marked. A flawed hero. A successful criminal. A noble sacrifice. History will judge whether your choice was right.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            immune_warrior: {
+                text: "Immune to Snow Crash, you become an elite operative. You can go anywhere. Interface with infected systems. Rescue trapped minds. You're the perfect weapon against the virus.\n\nYou lead raids into corrupted zones. Save thousands. Your immunity makes you invaluable.",
+                location: "🌐 Corrupted Zones - Elite Operations",
+                choices: [
+                    { text: "Continue rescue operations", next: 'rescue_champion' },
+                    { text: "Target Rife directly", next: 'immune_assassination' }
+                ]
+            },
+            coordinated_strike: {
+                text: "Your team executes the coordinated strike perfectly. Da5id crashes Rife's servers. Lagos deploys the Nam-Shub countervirus. Y.T. disrupts his physical operations. Juanita takes control of his Metaverse infrastructure.\n\nRife's empire collapses in hours. His influence evaporates. Snow Crash is contained. You've won through teamwork and precision.",
+                location: "🏙️ Multiple Locations - Victory",
+                ending: true,
+                achievement: "TEAM VICTORY",
+                endingText: "🤝 ENDING: You proved that cooperation beats tyranny. Your team's coordinated assault dismantled Rife's empire without a single casualty. Snow Crash is neutralized. The world is saved through collaboration, not individual heroism. You didn't save the world alone—you built a team that did it together. Sometimes the greatest strength is knowing when to trust others.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            preparation_phase: {
+                text: "You spend weeks preparing. Gathering resources. Training. Building support networks. When you finally strike, you're ready for anything.\n\nThe assault is overwhelming. Rife never stood a chance against your preparation. Every contingency planned. Every risk mitigated. Professional excellence.",
+                location: "🏙️ Downtown - RASC Headquarters - Prepared",
+                ending: true,
+                achievement: "METHODICAL VICTORY",
+                endingText: "📋 ENDING: You won through meticulous preparation. No rushing. No improvisation. Just careful planning and professional execution. Rife's empire falls to superior strategy. Snow Crash is defeated through patience and precision. You proved that slow and steady wins the race—even against a genocidal corporate empire. Victory through discipline.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            reconnaissance_raid: {
+                text: "You send a small team first. They infiltrate, gather intelligence, identify weaknesses. When the main assault comes, you know exactly where to strike.\n\nThe reconnaissance pays off. You hit Rife's weak points with surgical precision. Minimal casualties. Maximum effectiveness. Intelligence wins wars.",
+                location: "🏙️ Rife Tower - Reconnaissance Complete",
+                ending: true,
+                achievement: "INTELLIGENCE TRIUMPH",
+                endingText: "🔍 ENDING: You won through superior intelligence. Your reconnaissance team identified every weakness in Rife's defenses. When you struck, it was with perfect knowledge. Rife's empire crumbled because you knew exactly where to push. Snow Crash is neutralized. You proved that information is the ultimate weapon. Knowledge defeated tyranny.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            open_source_cure: {
+                text: "You release the vaccine formula as open source. Anyone can produce it. No patents. No restrictions. No profits.\n\nWithin days, production begins worldwide. Generic manufacturers. Local labs. Underground facilities. The vaccine spreads as fast as the virus. Humanity saves itself.",
+                location: "🌐 Global Network - Open Source Victory",
+                ending: true,
+                achievement: "GIFT TO HUMANITY",
+                endingText: "🎁 ENDING: You gave away the cure for free. No patents. No profits. No control. Humanity took your gift and ran with it. Within months, Snow Crash is defeated through distributed, collaborative effort. You could have been rich. You chose to be a hero instead. History will remember your generosity. Some gifts are priceless.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            collaborative_future: {
+                text: "You and Rife work together. His resources. Your ethics. You create something new—a voluntary network that respects freedom while enabling connection.\n\nSnow Crash is neutralized. Rife's empire redirected toward good. Humanity gets both security and liberty. You've achieved the impossible: peace with the enemy.",
+                location: "🌐 Global Network - New Era",
+                ending: true,
+                achievement: "TRANSCENDENT PEACE",
+                endingText: "🕊️ SECRET ENDING: You found the path nobody saw—converting the enemy, transforming the weapon into a tool, replacing control with cooperation. Rife's empire becomes a force for good. Snow Crash's technology gets repurposed for healing. You didn't just win. You transcended the conflict entirely. This is the ending reserved for those who refuse binary choices. You saw a third way and made it real.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            },
+            redemption_arc: {
+                text: "You use Rife's resources to undo the damage. His wealth funds vaccine distribution. His infrastructure spreads antivirus. His media empire broadcasts truth instead of propaganda.\n\nRife himself works to repair what he broke. Redemption is possible—even for monsters, if they choose it.",
+                location: "🏙️ Rife Tower - Redemption Operations",
+                ending: true,
+                achievement: "REDEMPTION SONG",
+                endingText: "♻️ ENDING: You achieved the impossible—you redeemed a villain. Rife uses his empire for good now, repairing the damage he caused. Snow Crash becomes a cautionary tale, not an apocalypse. You proved that people can change, that redemption is real, that even the worst can choose better. Sometimes the greatest victory is turning an enemy into an ally.",
+                choices: [
+                    { text: "Start Over", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "IGNORANT COURIER",
+            "PATIENT ZERO",
+            "BYSTANDER",
+            "SURVIVOR'S FLIGHT",
+            "NOBLE ISOLATION",
+            "TEAM VICTORY",
+            "METHODICAL VICTORY",
+            "INTELLIGENCE TRIUMPH",
+            "TRUE SAVIOR",
+            "GIFT TO HUMANITY"
+        ];
+
+        // Game State
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let questLog = [];
+
+        // Initialize the game
+        function init() {
+            updateDisplay();
+        }
+
+        // Update the display
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+
+            if (!currentScenario) {
+                console.error("Invalid game state:", gameState);
+                return;
+            }
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            const endingWarning = document.getElementById('endingWarning');
+            if (currentScenario.ending) {
+                endingWarning.style.display = 'block';
+            } else {
+                endingWarning.style.display = 'none';
+            }
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            if (currentScenario.choices) {
+                currentScenario.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-button';
+                    button.textContent = '→ ' + choice.text;
+                    button.onclick = () => handleChoice(choice.next);
+                    choicesContainer.appendChild(button);
+                });
+            }
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+            updateQuestLogDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (!scenarios[nextState]) {
+                console.error("Invalid next state:", nextState);
+                return;
+            }
+
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            questLog.push(scenarios[gameState].text);
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            gameState = nextState;
+
+            if (nextState === 'start') {
+                stateHistory = ['start'];
+                currentHistoryIndex = 0;
+                visitedStates = new Set(['start']);
+                achievements = [];
+                questLog = [];
+            }
+
+            updateDisplay();
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+
+                if (achievements.length === allAchievements.length && !achievements.includes("PROTAGONIST")) {
+                    setTimeout(() => {
+                        achievements.push("PROTAGONIST");
+                        showAchievementPopup("PROTAGONIST");
+                    }, 3500);
+                }
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isUltimate = achievement === "PROTAGONIST";
+
+            popup.className = 'achievement-popup ' + (isUltimate ? 'ultimate' : 'normal');
+            document.getElementById('achievementTitle').textContent = isUltimate ? '🌟 ULTIMATE ACHIEVEMENT! 🌟' : '⚡ ACHIEVEMENT UNLOCKED!';
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, isUltimate ? 5000 : 3000);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+            const totalAchievementsCount = allAchievements.length + 1;
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+                document.getElementById('totalAchievements').textContent = totalAchievementsCount;
+                document.getElementById('achievementsLeft').textContent = totalAchievementsCount - achievements.length;
+
+                const progressPercentage = (achievements.length / totalAchievementsCount) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    badge.className = 'achievement-badge' + (ach === "PROTAGONIST" ? ' ultimate' : '');
+                    badge.textContent = '🎯 ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    } else {
+                        button.classList.add('unvisited');
+                    }
+                    button.textContent = idx + 1;
+                    button.title = scenarios[state] ? scenarios[state].location : state;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function updateQuestLogDisplay() {
+            const questLogBox = document.getElementById('questLogBox');
+            if (questLog.length > 0) {
+                questLogBox.style.display = 'block';
+                const questLogEntries = document.getElementById('questLogEntries');
+                questLogEntries.innerHTML = '';
+                questLog.slice(-10).forEach((entry) => {
+                    const entryDiv = document.createElement('p');
+                    entryDiv.className = 'quest-log-entry';
+                    entryDiv.textContent = entry.substring(0, 100) + '...';
+                    questLogEntries.appendChild(entryDiv);
+                });
+            } else {
+                questLogBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
