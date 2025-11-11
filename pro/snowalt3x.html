@@ -185,11 +185,6 @@
             gap: 0.5rem;
         }
 
-        .location-icon {
-            color: #00ffff;
-            flex-shrink: 0;
-        }
-
         .location-text {
             color: #00ffff;
             font-family: 'Courier New', monospace;
@@ -308,12 +303,6 @@
             line-height: 1.5;
         }
 
-        @media (max-width: 640px) {
-            .scenario-text {
-                font-size: 0.875rem;
-            }
-        }
-
         .ending-text {
             color: #ff00ff;
             font-family: 'Courier New', monospace;
@@ -323,12 +312,6 @@
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 1px solid #005555;
-        }
-
-        @media (max-width: 640px) {
-            .ending-text {
-                font-size: 0.75rem;
-            }
         }
 
         .choices-container {
@@ -352,17 +335,10 @@
             text-align: left;
         }
 
-        @media (min-width: 640px) {
-            .choice-button {
-                padding: 1rem 1.5rem;
-                font-size: 1rem;
-            }
-        }
-
         .choice-button:hover {
             background-color: #00ffff;
             color: #000;
-            transform: scale(1.05);
+            transform: scale(1.02);
             box-shadow: 0 0 20px #00ffff;
         }
 
@@ -383,16 +359,7 @@
             font-family: 'Courier New', monospace;
             font-weight: bold;
             margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
             font-size: 0.875rem;
-        }
-
-        @media (min-width: 640px) {
-            .history-title {
-                font-size: 1rem;
-            }
         }
 
         .history-buttons {
@@ -429,11 +396,6 @@
             background-color: rgba(0, 100, 100, 0.5);
         }
 
-        .history-button.unvisited {
-            background-color: #0a0a0a;
-            color: #005555;
-        }
-
         .history-hint {
             color: #00ffff;
             font-family: 'Courier New', monospace;
@@ -454,16 +416,7 @@
             font-family: 'Courier New', monospace;
             font-weight: bold;
             margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
             font-size: 0.875rem;
-        }
-
-        @media (min-width: 640px) {
-            .quest-log-title {
-                font-size: 1rem;
-            }
         }
 
         .quest-log-entries {
@@ -484,34 +437,10 @@
         .quest-log-entry:last-child {
             border-bottom: none;
         }
-
-        @media (max-width: 640px) {
-            .main-box {
-                padding: 1rem;
-            }
-
-            .title {
-                font-size: 1.5rem;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 0.75rem;
-            }
-
-            .button-group {
-                width: 100%;
-            }
-
-            .nav-button {
-                flex: 1;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Achievement Popup -->
         <div id="achievementPopup" class="achievement-popup" style="display: none;">
             <div class="achievement-icon">🎯</div>
             <div class="achievement-content">
@@ -520,34 +449,30 @@
             </div>
         </div>
 
-        <!-- Main Game Box -->
         <div class="main-box">
-            <!-- Header -->
             <div class="header">
                 <h1 class="title">
                     <span class="cyber-icon">◉</span>
                     SNOW CRASH QUEST
                 </h1>
                 <div class="button-group">
-                    <button class="nav-button" id="backBtn" onclick="goBack()" title="Go back">← Back</button>
-                    <button class="nav-button" id="forwardBtn" onclick="goForward()" title="Go forward">Forward →</button>
+                    <button class="nav-button" id="backBtn" onclick="goBack()">← Back</button>
+                    <button class="nav-button" id="forwardBtn" onclick="goForward()">Forward →</button>
                 </div>
             </div>
 
-            <!-- Location -->
             <div class="location-box">
-                <span class="location-icon">📍</span>
+                <span>📍</span>
                 <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
             </div>
 
-            <!-- Achievements -->
             <div id="achievementsBox" class="achievements-box" style="display: none;">
                 <div class="achievements-header">
                     <div class="achievements-title">
                         <span>🎯</span>
-                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">10</span>)</p>
+                        <p class="achievements-title-text">ACHIEVEMENTS (<span id="achievementCount">0</span>/<span id="totalAchievements">11</span>)</p>
                     </div>
-                    <p class="achievements-count"><span id="achievementsLeft">10</span> left to unlock</p>
+                    <p class="achievements-count"><span id="achievementsLeft">11</span> left</p>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
@@ -555,43 +480,33 @@
                 <div class="achievements-list" id="achievementsList"></div>
             </div>
 
-            <!-- Ending Warning -->
             <div id="endingWarning" class="ending-warning" style="display: none;">
                 <p class="ending-warning-text">⚠️ SIMULATION TERMINATED ⚠️</p>
             </div>
 
-            <!-- Scenario Text -->
             <div class="scenario-box">
                 <p class="scenario-text" id="scenarioText"></p>
                 <p class="ending-text" id="endingText" style="display: none;"></p>
             </div>
 
-            <!-- Choices -->
             <div class="choices-container" id="choicesContainer"></div>
         </div>
 
-        <!-- History -->
         <div id="historyBox" class="history-box" style="display: none;">
             <h3 class="history-title">
-                <span>🔄</span>
-                DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+                🔄 DECISION HISTORY (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
             </h3>
             <div class="history-buttons" id="historyButtons"></div>
             <p class="history-hint">Click any number to jump to that decision point</p>
         </div>
 
-        <!-- Quest Log -->
         <div id="questLogBox" class="quest-log-box" style="display: none;">
-            <h3 class="quest-log-title">
-                <span>📜</span>
-                EVENT LOG
-            </h3>
+            <h3 class="quest-log-title">📜 EVENT LOG</h3>
             <div class="quest-log-entries" id="questLogEntries"></div>
         </div>
     </div>
 
     <script>
-        // Game Data - Snow Crash story
         const scenarios = {
             start: {
                 text: "You're a courier in the Metaverse - a virtual reality network where corporations rule and hackers are legends. Your handle: Protagonist.\n\nA message appears in your virtual HUD: 'New delivery: Black Ice Bar. Priority level: MAXIMUM. Warning: Package contains executable code.'\n\nYour phone buzzes. Real world. Unknown corporate prefix.",
@@ -642,9 +557,7 @@
                 ending: true,
                 achievement: "IGNORANT COURIER",
                 endingText: "📦 ENDING: You delivered the package without question. Professional. Safe. Boring. Whatever was in that code spreads through the Metaverse, but you're not involved. You survive, unburdened by knowledge or consequence. Sometimes ignorance is the best defense.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             research_sender: {
                 text: "You dig into the package origin. The trail leads through shell corporations, dark web markets, and finally... ancient history databases?\n\nThe sender used addresses associated with linguistic archaeology. Sumerian texts. Babel references. This isn't corporate espionage.\n\nThis is something older. Something dangerous.",
@@ -707,10 +620,8 @@
                 location: "🏙️ Downtown - Reality",
                 ending: true,
                 achievement: "PATIENT ZERO",
-                endingText: "💀 ENDING: You documented the virus, inadvertently creating a written transmission vector. Your notes spread through hacker channels, infecting thousands. You meant to warn people. Instead, you weaponized the information. Good intentions, catastrophic execution. The road to digital hell is paved with well-documented code.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "💀 ENDING: You documented the virus, inadvertently creating a written transmission vector. Your notes spread through hacker channels, infecting thousands. You meant to warn people. Instead, you weaponized the information. Good intentions, catastrophic execution.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             sumerian_path: {
                 text: "You dive into ancient texts. Sumerian mythology. The Tower of Babel. The original 'snow crash'—when humanity spoke one language and tried to build to heaven.\n\nThe code in your package is a reconstruction. An attempt to recreate the original linguistic virus that shattered human communication.\n\nSomeone is trying to hack reality through language itself.",
@@ -726,9 +637,7 @@
                 ending: true,
                 achievement: "BYSTANDER",
                 endingText: "😶 ENDING: You witnessed the beginning of a plague and chose caution over action. The world changes around you. Snow Crash becomes endemic. Millions are infected. You're safe, but at what cost? History will record this moment, and you'll know you were there when it started—and did nothing.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             deep_research: {
                 text: "You spend days researching. The virus operates on multiple levels:\n\n1. Code level - crashes computer systems\n2. Linguistic level - reprograms human cognition\n3. Memetic level - self-replicates through communication\n\nIt's based on a proto-language, a universal grammar that bypasses conscious thought. You're understanding the mechanism. Knowledge is power.",
@@ -760,9 +669,7 @@
                 ending: true,
                 achievement: "SURVIVOR'S FLIGHT",
                 endingText: "🏃 ENDING: You ran when things got dangerous. Self-preservation is a valid strategy, but you'll spend the rest of your life wondering: what if you'd stayed? What if you'd fought? You're alive, but you're not living. The guilt is a prison more secure than any firewall.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             learn_snow_crash: {
                 text: "Da5id explains: 'Snow Crash is a dual virus. It crashes computers and brains simultaneously. Based on Sumerian linguistic structures—the original proto-language that hardwired human consciousness.'\n\n'Someone weaponized the Tower of Babel myth. If this spreads, it could crash global civilization. Digital and biological.'",
@@ -810,9 +717,7 @@
                 ending: true,
                 achievement: "NOBLE ISOLATION",
                 endingText: "🔒 ENDING: You quarantined yourself to protect others. Noble. Self-sacrificing. Lonely. You watch through news feeds as the world fights Snow Crash without you. Your sacrifice matters, but you'll never know how much. Sometimes the greatest heroes are those who do nothing—deliberately.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             partial_documentation: {
                 text: "You write down fragments. Incomplete. Careful not to create a full transmission vector. Your notes are cryptic, usable only by experts.\n\nYou send them to Da5id, to Dr. Lagos, to other researchers. You're contributing to the resistance without becoming a vector yourself.\n\nSmart. Strategic. This might actually help.",
@@ -1080,11 +985,11 @@
                 ]
             },
             public_exposure: {
-                text: "You publish everything. Every news outlet. Every forum. Every channel. Full disclosure. Evidence. Analysis. Names.\n\nThe world reacts. Some believe. Many don't. Rife's lawyers attack. His media empire spins. Truth battles propaganda in real-time.\n\nYou've started something. But starting isn't finishing.",
-                location: "🏙️ Downtown - Reality - Media Storm",
+                text: "You publish everything. Every news outlet. Every forum. Every channel. Full disclosure. Evidence. Analysis. Names.\n\nThe world reacts. Some believe. Many don't. But you've planted seeds of awareness. The virus will spread slower now.",
+                location: "🏙️ Downtown - Reality - Media Campaign",
                 choices: [
-                    { text: "Continue the information war", next: 'propaganda_battle' },
-                    { text: "Double down with more evidence", next: 'evidence_campaign' }
+                    { text: "Support grassroots movement", next: 'grassroots_power' },
+                    { text: "Work with authorities", next: 'official_cooperation' }
                 ]
             },
             blackmail_rife: {
@@ -1109,9 +1014,7 @@
                 ending: true,
                 achievement: "EDUCATOR OF MASSES",
                 endingText: "🎓 ENDING: You chose education over violence. Millions learn your defensive techniques. Snow Crash becomes manageable—still dangerous but no longer apocalyptic. You didn't defeat the virus through force but through knowledge. The pen proved mightier than the sword. Civilization adapts and survives because you taught them how.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             team_assault: {
                 text: "Your team launches a coordinated assault on Rife's operations. Simultaneous strikes. Multiple targets. Overwhelming force.\n\nDa5id crashes his servers. Lagos neutralizes his viruses. Y.T. disrupts his logistics. Juanita sabotages his Metaverse infrastructure. You coordinate it all.\n\nIt's working. Rife's empire crumbles in real-time.",
@@ -1152,9 +1055,7 @@
                 ending: true,
                 achievement: "TRUE SAVIOR",
                 endingText: "🏆 ENDING: You created a true vaccine—one that protects without controlling. Snow Crash is defeated. Humanity is free AND safe. Rife's empire crumbles. Civilization rebuilds. Your name will be remembered alongside Salk and Pasteur. You saved the world the right way—through science, ethics, and determination. This is what victory looks like.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             cautious_testing: {
                 text: "You test thoroughly. Phase one trials. Phase two. Phase three. Everything by the book. It takes time but it's safe. Ethical. Right.\n\nEventually, you prove the vaccine works. No shortcuts. No compromises. No regrets.",
@@ -1184,7 +1085,7 @@
                 text: "You use the crystal's power responsibly. Save people. Protect the vulnerable. Never control. Always respect autonomy.\n\nIt's harder than tyranny. Less efficient. But it's right. And slowly, surely, you're winning.",
                 location: "🏙️ Downtown - Reality - Ethical Operations",
                 choices: [
-                    { text: "Continue ethical path", next: 'ethical_victory' },
+                    { text: "Continue until everyone is saved", next: 'ethical_victory' },
                     { text: "Scale up operations", next: 'mass_deployment' }
                 ]
             },
@@ -1201,7 +1102,7 @@
                 location: "🌐 Reality-Metaverse Convergence",
                 choices: [
                     { text: "Use your new form to help humanity", next: 'benevolent_transhuman' },
-                    { text: "Continue evolving beyond", next: 'posthuman_ending' }
+                    { text: "Ascend beyond the conflict", next: 'posthuman_ending' }
                 ]
             },
             last_resistance: {
@@ -1264,7 +1165,7 @@
                 text: "You download everything and release it. WikiLeaks style. Total transparency. Rife's secrets exposed to the world.\n\nThe impact is immediate. Global outrage. His empire collapses. But you've also released dangerous information. Some will use it for good. Others for evil.",
                 location: "🌐 Global Network - Data Release",
                 choices: [
-                    { text: "Accept responsibility for both", next: 'transparent_consequences' },
+                    { text: "Accept responsibility for both outcomes", next: 'transparent_consequences' },
                     { text: "Try to contain the dangerous parts", next: 'damage_control' }
                 ]
             },
@@ -1361,10 +1262,8 @@
                 location: "🏛️ Federal Courthouse - Justice Served",
                 ending: true,
                 achievement: "JUSTICE PREVAILS",
-                endingText: "⚖️ ENDING: You trusted the system and the system delivered. Rife is convicted. His assets seized. His operations shut down. It took years. Many died waiting. But justice was done properly, legally, ethically. You proved that civilization's institutions can work—given enough time and evidence. Sometimes the boring path is the right path.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "⚖️ ENDING: You trusted the system and the system delivered. Rife is convicted. His assets seized. His operations shut down. It took years. Many died waiting. But justice was done properly, legally, ethically. You proved that civilization's institutions can work—given enough time and evidence.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             opportunistic_strike: {
                 text: "While Rife is weakened by legal battles, you strike. His defenses are down. His supporters scattered. You dismantle his remaining operations with surgical precision.\n\nYou're vigilante and prosecutor simultaneously. Justice through all means necessary.",
@@ -1379,20 +1278,16 @@
                 location: "🏙️ New Power Structure",
                 ending: true,
                 achievement: "GREY GUARDIAN",
-                endingText: "⚖️ ENDING: You became what you fought to defeat the threat. Your methods were questionable, your morals grey, but your results undeniable. Snow Crash is defeated. Rife is gone. You rule from the shadows now, a benevolent dictator who knows too much and has done too much to ever be truly clean. Power corrupts, but you wield it responsibly. Probably.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "⚖️ ENDING: You became what you fought to defeat the threat. Your methods were questionable, your morals grey, but your results undeniable. Snow Crash is defeated. Rife is gone. You rule from the shadows now, a benevolent dictator who knows too much and has done too much to ever be truly clean.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             noble_sacrifice: {
                 text: "After defeating Rife through blackmail and extortion, you turn yourself in. You broke laws to save lives. Now you'll face justice.\n\nThe trial is public. Some call you hero. Others call you criminal. The jury deliberates. The verdict comes.",
                 location: "🏛️ Federal Courthouse - On Trial",
                 ending: true,
                 achievement: "NOBLE SACRIFICE",
-                endingText: "⚖️ ENDING: You saved the world through illegal means, then faced justice willingly. The court struggles with your case—you're guilty of crimes but saved millions. The verdict: guilty, but sentenced to time served. You're free, but forever marked. A flawed hero. A successful criminal. A noble sacrifice. History will judge whether your choice was right.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "⚖️ ENDING: You saved the world through illegal means, then faced justice willingly. The court struggles with your case—you're guilty of crimes but saved millions. The verdict: guilty, but sentenced to time served. You're free, but forever marked. A flawed hero. A successful criminal. A noble sacrifice.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             immune_warrior: {
                 text: "Immune to Snow Crash, you become an elite operative. You can go anywhere. Interface with infected systems. Rescue trapped minds. You're the perfect weapon against the virus.\n\nYou lead raids into corrupted zones. Save thousands. Your immunity makes you invaluable.",
@@ -1407,60 +1302,48 @@
                 location: "🏙️ Multiple Locations - Victory",
                 ending: true,
                 achievement: "TEAM VICTORY",
-                endingText: "🤝 ENDING: You proved that cooperation beats tyranny. Your team's coordinated assault dismantled Rife's empire without a single casualty. Snow Crash is neutralized. The world is saved through collaboration, not individual heroism. You didn't save the world alone—you built a team that did it together. Sometimes the greatest strength is knowing when to trust others.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "🤝 ENDING: You proved that cooperation beats tyranny. Your team's coordinated assault dismantled Rife's empire without a single casualty. Snow Crash is neutralized. The world is saved through collaboration, not individual heroism. You didn't save the world alone—you built a team that did it together.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             preparation_phase: {
                 text: "You spend weeks preparing. Gathering resources. Training. Building support networks. When you finally strike, you're ready for anything.\n\nThe assault is overwhelming. Rife never stood a chance against your preparation. Every contingency planned. Every risk mitigated. Professional excellence.",
                 location: "🏙️ Downtown - RASC Headquarters - Prepared",
                 ending: true,
                 achievement: "METHODICAL VICTORY",
-                endingText: "📋 ENDING: You won through meticulous preparation. No rushing. No improvisation. Just careful planning and professional execution. Rife's empire falls to superior strategy. Snow Crash is defeated through patience and precision. You proved that slow and steady wins the race—even against a genocidal corporate empire. Victory through discipline.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "📋 ENDING: You won through meticulous preparation. No rushing. No improvisation. Just careful planning and professional execution. Rife's empire falls to superior strategy. Snow Crash is defeated through patience and precision. You proved that slow and steady wins the race—even against a genocidal corporate empire.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             reconnaissance_raid: {
                 text: "You send a small team first. They infiltrate, gather intelligence, identify weaknesses. When the main assault comes, you know exactly where to strike.\n\nThe reconnaissance pays off. You hit Rife's weak points with surgical precision. Minimal casualties. Maximum effectiveness. Intelligence wins wars.",
                 location: "🏙️ Rife Tower - Reconnaissance Complete",
                 ending: true,
                 achievement: "INTELLIGENCE TRIUMPH",
-                endingText: "🔍 ENDING: You won through superior intelligence. Your reconnaissance team identified every weakness in Rife's defenses. When you struck, it was with perfect knowledge. Rife's empire crumbled because you knew exactly where to push. Snow Crash is neutralized. You proved that information is the ultimate weapon. Knowledge defeated tyranny.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "🔍 ENDING: You won through superior intelligence. Your reconnaissance team identified every weakness in Rife's defenses. When you struck, it was with perfect knowledge. Rife's empire crumbled because you knew exactly where to push. Snow Crash is neutralized. You proved that information is the ultimate weapon.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             open_source_cure: {
                 text: "You release the vaccine formula as open source. Anyone can produce it. No patents. No restrictions. No profits.\n\nWithin days, production begins worldwide. Generic manufacturers. Local labs. Underground facilities. The vaccine spreads as fast as the virus. Humanity saves itself.",
                 location: "🌐 Global Network - Open Source Victory",
                 ending: true,
                 achievement: "GIFT TO HUMANITY",
-                endingText: "🎁 ENDING: You gave away the cure for free. No patents. No profits. No control. Humanity took your gift and ran with it. Within months, Snow Crash is defeated through distributed, collaborative effort. You could have been rich. You chose to be a hero instead. History will remember your generosity. Some gifts are priceless.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "🎁 ENDING: You gave away the cure for free. No patents. No profits. No control. Humanity took your gift and ran with it. Within months, Snow Crash is defeated through distributed, collaborative effort. You could have been rich. You chose to be a hero instead. History will remember your generosity.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             collaborative_future: {
                 text: "You and Rife work together. His resources. Your ethics. You create something new—a voluntary network that respects freedom while enabling connection.\n\nSnow Crash is neutralized. Rife's empire redirected toward good. Humanity gets both security and liberty. You've achieved the impossible: peace with the enemy.",
                 location: "🌐 Global Network - New Era",
                 ending: true,
                 achievement: "TRANSCENDENT PEACE",
-                endingText: "🕊️ SECRET ENDING: You found the path nobody saw—converting the enemy, transforming the weapon into a tool, replacing control with cooperation. Rife's empire becomes a force for good. Snow Crash's technology gets repurposed for healing. You didn't just win. You transcended the conflict entirely. This is the ending reserved for those who refuse binary choices. You saw a third way and made it real.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "🕊️ SECRET ENDING: You found the path nobody saw—converting the enemy, transforming the weapon into a tool, replacing control with cooperation. Rife's empire becomes a force for good. Snow Crash's technology gets repurposed for healing. You didn't just win. You transcended the conflict entirely.",
+                choices: [{ text: "Start Over", next: 'start' }]
             },
             redemption_arc: {
                 text: "You use Rife's resources to undo the damage. His wealth funds vaccine distribution. His infrastructure spreads antivirus. His media empire broadcasts truth instead of propaganda.\n\nRife himself works to repair what he broke. Redemption is possible—even for monsters, if they choose it.",
                 location: "🏙️ Rife Tower - Redemption Operations",
                 ending: true,
                 achievement: "REDEMPTION SONG",
-                endingText: "♻️ ENDING: You achieved the impossible—you redeemed a villain. Rife uses his empire for good now, repairing the damage he caused. Snow Crash becomes a cautionary tale, not an apocalypse. You proved that people can change, that redemption is real, that even the worst can choose better. Sometimes the greatest victory is turning an enemy into an ally.",
-                choices: [
-                    { text: "Start Over", next: 'start' }
-                ]
+                endingText: "♻️ ENDING: You achieved the impossible—you redeemed a villain. Rife uses his empire for good now, repairing the damage he caused. Snow Crash becomes a cautionary tale, not an apocalypse. You proved that people can change, that redemption is real, that even the worst can choose better.",
+                choices: [{ text: "Start Over", next: 'start' }]
             }
         };
 
@@ -1477,7 +1360,6 @@
             "GIFT TO HUMANITY"
         ];
 
-        // Game State
         let gameState = 'start';
         let stateHistory = ['start'];
         let currentHistoryIndex = 0;
@@ -1485,15 +1367,12 @@
         let achievements = [];
         let questLog = [];
 
-        // Initialize the game
         function init() {
             updateDisplay();
         }
 
-        // Update the display
         function updateDisplay() {
             const currentScenario = scenarios[gameState];
-
             if (!currentScenario) {
                 console.error("Invalid game state:", gameState);
                 return;
@@ -1641,8 +1520,6 @@
                         button.classList.add('current');
                     } else if (visitedStates.has(state)) {
                         button.classList.add('visited');
-                    } else {
-                        button.classList.add('unvisited');
                     }
                     button.textContent = idx + 1;
                     button.title = scenarios[state] ? scenarios[state].location : state;
