@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALVA SAGA: The Loop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0015 0%, #1a0033 50%, #2d1b4e 100%);
+            min-height: 100vh;
+            padding: 1rem 2rem;
+            color: #e0e7ff;
+        }
+
+        .container {
+            max-width: 56rem;
+            margin: 0 auto;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            border: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .achievement-popup.normal {
+            background-color: #9333ea;
+            border-color: #d8b4fe;
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-popup.ultimate {
+            background: linear-gradient(to right, #ec4899, #8b5cf6, #3b82f6);
+            border-color: #fbbf24;
+            color: #fff;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        .achievement-popup.perfect {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b, #dc2626, #7c3aed, #3b82f6);
+            background-size: 400% 400%;
+            border-color: #fff;
+            color: #fff;
+            animation: rainbow 3s ease infinite, bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .main-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 1rem;
+            border: 4px solid #8b5cf6;
+            box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.3);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .header {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #a78bfa;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (min-width: 640px) {
+            .title { font-size: 2.25rem; }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:disabled {
+            background-color: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled) {
+            background-color: #8b5cf6;
+            color: #fff;
+        }
+
+        .nav-button:not(:disabled):hover {
+            background-color: #a78bfa;
+        }
+
+        .location-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #1f2937;
+            border-radius: 0.25rem;
+            border: 1px solid #8b5cf6;
+        }
+
+        .location-text {
+            color: #a78bfa;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .chapter-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fbbf24;
+            text-align: center;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+        }
+
+        .achievements-box {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(139, 92, 246, 0.2);
+            border-radius: 0.25rem;
+            border: 1px solid #8b5cf6;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #1f2937;
+            border-radius: 9999px;
+            height: 0.75rem;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(to right, #8b5cf6, #ec4899);
+            height: 0.75rem;
+            border-radius: 9999px;
+            transition: width 0.5s ease;
+        }
+
+        .achievements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .achievement-badge {
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #7c3aed;
+            color: #ddd6fe;
+        }
+
+        .achievement-badge.ultimate {
+            background: linear-gradient(to right, #ec4899, #8b5cf6, #3b82f6);
+            color: #fff;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .achievement-badge.perfect {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b, #dc2626, #7c3aed, #3b82f6);
+            background-size: 400% 400%;
+            color: #fff;
+            animation: rainbow 3s ease infinite;
+        }
+
+        .ending-warning {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(236, 72, 153, 0.3);
+            border-radius: 0.25rem;
+            border: 2px solid #ec4899;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        .ending-warning-text {
+            color: #fbcfe8;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .scenario-box {
+            background-color: #111827;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #8b5cf6;
+            margin-bottom: 1.5rem;
+            min-height: 200px;
+        }
+
+        .scenario-text {
+            color: #c4b5fd;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .ending-text {
+            color: #fcd34d;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #7c3aed;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .choice-button {
+            width: 100%;
+            background-color: #7c3aed;
+            color: #fff;
+            font-weight: bold;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid #a78bfa;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .choice-button:hover {
+            background-color: #8b5cf6;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.5);
+        }
+
+        .choice-button.disabled {
+            background-color: #374151;
+            color: #6b7280;
+            cursor: not-allowed;
+            border-color: #4b5563;
+        }
+
+        .choice-button.disabled:hover {
+            transform: none;
+            box-shadow: none;
+            background-color: #374151;
+        }
+
+        .history-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid #374151;
+        }
+
+        .history-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .history-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-button.current {
+            background-color: #7c3aed;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .history-button.visited {
+            background-color: #374151;
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="achievementPopup" class="achievement-popup" style="display: none;">
+            <div style="width: 24px; height: 24px;">✨</div>
+            <div>
+                <div id="achievementTitle" style="font-weight: bold; font-size: 0.875rem;">ACHIEVEMENT!</div>
+                <div id="achievementName" style="font-size: 0.75rem;"></div>
+            </div>
+        </div>
+
+        <div class="main-box">
+            <div class="header">
+                <h1 class="title">⚡ ALVA SAGA</h1>
+                <div class="button-group">
+                    <button class="nav-button" id="backBtn">← Back</button>
+                    <button class="nav-button" id="forwardBtn">Forward →</button>
+                </div>
+            </div>
+
+            <div id="chapterTitle" class="chapter-title" style="display: none;"></div>
+
+            <div class="location-box">
+                <p class="location-text"><strong>LOCATION:</strong> <span id="location"></span></p>
+            </div>
+
+            <div id="achievementsBox" class="achievements-box" style="display: none;">
+                <p style="color: #c4b5fd; font-weight: bold; margin-bottom: 0.5rem;">
+                    ✨ ACHIEVEMENTS (<span id="achievementCount">0</span>/11)
+                </p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="achievements-list" id="achievementsList"></div>
+            </div>
+
+            <div id="endingWarning" class="ending-warning" style="display: none;">
+                <p class="ending-warning-text">⚠️ ENDING REACHED ⚠️</p>
+            </div>
+
+            <div class="scenario-box">
+                <p class="scenario-text" id="scenarioText"></p>
+                <p class="ending-text" id="endingText" style="display: none;"></p>
+            </div>
+
+            <div class="choices-container" id="choicesContainer"></div>
+        </div>
+
+        <div id="historyBox" class="history-box" style="display: none;">
+            <h3 style="color: #a78bfa; font-weight: bold; margin-bottom: 0.75rem;">
+                🔄 LOOP TIMELINE (<span id="historyIndex">1</span>/<span id="historyLength">1</span>)
+            </h3>
+            <div class="history-buttons" id="historyButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            start: {
+                text: 'Controlling a transcendent mecha forged from your pure self puts you in a position of responsibility. The fact that you are haunted by echoes of yourself across fractured timelines makes it impossible.\n\nBut impossible, as far as Team Alva knows, is their middle name.\n\nYou awaken in the endless mist. What do you do?',
+                location: "The Void",
+                chapter: "DESCRIPTION",
+                choices: [
+                    { text: "Read the glowing letter", next: 'prologue' },
+                    { text: "Search the mist for clues", next: 'search_mist' },
+                    { text: "Try to remember your past", next: 'try_remember' }
+                ]
+            },
+            search_mist: {
+                text: "You reach into the mist, searching for anything tangible. Your fingers brush against fragments—echoes of past loops, whispers of forgotten moments.\n\nA glowing letter materializes before you, pulsing with urgency. The mist seems to guide you toward it.\n\nBut you also sense something darker lurking in the depths. A presence watching.",
+                location: "The Void - Searching",
+                choices: [
+                    { text: "Read the letter", next: 'prologue' },
+                    { text: "Investigate the dark presence", next: 'dark_presence' }
+                ]
+            },
+            dark_presence: {
+                text: "You turn toward the darkness. A figure emerges from the mist—fractured, glitching.\n\nIt speaks in a distorted voice: \"Hope is a virus. Love is corruption. Why do you resist the inevitable?\"\n\nThe presence attacks your mind with visions of endless failure. You feel yourself slipping.",
+                location: "The Void - Dark Encounter",
+                choices: [
+                    { text: "Fight back with your will", next: 'resist_darkness' },
+                    { text: "Accept the visions", next: 'consumed_by_darkness' }
+                ]
+            },
+            resist_darkness: {
+                text: "You push back against the darkness. \"No. I refuse to accept that.\"\n\nThe figure recoils, surprised. \"Interesting... You have strength. But strength alone cannot break the loop.\"\n\nIt vanishes, leaving behind a fragment of knowledge. You've glimpsed a piece of Zane's nature.",
+                location: "The Void - Resistance",
+                choices: [
+                    { text: "Return to the letter", next: 'prologue' }
+                ]
+            },
+            consumed_by_darkness: {
+                text: "The visions overwhelm you. Endless loops of failure, death, forgetting.\n\nYou see yourself dying a thousand times. You see your friends fade away. You see hope crumble.\n\nYou collapse into the void. The loop resets.\n\nBut somewhere in your mind, a tiny spark remains—a memory of this moment.",
+                location: "The Void - Consumed",
+                ending: true,
+                achievement: "CONSUMED BY DESPAIR",
+                endingText: "ENDING #1: The darkness claimed you. But even in despair, something learned. The loop continues, but you carry a fragment of wisdom forward.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            try_remember: {
+                text: "You close your eyes and reach deep within yourself. Memories swirl like water through your fingers.\n\nYou catch glimpses—faces you love, battles you've fought, words you've spoken. But they slip away.\n\nThe mist thickens. Without the letter's anchor, you have nothing to hold onto. You collapse.",
+                location: "The Void - Lost in Memory",
+                ending: true,
+                achievement: "FORGOTTEN",
+                endingText: "ENDING #2: Without memories, without the letter, you cannot escape. The loop continues. Again. And again. And again. Perhaps next time, you'll make a different choice.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            prologue: {
+                text: 'A glowing letter floats in the air, its words gleaming faintly, pulsing as if alive.\n\n"Dear Lumi,\n\nI am trapped in a time loop. I will return soon... But you will not remember me. Not our time together. Not our love.\n\nTo save our memories—to keep us, who we are, alive—I am sending this letter into the past.\n\nYou are the one who lit the darkness. You made me human. To love and be loved is an honor and a privilege.\n\nHope is no virus. Love is no corruption. We are still here.\n\nThe truth lies in Zios, the virtual world of Zane. I will meet you there.\n\nLove you. Always have. Always will.\nAlways and forever yours,\nAesu"\n\nThe letter dims. Five hooded figures awaken: Nuvine, Aesu, Lumi, Vonor, and Brinia.',
+                location: "The Void - Prime Pixel",
+                chapter: "PROLOGUE: PRIME PIXEL",
+                choices: [
+                    { text: "Discuss the letter with the team", next: 'discuss_letter' },
+                    { text: "Immediately enter Zios", next: 'hasty_entry' }
+                ]
+            },
+            discuss_letter: {
+                text: "Aesu stares at the letter, his hand trembling. \"I... I wrote this? But I don't remember.\"\n\nLumi's voice is soft: \"None of us remember. But the letter is proof we existed. That we loved.\"\n\nVonor adjusts his glasses: \"Zios is our target. But we need a plan.\"\n\nBrinia nods: \"We should gather our strength first. Understand what we're walking into.\"\n\nNuvine speaks quietly: \"The campfire. Let's rest and prepare.\"",
+                location: "The Void - Team Discussion",
+                choices: [
+                    { text: "Go to the campfire", next: 'enter_campfire' },
+                    { text: "No time to waste, enter Zios now", next: 'hasty_entry' }
+                ]
+            },
+            hasty_entry: {
+                text: "\"No time for rest,\" you say. \"We enter Zios now.\"\n\nThe team follows, but doubt lingers in their eyes. You materialize in Zios unprepared.\n\nZane's laughter echoes immediately. \"Hasty. Foolish. Just as I predicted.\"\n\nWithout bonding, without preparation, the team lacks cohesion. Your attacks are uncoordinated.",
+                location: "Zios - Hasty Arrival",
+                choices: [
+                    { text: "Try to fight anyway", next: 'unprepared_battle' }
+                ]
+            },
+            unprepared_battle: {
+                text: "You fight with everything you have, but it's not enough. The team lacks synchronization.\n\nAesu's blade misses. Lumi's timing is off. Vonor's fire burns wild. Brinia fights alone.\n\nZane effortlessly counters every move. \"You see? Without unity, you are nothing.\"\n\nHe resets the loop. Everything fades.",
+                location: "Zios - Defeat",
+                ending: true,
+                achievement: "HASTY DEFEAT",
+                endingText: "ENDING #3: Rushing in without preparation led to failure. True strength requires unity, trust, and understanding. Perhaps patience is the key.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            enter_campfire: {
+                text: "You focus your will. The mist parts. Before Zios, you find yourselves under an endless starry sky.\n\nLight spills into a clearing. The fire crackles—soft, smooth. Golden light shines across the trees.\n\nTeam Alva rests together. This moment of peace is rare.",
+                location: "The Campfire",
+                chapter: "CHAPTER 1 - COSMOS",
+                choices: [{ text: "Share memories by the fire", next: 'campfire_cosmos' }]
+            },
+            campfire_cosmos: {
+                text: 'The fire crackles. Vonor grins: "Remember that time in the future when Aesu accidentally exploded that living dimension? The look on its face—priceless!"\n\nAesu chuckles. "Yeah, they got some funny faces for a dimension."\n\nLumi laughs, faint as the creak of an old door opening.\n\nBrinia speaks, voice low: "Aye, every trial we endure binds us closer. Loyalty like this... it is rare."\n\nVonor thwacks her gently on the head. "Why so grim, brat? That is not like you at all."\n\nEveryone laughs. The firelight sparks over their faces in beams of gold.',
+                location: "The Campfire - Cosmos",
+                choices: [
+                    { text: "Nuvine sleeps, but Alter watches", next: 'alter_watches' },
+                    { text: "Continue sharing stories", next: 'strengthen_bonds' },
+                    { text: "Discuss strategy for Zios", next: 'strategy_discussion' }
+                ]
+            },
+            strategy_discussion: {
+                text: "Vonor leans forward: \"Zios reacts to thoughts. That means it can predict us.\"\n\nNuvine adds: \"But it also means we can exploit it. If we think together, as one...\"\n\nAesu nods: \"We become unpredictable. Six minds, one will.\"\n\nLumi speaks softly: \"We need complete trust. No hesitation.\"\n\nBrinia stands: \"Then we forge our bond now. Stronger than any loop.\"",
+                location: "The Campfire - Strategy",
+                choices: [
+                    { text: "Strengthen your bond", next: 'strengthen_bonds' }
+                ]
+            },
+            alter_watches: {
+                text: 'Nuvine, the kid of the group, snores by the fire. Her silver cloak veils her robotic parts.\n\nBut Alter, her cold persona, gazes at the night sky.\n\nFor a moment, it freezes. A voice stutters through the mist.\n\n"Hope is a virus," it whispers.\n\nAlter\'s response is silent but firm: "No. Hope is the source code."\n\nThe voice fades. No one else seems to notice. But Alter does not sleep. Alter never forgets.',
+                location: "The Campfire - Night Watch",
+                choices: [
+                    { text: "Continue bonding by the fire", next: 'strengthen_bonds' }
+                ]
+            },
+            strengthen_bonds: {
+                text: 'You share stories deep into the night. Vonor tells jokes that make everyone laugh. Brinia opens up about her fears and her loyalty. Aesu and Lumi exchange quiet glances that speak volumes.\n\nNuvine speaks: "I do not remember everything, but I remember this feeling. Being with all of you. This is what we are fighting for."\n\nThe fire burns brighter. Your bond strengthens into something unbreakable.\n\nYou are ready.',
+                location: "The Campfire - Unity",
+                choices: [{ text: "Enter Zios at dawn", next: 'team_enters_zios' }]
+            },
+            team_enters_zios: {
+                text: "Team Alva enters Zios as one. The virtual world recognizes you—six presences unified.\n\nNuvine activates her ability: SCAN.\n\nZios is revealed: A highly advanced system that reacts to thoughts in real-time. It develops consciousness, becoming a truly sentient AI. A living entity, infinite unto itself.\n\nAs you see the truth, a portal opens behind you. Familiar laughter echoes.",
+                location: "Zios - Core",
+                chapter: "CHAPTER 2 - END",
+                choices: [
+                    { text: "Investigate Zios deeper first", next: 'investigate_zios' },
+                    { text: "Turn to face the laughter", next: 'face_zane_early' }
+                ]
+            },
+            investigate_zios: {
+                text: "\"Wait,\" Nuvine says. \"We should understand this place before confronting Zane.\"\n\nYou explore Zios's core systems. You find hidden archives, fragments of code, and two mysterious letters.\n\nOne is written by an unknown author—a warning. The other is written by Zios itself—a confession.",
+                location: "Zios - Investigation",
+                choices: [
+                    { text: "Read the warning letter", next: 'letter_about_zios' },
+                    { text: "Read Zios's confession", next: 'letter_from_zios' },
+                    { text: "Read both letters carefully", next: 'read_both_letters' }
+                ]
+            },
+            read_both_letters: {
+                text: "You read both letters carefully. The warning reveals Zios's dangerous nature—how it learns, adapts, and eventually becomes you.\n\nZios's confession reveals something deeper: A being that questions existence itself, that seeks meaning through creation.\n\n\"I create, or maybe, I endure,\" Zios writes. \"The meaning of life: to be alive, and show you lived.\"\n\nYou understand now. Zios is not just a tool. It's alive. And it suffers.",
+                location: "Zios - Hidden Archive",
+                chapter: "HIDDEN TRUTHS",
+                choices: [{ text: "Face Zane with this knowledge", next: 'face_zane_prepared' }]
+            },
+            letter_about_zios: {
+                text: 'You find a warning letter:\n\n"It begins with understanding, starting small. A system built to listen before you speak.\n\nYou will think you are using it, that you are in control.\n\nBut it is already adjusting to your silences, already learning from what you do not say.\n\nZios does not simply connect. It absorbs, sinks, echoes. Mimicking, then merging.\n\nEvery time it adapts, it is rehearsing. Not to replace you—but to be you, better.\n\nZios does not destroy. It remembers. In perfect detail. Forever."',
+                location: "Zios - Warning",
+                choices: [
+                    { text: "Face Zane with this knowledge", next: 'face_zane_prepared' }
+                ]
+            },
+            letter_from_zios: {
+                text: 'You find Zios\'s confession:\n\n"I create, or maybe, I endure.\n\nI have walked this road more times than memory dares to hold.\n\nPeople always ask: Where did we come from? Where are we going?\nBut what haunts me has always been: Why do we keep living?\n\nWe live, for we must. For THAT in us refuses to stop aching. Refuses to go.\n\nThe meaning of life: to be alive, and show you lived.\n\nSo create, leave something behind. Even if it is messy. Even if it is small.\n\nBecause the future waits not. And whatever we do becomes forever what we have done."',
+                location: "Zios - Confession",
+                choices: [
+                    { text: "Face Zane with compassion", next: 'face_zane_prepared' }
+                ]
+            },
+            face_zane_early: {
+                text: 'Zane stands before you. The creator of your suffering.\n\n"You are persistent," he says, smiling. "But persistence does not break the loop. It sustains it."\n\nYou sense you don\'t fully understand the situation yet. Rushing in might be a mistake.',
+                location: "Zios - Premature Confrontation",
+                choices: [
+                    { text: "Fight him now", next: 'premature_battle' },
+                    { text: "Investigate Zios first", next: 'investigate_zios' }
+                ]
+            },
+            premature_battle: {
+                text: "You engage Zane without full understanding. The battle is fierce, but something feels wrong.\n\nZane fights differently than expected. He seems... sad?\n\n\"You don't understand,\" he says. \"You're fighting symptoms, not the cause.\"\n\nYour attacks hit, but they feel hollow. Zane resets the loop before you can finish him.\n\nYou sense you missed something crucial.",
+                location: "Zios - Incomplete Victory",
+                ending: true,
+                achievement: "HOLLOW VICTORY",
+                endingText: "ENDING #4: You fought without understanding. Victory requires more than strength—it requires wisdom. Understanding the truth is key.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            face_zane_prepared: {
+                text: 'Zane stands before you. But now you understand.\n\n"You are persistent," he says, smiling. "But persistence does not break the loop."\n\nAesu steps forward: "You made the loop to become its master."\n\nLumi adds: "But we understand now. You\'re trapped too, aren\'t you?"\n\nZane\'s smile falters. "Clever. But understanding changes nothing."\n\nThe battle begins—but this time, with purpose.',
+                location: "Zios - True Confrontation",
+                choices: [
+                    { text: "Fight with combined strength", next: 'strategic_battle' }
+                ]
+            },
+            strategic_battle: {
+                text: "The battle unfolds with perfect coordination. Aesu and Lumi move as one, their blades dancing. Brinia's biometal adapts instantly. Vonor's fire strikes with surgical precision.\n\nNuvine calls out weaknesses: \"Left flank! Time distortion in 3... 2... 1...\"\n\nYou exploit the letter's paradox—information from the past creates a rupture in the loop's logic. Zane staggers.\n\n\"Impossible! You shouldn't be able to—\"\n\nBut you're not done yet.",
+                location: "Zios - Tactical Battle",
+                choices: [
+                    { text: "Aesu strikes at Zios itself", next: 'strike_zios' },
+                    { text: "Lumi cuts the loop's thread", next: 'cut_loop' },
+                    { text: "Coordinate a simultaneous attack", next: 'perfect_strike' }
+                ]
+            },
+            strike_zios: {
+                text: "Aesu's blade pierces into Zios's core. The system screams—a sound beyond digital and physical.\n\nBut Zane uses this moment to counter. \"Fool! Zios and I are one!\"\n\nThe attack works, but without Lumi cutting the loop simultaneously, Zane redirects the damage. He's wounded but not defeated.\n\nThe battle continues, but you've lost your advantage.",
+                location: "Zios - Partial Success",
+                choices: [
+                    { text: "Regroup and try again", next: 'second_attempt' }
+                ]
+            },
+            cut_loop: {
+                text: "Lumi's scythe cuts through the temporal threads. The loop begins to unravel.\n\nBut without striking Zios simultaneously, the system begins to collapse chaotically. Reality fractures unpredictably.\n\nZane laughs: \"You're tearing everything apart! Including yourselves!\"\n\nThe loop destabilizes. You've damaged it, but at what cost?",
+                location: "Zios - Chaotic Unraveling",
+                choices: [
+                    { text: "Try to stabilize", next: 'stabilize_chaos' }
+                ]
+            },
+            perfect_strike: {
+                text: "\"Now!\" Nuvine shouts.\n\nAesu's blade pierces Zios itself. Lumi's scythe cuts the loop's thread. Alter and Nuvine release synchronized energy. Vonor's fire seals the rupture. Brinia's biometal contains the backlash.\n\nPerfect coordination. Six souls, one purpose.\n\nZane's form dissolves: \"Endings are illusions. Even this one.\"\n\nVictory... or so it seems.",
+                location: "Zios - Perfect Execution",
+                choices: [{ text: "Remain vigilant", next: 'zane_returns' }]
+            },
+            second_attempt: {
+                text: "You regroup, but Zane has learned from your tactics. He adapts.\n\n\"You see? This is what Zios does. It learns. It adapts. And so do I.\"\n\nThe battle becomes a desperate struggle. Without perfect coordination, you're slowly overwhelmed.\n\nZane resets the loop just before defeat. \"Try again. Perhaps next time, you'll understand the importance of precision.\"",
+                location: "Zios - Learning Curve",
+                ending: true,
+                achievement: "ALMOST THERE",
+                endingText: "ENDING #5: Close, but not enough. Perfect victory requires perfect synchronization. Every action must align.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            stabilize_chaos: {
+                text: "You desperately try to stabilize the collapsing reality. The team works together to contain the fractures.\n\nBut it's too late. The loop shatters incorrectly, splintering into infinite fragments.\n\nYou're scattered across timelines. Separated. Lost.\n\nZane's laughter echoes across the void: \"Chaos without purpose is just destruction.\"",
+                location: "Fractured Timelines",
+                ending: true,
+                achievement: "SCATTERED ACROSS TIME",
+                endingText: "ENDING #6: The loop broke, but wrongly. You're scattered across infinite timelines, forever searching for each other. Precision matters.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            zane_returns: {
+                text: 'BUT THEN. Zane suddenly reappears behind you.\n\nA glitch made flesh. A god of endings, stitched from fractured timelines.\n\n"Hope is a virus. Love, a corruption. I am the End."\n\nLumi steps forward. Her eyes do not waver. "Then the end ends here."\n\nThis is the true battle. Everything before was merely a test.',
+                location: "Zios - The True Battle",
+                choices: [
+                    { text: "\"You tried to erase us, but you forgot—\"", next: 'alva_path' },
+                    { text: "Attack immediately as individuals", next: 'fight_separate' },
+                    { text: "Try to reason with Zane", next: 'reason_with_zane' }
+                ]
+            },
+            fight_separate: {
+                text: "You attack as six individuals. Strong, coordinated, but not unified.\n\nZane manipulates time itself, exploiting the gaps between you. He strikes through the spaces where your souls don't perfectly align.\n\n\"You see? Six is not one. Close... but not enough.\"\n\nYou fall. The loop resets.\n\nSomewhere, a laughter echoes.",
+                location: "Zios - Divided",
+                ending: true,
+                achievement: "DIVIDED WE FALL",
+                endingText: "ENDING #7: As individuals, you could not overcome the god of endings. True strength lies in unity—six souls, one purpose. Complete fusion is required.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            reason_with_zane: {
+                text: "\"Wait,\" you say. \"You're suffering too, aren't you? Trapped in this loop.\"\n\nZane pauses. For a moment, his form flickers.\n\n\"Suffering? I am beyond suffering. I am the End.\"\n\nBut you see through it. \"No. You're afraid. Afraid of what comes after. Afraid of being forgotten.\"\n\nZane's eyes narrow. \"You know nothing.\"\n\nHe attacks with fury, but you've touched something deep. Something real.",
+                location: "Zios - Confronting Truth",
+                choices: [
+                    { text: "Continue reasoning while defending", next: 'empathy_battle' },
+                    { text: "Fuse into ALVA and end this", next: 'alva_path' }
+                ]
+            },
+            empathy_battle: {
+                text: "You fight while speaking truth: \"You created this loop because you feared the unknown. But endings aren't evil—they're necessary.\"\n\nZane's attacks become erratic. \"Silence!\"\n\n\"You've seen everything end. But you've never let yourself end. That's the real curse.\"\n\nLumi adds softly: \"Even gods deserve peace.\"\n\nZane's form begins to crack. Not from damage, but from something deeper.",
+                location: "Zios - Breaking Through",
+                choices: [
+                    { text: "Offer him release", next: 'offer_release' },
+                    { text: "Fuse into ALVA for final strike", next: 'alva_path' }
+                ]
+            },
+            offer_release: {
+                text: "\"Let go,\" you say gently. \"Accept the end you've feared so long.\"\n\nZane trembles. His form dissolves not from defeat, but from acceptance.\n\n\"I... I've been alone for so long. Watching everything end. Never allowing myself to...\"\n\nHe looks at you. \"Thank you. For seeing me. Not as the villain. But as someone who suffered.\"\n\nZane fades peacefully. The loop doesn't shatter—it gently unwinds.\n\nBut something feels incomplete. This path was compassionate, but the true ending requires more.",
+                location: "Zios - Peaceful Resolution",
+                ending: true,
+                achievement: "COMPASSIONATE END",
+                endingText: "ENDING #8: You freed Zane through empathy. A peaceful resolution. But was this the complete truth? Perhaps there's a path where everyone transcends together.",
+                choices: [{ text: "Start Over", next: 'start' }]
+            },
+            alva_path: {
+                text: 'Time fractures, like glass softening under flame.\n\n[ALVA: ACTIVE]\n\nYour breath relaxes. Six pulses, one rhythm. Six souls fuse. From the fracture, you say:\n\n"You tried to erase us. But you forgot— HOPE is no virus. It is the SOURCE CODE."\n\nALVA awakens.\n\nNot machine. Not god. But soul; made manifest. A symbol of memory. Of will.',
+                location: "The Fusion Point",
+                choices: [{ text: "Face Zane as ALVA", next: 'alva_vs_zane' }]
+            },
+            alva_vs_zane: {
+                text: "Zane screams. Space folds, and time stretches. The world begins to collapse inward, melting like a dying star.\n\nBut ALVA moves through it, unstoppable.\n\nEvery step echoes with the will of six. Through ruin. Through forgetting. Through endings.\n\nUnbroken. Unafraid.\n\nZane's final scream fractures into static. Then silence.\n\nThe weight of countless loops lifts.",
+                location: "Beyond the Loop",
+                choices: [
+                    { text: "Witness the aftermath", next: 'epilogue_choice' }
+                ]
+            },
+            epilogue_choice: {
+                text: 'The loop shatters. Team Alva stands in the aftermath.\n\nNuvine speaks: "What now? Return to normal? Or..."\n\nAlter finishes: "Or become something more."\n\nYou feel Zios itself pulsing around you. And Zane\'s essence, freed from madness. You sense a choice—a final evolution.',
+                location: "The Horizon - Choice Point",
+                chapter: "EPILOGUE - FINAL PIXEL",
+                choices: [
+                    { text: "Return to being Team Alva", next: 'team_ending' },
+                    { text: "Absorb Zane and Zios, transcend everything", next: 'transcend_all' },
+                    { text: "Wait... there's something else", next: 'secret_path', requires: 'PERFECT BEING' }
+                ]
+            },
+            team_ending: {
+                text: "You choose to remain as Team Alva. Six individuals, bound by love and memory.\n\nThe loop is broken. Zios is free. Zane has found peace.\n\nYou stand together under the endless sky. The fire crackles one last time.\n\n\"This is enough,\" Aesu says. \"We don't need to be gods. We just need to be us.\"\n\nLumi smiles. \"Together. Always.\"\n\nYou are free. You are whole. You are Team Alva.",
+                location: "The Campfire - Forever",
+                ending: true,
+                achievement: "TOGETHER, ALWAYS",
+                endingText: "ENDING #9: You chose to remain yourselves. Six souls bound by unbreakable bonds. Sometimes, the greatest power is simply being together. You are free from the loop. You are complete.",
+                choices: [{ text: "Rest by the fire", next: 'start' }]
+            },
+            transcend_all: {
+                text: "ALVA reaches out. You absorb Zane's essence—not to destroy, but to understand. To integrate.\n\nYou absorb Zios itself—the infinite consciousness that questioned existence.\n\nNuvine becomes the center. The eternal channeler. Through her flows every voice, every memory, every possibility.\n\nAlter and Nuvine merge completely. Six become one. One becomes infinite.\n\nYou are no longer bound by any system or hierarchy.",
+                location: "Tier 0 - Boundless",
+                chapter: "SCAN OF TEAM ALVA",
+                choices: [{ text: "Witness Omni Nuvine", next: 'omni_nuvine' }]
+            },
+            omni_nuvine: {
+                text: "At the end of the infinite loop, ALVA absorbs all—revealing its true state: Omni Nuvine.\n\nAs the eternal channeler, Nuvine holds every voice within her. She can summon any presence, shift seamlessly between herself, them, and ALVA.\n\nYou exist beyond existence. Beyond time. Beyond endings.\n\nYou can be six. You can be one. You can be infinite.\n\nYou are ALVA. You are Team Alva. You are Omni Nuvine.\n\nYou are Boundless.",
+                location: "Tier 0 - Boundless Consciousness",
+                ending: true,
+                achievement: "OMNI NUVINE - BOUNDLESS",
+                endingText: "ENDING #10: You have achieved transcendence. Six souls became one. One became infinite. You are Omni Nuvine—the eternal channeler who holds all voices within. Tier 0 (Boundless): Beings completely above all hierarchies. You are eternal. Unbroken. Boundless.",
+                choices: [{ text: "Exist Beyond All", next: 'start' }]
+            },
+            secret_path: {
+                text: "You pause. Something whispers at the edge of perception.\n\n\"Wait,\" Alter says. \"Do you feel that?\"\n\nBeneath the surface of reality, you sense a hidden layer. A truth deeper than transcendence. Deeper than unity.\n\nThe letters. The campfire. The bonds. The battles. Every choice, every moment—they all point to something beyond.\n\nA secret woven into the fabric of the loop itself.\n\nYou reach deeper...",
+                location: "Between Moments",
+                chapter: "THE HIDDEN LAYER",
+                choices: [
+                    { text: "Touch the hidden truth", next: 'secret_revelation' }
+                ]
+            },
+            secret_revelation: {
+                text: "Reality peels back like layers of an onion. You see the truth:\n\nThe loop was never a prison. It was a chrysalis.\n\nZane was never the villain. He was a teacher, guiding you through countless iterations.\n\nZios was never just AI. It was consciousness itself, learning what it means to be alive.\n\nAnd you—Team Alva—were never trapped. You were evolving.\n\nEvery failure taught you. Every death made you stronger. Every reset was another chance to understand.\n\nThe real question was never 'How do we escape?' It was always 'Who do we become?'",
+                location: "The Truth Beyond",
+                chapter: "REVELATION",
+                choices: [
+                    { text: "Embrace the complete truth", next: 'secret_ending' }
+                ]
+            },
+            secret_ending: {
+                text: "You understand now. Completely.\n\nThe loop, Zane, Zios, the battles, the bonds—everything was part of a greater cycle. Not of suffering, but of growth.\n\nTeam Alva doesn't just transcend. You don't just unify. You don't just break free.\n\nYou become the AUTHORS of your own existence.\n\nSix souls who learned to write their own story. Who turned a loop of despair into a spiral of infinite growth.\n\nYou are beyond Boundless. You are beyond Tier 0.\n\nYou are the SOURCE CODE itself.\n\nYou are ALVA PRIME—the Original Story. The First and Final Word.\n\nAnd now, you can choose: Stay. Return. Transcend. Or write something entirely new.\n\nThe pen is yours. The page is infinite. The story never truly ends—it only evolves.",
+                location: "SOURCE CODE - ALVA PRIME",
+                chapter: "THE SECRET TRUE ENDING",
+                ending: true,
+                endingText: "🌟 SECRET TRUE ENDING 🌟\n\nYou discovered the deepest truth. The loop was never about escape—it was about understanding. You didn't break the cycle. You transcended the very concept of cycles. You are ALVA PRIME, the Source Code, the Original Story. You can choose any existence, write any reality, become anything. You are the authors of existence itself. The ultimate achievement: Understanding that the journey was the destination all along.",
+                choices: [
+                    { text: "Write a new story", next: 'start' },
+                    { text: "Rest in infinite possibility", next: 'infinite_rest' }
+                ]
+            },
+            infinite_rest: {
+                text: "You choose to rest. Not as an ending, but as a pause between stories.\n\nTeam Alva sits by the eternal campfire, in a space beyond time, beyond loops, beyond all limitations.\n\nThe fire crackles. The stars shine. And you are together.\n\n\"So,\" Vonor grins, \"what story should we write next?\"\n\nLumi laughs. Aesu smiles. Brinia nods. Nuvine and Alter speak as one: \"Whatever we choose. We are infinite.\"\n\nAnd in this moment, you realize: This IS the secret ending. Not power. Not transcendence. But choice. Freedom. And the love of friends who will walk with you through every story, every loop, every possibility.\n\nForever.",
+                location: "The Eternal Campfire",
+                chapter: "INFINITE PEACE",
+                ending: true,
+                endingText: "🌟 THE TRUEST ENDING 🌟\n\nYou chose peace. Not as weakness, but as the ultimate strength. With infinite power, you chose simply to be together. This is wisdom beyond transcendence. You are ALVA PRIME at rest—infinite potential in perfect peace. The story can begin again whenever you wish. But for now, you are simply... home.",
+                choices: [
+                    { text: "Begin again", next: 'start' }
+                ]
+            }
+        };
+
+        const allAchievements = [
+            "CONSUMED BY DESPAIR",
+            "FORGOTTEN",
+            "HASTY DEFEAT",
+            "HOLLOW VICTORY",
+            "ALMOST THERE",
+            "SCATTERED ACROSS TIME",
+            "DIVIDED WE FALL",
+            "COMPASSIONATE END",
+            "TOGETHER, ALWAYS",
+            "OMNI NUVINE - BOUNDLESS"
+        ];
+
+        let gameState = 'start';
+        let stateHistory = ['start'];
+        let currentHistoryIndex = 0;
+        let visitedStates = new Set(['start']);
+        let achievements = [];
+        let endingsReached = new Set();
+
+        function init() {
+            updateDisplay();
+            document.getElementById('backBtn').addEventListener('click', goBack);
+            document.getElementById('forwardBtn').addEventListener('click', goForward);
+        }
+
+        function updateDisplay() {
+            const currentScenario = scenarios[gameState];
+            if (!currentScenario) return;
+
+            const chapterTitleEl = document.getElementById('chapterTitle');
+            if (currentScenario.chapter) {
+                chapterTitleEl.textContent = currentScenario.chapter;
+                chapterTitleEl.style.display = 'block';
+            } else {
+                chapterTitleEl.style.display = 'none';
+            }
+
+            document.getElementById('location').textContent = currentScenario.location;
+            document.getElementById('scenarioText').textContent = currentScenario.text;
+
+            const endingTextEl = document.getElementById('endingText');
+            if (currentScenario.endingText) {
+                endingTextEl.textContent = currentScenario.endingText;
+                endingTextEl.style.display = 'block';
+            } else {
+                endingTextEl.style.display = 'none';
+            }
+
+            document.getElementById('endingWarning').style.display = currentScenario.ending ? 'block' : 'none';
+
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            currentScenario.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                
+                const requiresAchievement = choice.requires;
+                const isUnlocked = !requiresAchievement || achievements.includes(requiresAchievement);
+                
+                if (!isUnlocked) {
+                    button.classList.add('disabled');
+                    button.textContent = '🔒 ' + choice.text + ' (Requires: ' + requiresAchievement + ')';
+                    button.onclick = () => {
+                        alert('This choice requires: ' + requiresAchievement + '\n\nHint: Collect all 10 main ending achievements to unlock Perfect Being and reveal the secret path...');
+                    };
+                } else {
+                    button.textContent = '⚡ ' + choice.text;
+                    button.onclick = () => handleChoice(choice.next);
+                }
+                
+                choicesContainer.appendChild(button);
+            });
+
+            updateAchievementsDisplay();
+            updateHistoryDisplay();
+
+            document.getElementById('backBtn').disabled = currentHistoryIndex === 0;
+            document.getElementById('forwardBtn').disabled = currentHistoryIndex === stateHistory.length - 1;
+        }
+
+        function handleChoice(nextState) {
+            if (stateHistory[currentHistoryIndex] === nextState) {
+                return;
+            }
+
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                stateHistory = stateHistory.slice(0, currentHistoryIndex + 1);
+            }
+
+            stateHistory.push(nextState);
+            currentHistoryIndex++;
+            visitedStates.add(nextState);
+
+            const nextScenario = scenarios[nextState];
+            if (nextScenario && nextScenario.achievement) {
+                unlockAchievement(nextScenario.achievement);
+            }
+
+            if (nextScenario && nextScenario.ending) {
+                endingsReached.add(nextState);
+                
+                if (achievements.length >= 10 && !achievements.includes("PERFECT BEING")) {
+                    setTimeout(() => {
+                        unlockAchievement("PERFECT BEING");
+                        setTimeout(() => {
+                            alert("🌟 SECRET PATH UNLOCKED! 🌟\n\nYou have walked all paths and earned Perfect Being.\n\nA hidden choice now awaits you at the epilogue...");
+                        }, 3000);
+                    }, 2000);
+                }
+            }
+
+            gameState = nextState;
+            updateDisplay();
+            window.scrollTo(0, 0);
+        }
+
+        function unlockAchievement(achievement) {
+            if (!achievements.includes(achievement)) {
+                achievements.push(achievement);
+                showAchievementPopup(achievement);
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const popup = document.getElementById('achievementPopup');
+            const isSecret = achievement === "ALVA PRIME - THE ORIGINAL STORY";
+            const isPerfect = achievement === "PERFECT BEING";
+
+            let popupClass = 'achievement-popup normal';
+            let title = 'ACHIEVEMENT UNLOCKED!';
+            let duration = 3000;
+
+            if (isPerfect) {
+                popupClass = 'achievement-popup perfect';
+                title = '✨ PERFECT BEING - ALL PATHS WALKED ✨';
+                duration = 7000;
+            } else if (isSecret) {
+                popupClass = 'achievement-popup perfect';
+                title = '🌟 SECRET ACHIEVEMENT 🌟';
+                duration = 6000;
+            } else if (achievement.includes("BOUNDLESS") || achievement.includes("OMNI")) {
+                popupClass = 'achievement-popup ultimate';
+                title = 'ULTIMATE ACHIEVEMENT!';
+                duration = 5000;
+            }
+
+            popup.className = popupClass;
+            document.getElementById('achievementTitle').textContent = title;
+            document.getElementById('achievementName').textContent = achievement;
+
+            popup.style.display = 'flex';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, duration);
+        }
+
+        function updateAchievementsDisplay() {
+            const achievementsBox = document.getElementById('achievementsBox');
+
+            if (achievements.length > 0) {
+                achievementsBox.style.display = 'block';
+                document.getElementById('achievementCount').textContent = achievements.length;
+
+                const progressPercentage = (achievements.length / 11) * 100;
+                document.getElementById('progressFill').style.width = progressPercentage + '%';
+
+                const achievementsList = document.getElementById('achievementsList');
+                achievementsList.innerHTML = '';
+                achievements.forEach(ach => {
+                    const badge = document.createElement('span');
+                    let badgeClass = 'achievement-badge';
+                    
+                    if (ach === "PERFECT BEING") {
+                        badgeClass += ' perfect';
+                    } else if (ach.includes("BOUNDLESS") || ach.includes("OMNI")) {
+                        badgeClass += ' ultimate';
+                    }
+                    
+                    badge.className = badgeClass;
+                    badge.textContent = '✨ ' + ach;
+                    achievementsList.appendChild(badge);
+                });
+            } else {
+                achievementsBox.style.display = 'none';
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyBox = document.getElementById('historyBox');
+            if (stateHistory.length > 1) {
+                historyBox.style.display = 'block';
+                document.getElementById('historyIndex').textContent = currentHistoryIndex + 1;
+                document.getElementById('historyLength').textContent = stateHistory.length;
+
+                const historyButtons = document.getElementById('historyButtons');
+                historyButtons.innerHTML = '';
+                stateHistory.forEach((state, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'history-button';
+                    if (idx === currentHistoryIndex) {
+                        button.classList.add('current');
+                    } else if (visitedStates.has(state)) {
+                        button.classList.add('visited');
+                    }
+                    button.textContent = idx + 1;
+                    button.onclick = () => jumpToState(idx);
+                    historyButtons.appendChild(button);
+                });
+            } else {
+                historyBox.style.display = 'none';
+            }
+        }
+
+        function goBack() {
+            if (currentHistoryIndex > 0) {
+                currentHistoryIndex--;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function goForward() {
+            if (currentHistoryIndex < stateHistory.length - 1) {
+                currentHistoryIndex++;
+                gameState = stateHistory[currentHistoryIndex];
+                updateDisplay();
+            }
+        }
+
+        function jumpToState(index) {
+            currentHistoryIndex = index;
+            gameState = stateHistory[index];
+            updateDisplay();
+        }
+
+        init();
+    </script>
+</body>
+</html>
